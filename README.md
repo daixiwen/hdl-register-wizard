@@ -4,8 +4,8 @@ This is a webapp that can generate VHDL code and documentation to create hardwar
 
 ## Project Status
 
-The project is under development and is not currently usable. The aim for the first release is to be able to load and save MDF files, as the [Bitvis Register Wizard](https://bitvis.no/dev-tools/register-wizard/) currently lacks a GUI to create the files.
-A future release will also be able to generate files.
+The project is under development and is not currently usable. The aim for the first release is to be able to load and save MDF files, as the [Bitvis Register Wizard](https://bitvis.no/dev-tools/register-wizard/) currently lacks a GUI.
+A future release will also be able to generate code and documentation.
 
 ## Project License
 
