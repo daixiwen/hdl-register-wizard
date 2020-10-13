@@ -1,0 +1,157 @@
+{
+  "name": "irqc",
+  "configuration": {
+    "hdl" : {
+      "rtlPath" : "<model_file>irqc/src",
+      "simPath" : "<model_file>/irqc/sim",
+      "tbPath"  : "<model_file>/irqc/tb",
+      "rtlLibrary" : "bitvis_irqc",
+      "tbLibrary"  : "bitvis_irqc_tb",
+      "headerTemplate" : "<model_file>/../templates/headers/header.txt"
+    },
+    "software" : {
+      "path" : "<model_file>/irqc/sw"
+    },
+    "documentation" : {
+      "path" : "<model_file>/irqc/doc",
+      "moduleTemplate" : [
+        "<model_file>/../templates/docx/moduleregistermap-template.docx",
+        "<model_file>/../templates/docx/registerdescription-template.docx"
+      ]
+    }
+  },
+  "interfaces": [
+    {
+      "name": "sbi",
+      "type": "SBI",
+      "description": [
+        "Control/Status register interface."
+      ],
+      "registers": [
+        {
+          "name": "IER",
+          "address": "auto",
+          "access": "RW",
+          "signal": "std_logic_vector",
+          "reset": "0x0",
+          "width": 32,
+          "location": "pif",
+          "summary": [
+            "Interrupt Enable Register."
+          ],
+          "description": [
+            "Interrupt Enable Register"
+          ]
+        },
+        {
+          "name": "IRR",
+          "address": "auto",
+          "access": "RO",
+          "signal": "std_logic_vector",
+          "reset": "0x0",
+          "width": 32,
+          "location": "core",
+          "coreSignalProperties":{
+            "useReadEnable":false
+          },
+          "summary": [
+            "Interrupt Request Register."
+          ],
+          "description": [
+            "Interrupt Request Register"
+          ]
+        },
+        {
+          "name": "IPR",
+          "address": "auto",
+          "access": "RO",
+          "signal": "std_logic_vector",
+          "reset": "0x0",
+          "width": 32,
+          "location": "core",
+          "coreSignalProperties":{
+            "useReadEnable":false
+          },
+          "summary": [
+            "Interrupt Pending Register."
+          ],
+          "description": [
+            "Interrupt Pending Register"
+          ]
+        },
+        {
+          "name": "ICR",
+          "address": "auto",
+          "access": "WO",
+          "signal": "std_logic_vector",
+          "reset": "0x0",
+          "width": 32,
+          "location": "core",
+          "coreSignalProperties":{
+            "useWriteEnable":false
+          },
+          "summary": [
+            "Interrupt Clear Register."
+          ],
+          "description": [
+            "Interrupt Clear Register"
+          ]
+        },
+        {
+          "name": "ITR",
+          "address": "auto",
+          "access": "WO",
+          "signal": "std_logic_vector",
+          "reset": "0x0",
+          "width": 32,
+          "location": "core",
+          "coreSignalProperties":{
+            "useWriteEnable":false
+          },
+          "summary": [
+            "Interrupt Clear Register."
+          ],
+          "description": [
+            "Interrupt Clear Register"
+          ]
+        },
+        {
+          "name": "IRQ2CPU_ENA",
+          "address": "auto",
+          "access": "WO",
+          "signal": "std_logic",
+          "reset": "0x0",
+          "width": 1,
+          "location": "core",
+          "coreSignalProperties":{
+            "useWriteEnable":true
+          },
+          "summary": [
+            "Interrupt Request to CPU Register."
+          ],
+          "description": [
+            "Interrupt Request to CPU Register."
+          ]
+        },
+        {
+          "name": "IRQ2CPU_allowed",
+          "address": "auto",
+          "access": "RO",
+          "signal": "std_logic",
+          "reset": "0x0",
+          "width": 1,
+          "location": "core",
+          "coreSignalProperties":{
+            "useReadEnable":false
+          },
+          "summary": [
+            "Interrupt Request to CPU Allowed Register."
+          ],
+          "description": [
+            "Interrupt Request to CPU Allowed Register."
+          ]
+        }
+      ]
+    }
+  ]
+}

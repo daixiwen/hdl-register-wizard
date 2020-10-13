@@ -5,13 +5,30 @@
 
 use seed::{prelude::*, *};
 
+mod navigation;
+mod mdf_format;
+mod file_io;
+
+mod page;
+
+// URLs
+const SETTINGS: &str = "settings";
+
 // ------ ------
 //     Init
 // ------ ------
 
 // `init` describes what should happen when your app started.
-fn init(_: Url, _: &mut impl Orders<Msg>) -> Model {
-    Model::default()
+fn init(url: Url, orders: &mut impl Orders<Msg>) -> Model {
+    let base_url = url.to_base_url();
+    orders
+        .subscribe(Msg::UrlChanged)
+        .notify(subs::UrlChanged(url));
+    Model {
+        base_url,
+        active_page : PageType::Edit,
+        mdf_data : mdf_format::Mdf::new(),
+    }
 }
 
 // ------ ------
@@ -19,23 +36,87 @@ fn init(_: Url, _: &mut impl Orders<Msg>) -> Model {
 // ------ ------
 
 // `Model` describes our app state.
-type Model = i32;
+pub struct Model {
+    base_url : Url,
+    active_page : PageType,
+    mdf_data : mdf_format::Mdf
+}
+
+#[derive(Copy, Clone, PartialEq)]
+pub enum PageType {
+    Edit,
+    Settings,
+    NotFound
+}
+
+// ------ ------
+//     Urls
+// ------ ------
+
+struct_urls!();
+impl<'a> Urls<'a> {
+    fn home(self) -> Url {
+        self.base_url()
+    }
+    fn settings(self) -> Url {
+        self.base_url().add_path_part(SETTINGS)
+    }
+    fn from_page_type(self, page : PageType) -> Url
+    {
+        match page {
+            PageType::Edit => self.home(),
+            PageType::Settings => self.settings(),
+            _ => self.home()
+        }
+    }
+}
 
 // ------ ------
 //    Update
 // ------ ------
 
-// (Remove the line below once any of your `Msg` variants doesn't implement `Copy`.)
-#[derive(Copy, Clone)]
 // `Msg` describes the different events you can modify state with.
-enum Msg {
-    Increment,
+pub enum Msg {
+    UrlChanged(subs::UrlChanged),
+    Menu(navigation::MenuCommand),
+    Edit(page::edit::EditMsg),
+    UploadStart(web_sys::Event),
+    UploadText(String)
 }
 
+
 // `update` describes how to handle each `Msg`.
-fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
+fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
     match msg {
-        Msg::Increment => *model += 1,
+        Msg::UrlChanged(subs::UrlChanged(mut url)) => {
+            model.active_page = match url.next_path_part() {
+                None => PageType::Edit,
+                Some(SETTINGS) => PageType::Settings,
+                Some(_) => PageType::NotFound
+            }
+        },
+        Msg::Menu(action) =>
+            navigation::do_menu(action, model, orders),
+
+        Msg::Edit(edit_msg) => page::edit::update(edit_msg, model, orders),
+
+        Msg::UploadStart(event) => {
+            file_io::upload_file(event, orders);
+            orders.skip();
+        }
+
+        Msg::UploadText(text) => {
+            let decode : Result<mdf_format::Mdf, serde_json::Error> = serde_json::from_str(&text);
+            match decode {
+                Ok(decoded) =>
+                    model.mdf_data = decoded,
+
+                Err(error) => {
+                    modal_window("upload error", &format!("error while reading file:<br>{}", error));
+                    orders.skip();
+                },
+            }
+        }
     }
 }
 
@@ -43,15 +124,95 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
 //     View
 // ------ ------
 
+
 // (Remove the line below once your `Model` become more complex.)
 #[allow(clippy::trivially_copy_pass_by_ref)]
 // `view` describes what to display.
 fn view(model: &Model) -> Node<Msg> {
     div![
-        "This is a counter: ",
-        C!["counter"],
-        button![model, ev(Ev::Click, |_| Msg::Increment),],
+        navigation::navbar(model),
+        div![C!["container-fluid"],
+            div![C!["row"],
+                match model.active_page {
+                    PageType::Edit => div![
+                            C!["col-md3 col-xl-2 bd-sidebar"],
+                            "sidebar",
+                        ],
+                    _ => empty![],
+                },
+
+                div![C!["col"],
+                    div![
+                        match model.active_page {
+                            PageType::Edit => page::edit::view(model),
+                            PageType::Settings => page::settings::view(model),
+                            _ => div!["404 not found"],
+                        },
+                    ]
+                ]
+            ]
+        ],
+        div![
+            attrs!{
+                At::Style => "display: none",
+            },
+            input![
+                attrs!{
+                    At::Id => "hidden_file_input",
+                    At::Type => "file",
+                    At::Accept => ".regwiz,.mdf,text/plain"
+                },
+                ev(Ev::Change, |event| Msg::UploadStart(event))
+            ]
+        ],
+        div![
+            attrs!{
+                At::Id => "modal",
+            }
+        ]
     ]
+}
+
+pub fn modal_window(title: &str, content: &str) {
+    let modal_window = seed::document()
+        .get_element_by_id("modal")
+        .unwrap();
+
+    modal_window.set_inner_html(&format!(r##"
+<div class="modal fade" id="function_modal" tabindex="-1" aria-labelledby="function_modal_label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="function_modal_label">{}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<button style="display: none" type="button" data-toggle="modal" data-target="#function_modal" id="function_modal_button">
+</button>
+        "##, title, content));
+
+    // we could also directly call the javascript instead of clicking on the button
+    let button = seed::document()
+        .get_element_by_id("function_modal_button")
+        .unwrap();
+    let event = seed::document()
+        .create_event("MouseEvents")
+        .expect("should be able to call createEvent()")
+        .dyn_into::<web_sys::MouseEvent>()
+        .ok()
+        .expect("should be a MouseEvent");
+    event.init_mouse_event_with_can_bubble_arg_and_cancelable_arg("click", true, true);
+    let _ = button.dispatch_event(&event);
 }
 
 // ------ ------
