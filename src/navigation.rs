@@ -19,14 +19,14 @@ pub enum MenuCommand {
 pub fn do_menu(action: MenuCommand, model: &mut super::Model, orders: &mut impl Orders<super::Msg>) {
     match action {
         MenuCommand::SaveFile => {
-            let filename = format!("{}.mdf", &model.mdf_data.name);
+            let filename = format!("{}.regwiz", &model.mdf_data.name);
             let jsondata = serde_json::to_string(&model.mdf_data).expect("serialize data to json");
             super::file_io::download_text(&filename, &jsondata);
             orders.skip();
         },
         MenuCommand::LoadFile => {
         
-            super::file_io::choose_upload("hidden_file_input");
+            super::file_io::choose_upload(super::FILE_INPUT_ID);
             orders.skip();
         },
     }

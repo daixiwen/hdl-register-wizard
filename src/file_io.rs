@@ -31,12 +31,6 @@ pub fn download_text(filename: &str, data: &str) {
 
 pub fn choose_upload(input_element_id : &str)
 {
-    // create a file input element
-//    let element = seed::document()
-//        .create_element("input")
-//        .expect("should be able to create element");
-//    let _ = element.set_attribute("type", "file");
-//    let _ = element.set_attribute("accept", mime_type);
     let element = seed::document()
         .get_element_by_id(input_element_id)
         .unwrap();

@@ -14,6 +14,9 @@ mod page;
 // URLs
 const SETTINGS: &str = "settings";
 
+// IDs
+pub const FILE_INPUT_ID: &str = "hidden_file_input";
+
 // ------ ------
 //     Init
 // ------ ------
@@ -158,7 +161,7 @@ fn view(model: &Model) -> Node<Msg> {
             },
             input![
                 attrs!{
-                    At::Id => "hidden_file_input",
+                    At::Id => FILE_INPUT_ID,
                     At::Type => "file",
                     At::Accept => ".regwiz,.mdf,text/plain"
                 },
