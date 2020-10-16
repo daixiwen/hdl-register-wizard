@@ -29,7 +29,18 @@ pub struct Interface {
   pub registers : Vec<Register>,
 }
 
-#[derive(Serialize, Deserialize, strum_macros::ToString)]
+impl Interface{
+  pub fn new () -> Interface {
+    Interface {
+      name : String::new(),
+      description : None,
+      interface_type : InterfaceType::SBI,
+      registers : Vec::<Register>::new()
+    }
+  }
+}
+
+#[derive(Serialize, Deserialize, strum_macros::ToString, strum_macros::EnumIter, strum_macros::EnumString, PartialEq)]
 pub enum InterfaceType { SBI, APB3, AvalonMm}
 
 #[derive(Serialize, Deserialize)]

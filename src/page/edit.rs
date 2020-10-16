@@ -4,7 +4,11 @@ use seed::{prelude::*, *};
 use super::super::Model;
 use super::super::Msg;
 use super::super::mdf_format;
+use super::super::Urls;
+use super::interface::InterfacePage;
+use super::interface::InterfaceMsg;
 
+#[derive(Clone)]
 pub enum EditMsg {
   NameChanged(String)
 }
@@ -95,13 +99,14 @@ pub fn view(model: &Model) -> Node<Msg> {
           ]
         ],
         tbody![
-          model.mdf_data.interfaces.iter().enumerate().map(|(index, interface)| interface_table_row(index, &interface)).collect::<Vec<_>>(),
+          model.mdf_data.interfaces.iter().enumerate().map(|(index, interface)| interface_table_row(&model, index, &interface)).collect::<Vec<_>>(),
           tr![
             td![],
             td![],
             td![],
             td![
-              in_table_button(0, "Add", "primary"), 
+              in_table_button_url(0, "Add", "primary",
+                &Urls::new(&model.base_url).interface(InterfacePage::NewInterface), true), 
             ],           
           ]
         ]
@@ -110,7 +115,7 @@ pub fn view(model: &Model) -> Node<Msg> {
   ]
 }
 
-fn interface_table_row(index : usize, interface : &mdf_format::Interface) -> Node<Msg>
+fn interface_table_row(model: &Model, index : usize, interface : &mdf_format::Interface) -> Node<Msg>
 {
   tr![
     td![
@@ -133,21 +138,39 @@ fn interface_table_row(index : usize, interface : &mdf_format::Interface) -> Nod
       }
     ],
     td![
-      in_table_button(index, "▲", "primary"),
-      in_table_button(index, "▼", "primary"),
-      in_table_button(index, "✎", "primary"),
-      in_table_button(index, "✖", "danger"),
+      in_table_button_url(index, "✎", "primary",
+        &Urls::new(&model.base_url).interface(InterfacePage::Num(index)), true),
+      in_table_button_msg(index, "✖", "danger",
+        Msg::Interface(InterfaceMsg::Delete(index)), true),
+      in_table_button_msg(index, "▲", "primary", 
+        Msg::Interface(InterfaceMsg::MoveUp(index)), index != 0),
+      in_table_button_msg(index, "▼", "primary",
+        Msg::Interface(InterfaceMsg::MoveDown(index)), index != model.mdf_data.interfaces.len()-1),
     ],    
   ]
 }
 
-fn in_table_button(_index: usize, label: &str, color: &str) -> Node<Msg>
+fn in_table_button_url(_index: usize, label: &str, color: &str, url: &Url, enabled: bool) -> Node<Msg>
 {
   a![
     C![&format!("btn btn-sm mx-1 btn-outline-{}", color)],
     attrs!{
-      At::Href => "#"
+      At::Href => url
     },
+    IF![! enabled => attrs!{ At::Disabled => "disaled"}],
     label
+  ]
+}
+
+fn in_table_button_msg(_index: usize, label: &str, color: &str, msg: Msg, enabled: bool) -> Node<Msg>
+{
+  button![
+    C![&format!("btn btn-sm mx-1 btn-outline-{}", color)],
+    attrs!{
+      At::Type => "button"
+    },
+    IF![! enabled => attrs!{ At::Disabled => "disaled"}],
+    label,
+    ev(Ev::Click, move | _ | msg),
   ]
 }

@@ -13,6 +13,7 @@ mod page;
 
 // URLs
 const SETTINGS: &str = "settings";
+const INTERFACE: &str = "interface";
 
 // IDs
 pub const FILE_INPUT_ID: &str = "hidden_file_input";
@@ -48,6 +49,7 @@ pub struct Model {
 #[derive(Copy, Clone, PartialEq)]
 pub enum PageType {
     Edit,
+    Interface(usize),
     Settings,
     NotFound
 }
@@ -64,11 +66,15 @@ impl<'a> Urls<'a> {
     fn settings(self) -> Url {
         self.base_url().add_path_part(SETTINGS)
     }
+    pub fn interface(self, interface_page : page::interface::InterfacePage) -> Url {
+        page::interface::interface_url(self.base_url().add_path_part(INTERFACE), interface_page)
+    }
     fn from_page_type(self, page : PageType) -> Url
     {
         match page {
             PageType::Edit => self.home(),
             PageType::Settings => self.settings(),
+            PageType::Interface(index) => self.interface(page::interface::InterfacePage::Num(index)),
             _ => self.home()
         }
     }
@@ -79,10 +85,12 @@ impl<'a> Urls<'a> {
 // ------ ------
 
 // `Msg` describes the different events you can modify state with.
+#[derive(Clone)]
 pub enum Msg {
     UrlChanged(subs::UrlChanged),
     Menu(navigation::MenuCommand),
     Edit(page::edit::EditMsg),
+    Interface(page::interface::InterfaceMsg),
     UploadStart(web_sys::Event),
     UploadText(String)
 }
@@ -95,6 +103,7 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
             model.active_page = match url.next_path_part() {
                 None => PageType::Edit,
                 Some(SETTINGS) => PageType::Settings,
+                Some(INTERFACE) => page::interface::change_url(url.next_path_part(), model),
                 Some(_) => PageType::NotFound
             }
         },
@@ -102,6 +111,8 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
             navigation::do_menu(action, model, orders),
 
         Msg::Edit(edit_msg) => page::edit::update(edit_msg, model, orders),
+
+        Msg::Interface(interface_msg) => page::interface::update(interface_msg, model, orders),
 
         Msg::UploadStart(event) => {
             file_io::upload_file(event, orders);
@@ -128,8 +139,6 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
 // ------ ------
 
 
-// (Remove the line below once your `Model` become more complex.)
-#[allow(clippy::trivially_copy_pass_by_ref)]
 // `view` describes what to display.
 fn view(model: &Model) -> Node<Msg> {
     div![
@@ -137,7 +146,7 @@ fn view(model: &Model) -> Node<Msg> {
         div![C!["container-fluid"],
             div![C!["row"],
                 match model.active_page {
-                    PageType::Edit => div![
+                    PageType::Edit | PageType::Interface(_) => div![
                             C!["col-md3 col-xl-2 bd-sidebar"],
                             "sidebar",
                         ],
@@ -149,6 +158,7 @@ fn view(model: &Model) -> Node<Msg> {
                         match model.active_page {
                             PageType::Edit => page::edit::view(model),
                             PageType::Settings => page::settings::view(model),
+                            PageType::Interface(index) => page::interface::view(model,index),
                             _ => div!["404 not found"],
                         },
                     ]
