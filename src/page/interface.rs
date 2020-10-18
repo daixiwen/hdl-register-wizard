@@ -9,7 +9,13 @@ use strum::IntoEnumIterator;
 
 use std::str::FromStr;
 
+// URL constants
 const URL_NEW: &str = "new";
+
+// ID constants
+const ID_ADDRESS_WIDTH: &str = "inputAddressWidth";
+const ID_DATA_WIDTH: &str = "inputDataWidth";
+
 // ------ ------
 //     Urls
 // ------ ------
@@ -69,16 +75,34 @@ fn new_interface(model: &mut Model) -> PageType {
 // `Msg` describes the different events you can modify state with.
 #[derive(Clone)]
 pub enum InterfaceMsg {
+    Delete(usize),
+    MoveUp(usize),
+    MoveDown(usize),
     NameChanged(usize, String),
     TypeChanged(usize, String),
     DescriptionChanged(usize, String),
-    Delete(usize),
-    MoveUp(usize),
-    MoveDown(usize)
+    AddressWitdhChanged(usize, String),
+    DataWidthChanged(usize, String)
 }
 
 pub fn update(msg: InterfaceMsg, model: &mut Model, orders: &mut impl Orders<Msg>) {
   match msg {
+    InterfaceMsg::Delete(index) => {
+      if index < model.mdf_data.interfaces.len() {
+        model.mdf_data.interfaces.remove(index);
+      }
+    },
+    InterfaceMsg::MoveUp(index) => {
+      if (index < model.mdf_data.interfaces.len()) && (index > 0) {
+        model.mdf_data.interfaces.swap(index-1, index);
+      }
+    },
+    InterfaceMsg::MoveDown(index) => {
+      if  index < model.mdf_data.interfaces.len()-1 {
+        model.mdf_data.interfaces.swap(index, index+1);
+      }
+    },
+
     InterfaceMsg::NameChanged(index, new_name) => {
       model.mdf_data.interfaces[index].name = new_name;
       orders.skip();
@@ -106,24 +130,30 @@ pub fn update(msg: InterfaceMsg, model: &mut Model, orders: &mut impl Orders<Msg
 
       orders.skip();
     },
-    InterfaceMsg::Delete(index) => {
-      if index < model.mdf_data.interfaces.len() {
-        model.mdf_data.interfaces.remove(index);
-      }
+
+    InterfaceMsg::AddressWitdhChanged(index, new_width) => {
+      orders.skip();
+
+      match super::super::validate_field(
+          ID_ADDRESS_WIDTH, &new_width, | field_value | super::super::option_num_from_str(field_value)) {
+        Ok(value) => model.mdf_data.interfaces[index].address_width = value,
+        Err(_) => ()
+      };
     },
-    InterfaceMsg::MoveUp(index) => {
-      if (index < model.mdf_data.interfaces.len()) && (index > 0) {
-        model.mdf_data.interfaces.swap(index-1, index);
-      }
-    },
-    InterfaceMsg::MoveDown(index) => {
-      if  index < model.mdf_data.interfaces.len()-1 {
-        model.mdf_data.interfaces.swap(index, index+1);
-      }
+
+    InterfaceMsg::DataWidthChanged(index, new_width) => {
+      orders.skip();
+
+      match super::super::validate_field(
+          ID_DATA_WIDTH, &new_width, | field_value | super::super::option_num_from_str(field_value)) {
+        Ok(value) => model.mdf_data.interfaces[index].data_width = value,
+        Err(_) => ()
+      };
     }
 
   }
 }
+
 
 // ------ ------
 //     View
@@ -206,7 +236,7 @@ pub fn view(model: &Model, index: usize) -> Node<Msg> {
         label![
           C!["col-sm-2 col-form-label"],
           attrs!{
-            At::For => "inputType",
+            At::For => "inputDescription",
           },
           "Description"
         ],
@@ -225,8 +255,65 @@ pub fn view(model: &Model, index: usize) -> Node<Msg> {
             input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::DescriptionChanged(index, input))),
           ]
         ]
+      ], 
+      div![
+        C!["form-group row"],
+        label![
+          C!["col-sm-2 col-form-label"],
+          attrs!{
+            At::For => ID_ADDRESS_WIDTH,
+          },
+          "Address width"
+        ],
+        div![
+          C!["col-sm-10 was-validated]"],
+          input![
+            C!["form-control"],
+            attrs!{
+              At::Type => "text",
+              At::Id => ID_ADDRESS_WIDTH,
+              At::Value => match &interface.address_width {
+                None => String::new(),
+                Some(width) => width.to_string(),
+              },
+            },
+            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::AddressWitdhChanged(index, input))),
+          ],
+          div![
+            C!["invalid-feedback"],
+            "please write a decimal value or leave empty for automatic"
+          ],
+        ]
+      ],
+      div![
+        C!["form-group row"],
+        label![
+          C!["col-sm-2 col-form-label"],
+          attrs!{
+            At::For => ID_DATA_WIDTH,
+          },
+          "Data width"
+        ],
+        div![
+          C!["col-sm-10"],
+          input![
+            C!["form-control"],
+            attrs!{
+              At::Type => "text",
+              At::Id => ID_DATA_WIDTH,
+              At::Value => match &interface.data_width {
+                None => String::new(),
+                Some(width) => width.to_string(),
+              },
+            },
+            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::DataWidthChanged(index, input))),
+          ],
+          div![
+            C!["invalid-feedback"],
+            "please write a decimal value or leave empty for automatic"
+          ],
+        ]
       ]
-
 
     ],
   ]

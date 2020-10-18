@@ -26,6 +26,10 @@ pub struct Interface {
   pub description : Option<Vec<String>>,
   #[serde(rename = "type")]
   pub interface_type : InterfaceType,
+  #[serde(rename = "AddressWidth", skip_serializing_if = "Option::is_none")]
+  pub address_width : Option<u32>,
+  #[serde(rename = "DataWidth",skip_serializing_if = "Option::is_none")]
+  pub data_width : Option<u32>,
   pub registers : Vec<Register>,
 }
 
@@ -35,7 +39,9 @@ impl Interface{
       name : String::new(),
       description : None,
       interface_type : InterfaceType::SBI,
-      registers : Vec::<Register>::new()
+      registers : Vec::<Register>::new(),
+      address_width: None,
+      data_width: None
     }
   }
 }
