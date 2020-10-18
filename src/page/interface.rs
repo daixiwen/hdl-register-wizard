@@ -4,8 +4,11 @@ use super::super::Model;
 use super::super::PageType;
 use super::super::mdf_format::Interface;
 use super::super::mdf_format::InterfaceType;
-use super::super::Msg;
+use super::super::mdf_format;
 use strum::IntoEnumIterator;
+use super::super::Msg;
+
+use super::super::utils;
 
 use std::str::FromStr;
 
@@ -134,8 +137,8 @@ pub fn update(msg: InterfaceMsg, model: &mut Model, orders: &mut impl Orders<Msg
     InterfaceMsg::AddressWitdhChanged(index, new_width) => {
       orders.skip();
 
-      match super::super::validate_field(
-          ID_ADDRESS_WIDTH, &new_width, | field_value | super::super::option_num_from_str(field_value)) {
+      match utils::validate_field(
+          ID_ADDRESS_WIDTH, &new_width, | field_value | utils::option_num_from_str(field_value)) {
         Ok(value) => model.mdf_data.interfaces[index].address_width = value,
         Err(_) => ()
       };
@@ -144,8 +147,8 @@ pub fn update(msg: InterfaceMsg, model: &mut Model, orders: &mut impl Orders<Msg
     InterfaceMsg::DataWidthChanged(index, new_width) => {
       orders.skip();
 
-      match super::super::validate_field(
-          ID_DATA_WIDTH, &new_width, | field_value | super::super::option_num_from_str(field_value)) {
+      match utils::validate_field(
+          ID_DATA_WIDTH, &new_width, | field_value | utils::option_num_from_str(field_value)) {
         Ok(value) => model.mdf_data.interfaces[index].data_width = value,
         Err(_) => ()
       };
@@ -313,8 +316,78 @@ pub fn view(model: &Model, index: usize) -> Node<Msg> {
             "please write a decimal value or leave empty for automatic"
           ],
         ]
-      ]
-
+      ],
     ],
+    h3![
+      C!["my-2"],
+      "Registers"],
+    table![
+      C!["table table-striped"],
+      thead![
+        tr![
+          th![
+            attrs!{
+              At::Scope => "col"
+            },
+            "name"
+          ],
+          th![
+            attrs!{
+              At::Scope => "col"
+            },
+            "address"
+          ],
+          th![
+            attrs!{
+              At::Scope => "col"
+            },
+            "summary"
+          ],
+          th![
+            attrs!{
+              At::Scope => "col"
+            },
+            "actions"
+          ],
+        ]
+      ],
+      tbody![
+        interface.registers.iter().enumerate().map(|(ref_index, register)| register_table_row(&model, index, ref_index, &register)).collect::<Vec<_>>(),
+        tr![
+          td![],
+          td![],
+          td![],
+          td![
+
+            "placeholder for future 'add' button"
+          ],           
+        ]
+      ]
+    ]
+  ]
+}
+
+fn register_table_row(model: &Model, index : usize, ref_index : usize, register : &mdf_format::Register) -> Node<Msg>
+{
+  tr![
+    td![
+      &register.name
+    ],
+    td![
+      &register.address
+    ],
+    td![
+      utils::opt_vec_str_to_str(&register.summary),
+    ],
+    td![
+/*      in_table_button_url(index, "✎", "primary",
+        &Urls::new(&model.base_url).interface(InterfacePage::Num(index)), true),
+      in_table_button_msg(index, "✖", "danger",
+        Msg::Interface(InterfaceMsg::Delete(index)), true),
+      in_table_button_msg(index, "▲", "primary", 
+        Msg::Interface(InterfaceMsg::MoveUp(index)), index != 0),
+      in_table_button_msg(index, "▼", "primary",
+        Msg::Interface(InterfaceMsg::MoveDown(index)), index != model.mdf_data.interfaces.len()-1),
+*/    ],    
   ]
 }

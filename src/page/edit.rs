@@ -8,6 +8,8 @@ use super::super::Urls;
 use super::interface::InterfacePage;
 use super::interface::InterfaceMsg;
 
+use super::super::utils;
+
 #[derive(Clone)]
 pub enum EditMsg {
   NameChanged(String)
@@ -125,17 +127,7 @@ fn interface_table_row(model: &Model, index : usize, interface : &mdf_format::In
       interface.interface_type.to_string()
     ],
     td![
-      match &interface.description
-      {
-        None => empty![],
-        Some(description) => {
-          match description.len() {
-            0 => empty![],
-            1 => plain![description[0].clone()],
-            _ => plain![format!("{} ...",description[0])],
-          }
-        }
-      }
+      utils::opt_vec_str_to_str(&interface.description),
     ],
     td![
       in_table_button_url(index, "✎", "primary",

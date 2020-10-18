@@ -33,7 +33,7 @@ pub struct Interface {
   pub registers : Vec<Register>,
 }
 
-impl Interface{
+impl Interface {
   pub fn new () -> Interface {
     Interface {
       name : String::new(),
@@ -51,5 +51,21 @@ pub enum InterfaceType { SBI, APB3, AvalonMm}
 
 #[derive(Serialize, Deserialize)]
 pub struct Register {
+  pub name : String,
+  pub address: String,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub summary : Option<Vec<String>>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub description : Option<Vec<String>>,
+}
 
+impl Register {
+  pub fn new () -> Register {
+    Register {
+      name : String::new(),
+      address: String::new(),
+      summary : None,
+      description : None
+    }
+  }
 }
