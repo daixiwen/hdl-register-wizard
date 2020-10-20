@@ -103,12 +103,13 @@ pub enum AccessType { RW, RO, WO}
 #[serde(rename_all = "snake_case")]
 pub enum SignalType { StdLogic, StdLogicVector, Unsigned, Signed, Boolean}
 
+#[derive(Debug, PartialEq)]
 pub struct VectorValue {
   pub value : u128,
   pub radix : RadixType
 }
 
-#[derive(PartialEq, strum_macros::ToString)]
+#[derive(PartialEq, strum_macros::ToString, Debug)]
 pub enum RadixType { Binary, Decimal, Hexadecimal }
 
 impl VectorValue {

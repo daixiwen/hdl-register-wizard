@@ -11,6 +11,7 @@ mod file_io;
 
 mod page;
 mod utils;
+mod tests;
 
 // URLs
 const SETTINGS: &str = "settings";

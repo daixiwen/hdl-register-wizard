@@ -28,7 +28,12 @@
 1. Refresh your browser and see changes.
 1. Go to step 4.
 
-## 3. Prepare your project for deploy
+## 3. Unit tests
+
+Open a new terminal tab / window and run: `cargo make test_h firefox`
+Replace firefox with chrome or safari depending on the browser you are using
+
+## 4. Prepare your project for deploy
 
 1. Run `cargo make verify` in your terminal to format and lint the code.
 1. Run `cargo make build_release`.
