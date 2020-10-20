@@ -33,7 +33,7 @@
           "address": "auto",
           "access": "RW",
           "signal": "std_logic_vector",
-          "reset": "0x0",
+          "reset": "0d14",
           "width": 32,
           "location": "pif",
           "summary": [

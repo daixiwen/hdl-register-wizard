@@ -30,7 +30,7 @@
 
 ## 3. Unit tests
 
-Open a new terminal tab / window and run: `cargo make test_h firefox`
+Open a new terminal tab / window and run: `cargo make test_h firefox`.
 Replace firefox with chrome or safari depending on the browser you are using
 
 ## 4. Prepare your project for deploy

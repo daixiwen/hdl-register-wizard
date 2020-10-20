@@ -127,7 +127,7 @@ fn interface_table_row(model: &Model, index : usize, interface : &mdf_format::In
       interface.interface_type.to_string()
     ],
     td![
-      utils::opt_vec_str_to_str(&interface.description),
+      utils::opt_vec_str_to_summary(&interface.description),
     ],
     td![
       in_table_button_url(index, "✎", "primary",

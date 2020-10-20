@@ -31,7 +31,7 @@ pub fn option_num_from_str(string_input: &str) -> Result<Option<u32>, std::num::
 
 // utilities functions for the fields using arrays of strings (description mostly)
 // convert to string, for example to put in a table. Outputs at most the first line
-pub fn opt_vec_str_to_str(field : &Option<Vec<String>>) -> Node<Msg> {
+pub fn opt_vec_str_to_summary(field : &Option<Vec<String>>) -> Node<Msg> {
   match field {
     None => empty![],
     Some(vec_str) => {
@@ -44,3 +44,20 @@ pub fn opt_vec_str_to_str(field : &Option<Vec<String>>) -> Node<Msg> {
   }
 }
 
+// convert to string for a text area, each line separated by an end of line
+pub fn opt_vec_str_to_textarea(field : &Option<Vec<String>>) -> String {
+  match field {
+    None => String::new(),
+    Some(str_vector) => str_vector.join("\n"),
+  }
+}
+
+// convert from string from a text area, each line separated by an end of line
+pub fn textarea_to_opt_vec_str(value_str: &String) -> Option<Vec<String>> {
+  if value_str.is_empty() {
+    None
+  }
+  else {
+    Some(value_str.split("\n").map(|s|s.to_string()).collect())
+  }
+}

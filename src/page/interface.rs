@@ -124,12 +124,7 @@ pub fn update(msg: InterfaceMsg, model: &mut Model, orders: &mut impl Orders<Msg
     },
     InterfaceMsg::DescriptionChanged(index, new_description) => {
       model.mdf_data.interfaces[index].description =
-        if new_description.is_empty() {
-          None
-        }
-        else {
-          Some(new_description.split("\n").map(|s|s.to_string()).collect())
-        };
+          utils::textarea_to_opt_vec_str(&new_description);
 
       orders.skip();
     },
@@ -250,10 +245,7 @@ pub fn view(model: &Model, index: usize) -> Node<Msg> {
             attrs!{
               At::Type => "text",
               At::Id => "inputDescription",
-              At::Value => match &interface.description {
-                None => String::new(),
-                Some(str_vector) => str_vector.join("\n"),
-              },
+              At::Value => utils::opt_vec_str_to_textarea(&interface.description),
             },
             input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::DescriptionChanged(index, input))),
           ]
@@ -374,10 +366,10 @@ fn register_table_row(model: &Model, index : usize, ref_index : usize, register 
       &register.name
     ],
     td![
-      &register.address
+      &register.address.to_string()
     ],
     td![
-      utils::opt_vec_str_to_str(&register.summary),
+      utils::opt_vec_str_to_summary(&register.summary),
     ],
     td![
 /*      in_table_button_url(index, "✎", "primary",
