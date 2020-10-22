@@ -107,7 +107,7 @@ pub fn view(model: &Model) -> Node<Msg> {
             td![],
             td![],
             td![
-              in_table_button_url(0, "Add", "primary",
+              in_table_button_url("Add", "primary",
                 &Urls::new(&model.base_url).interface(InterfacePage::NewInterface), true), 
             ],           
           ]
@@ -130,19 +130,19 @@ fn interface_table_row(model: &Model, index : usize, interface : &mdf_format::In
       utils::opt_vec_str_to_summary(&interface.description),
     ],
     td![
-      in_table_button_url(index, "✎", "primary",
+      in_table_button_url("✎", "primary",
         &Urls::new(&model.base_url).interface(InterfacePage::Num(index)), true),
-      in_table_button_msg(index, "✖", "danger",
+      in_table_button_msg("✖", "danger",
         Msg::Interface(InterfaceMsg::Delete(index)), true),
-      in_table_button_msg(index, "▲", "primary", 
+      in_table_button_msg("▲", "primary", 
         Msg::Interface(InterfaceMsg::MoveUp(index)), index != 0),
-      in_table_button_msg(index, "▼", "primary",
+      in_table_button_msg("▼", "primary",
         Msg::Interface(InterfaceMsg::MoveDown(index)), index != model.mdf_data.interfaces.len()-1),
     ],    
   ]
 }
 
-fn in_table_button_url(_index: usize, label: &str, color: &str, url: &Url, enabled: bool) -> Node<Msg>
+pub fn in_table_button_url(label: &str, color: &str, url: &Url, enabled: bool) -> Node<Msg>
 {
   a![
     C![&format!("btn btn-sm mx-1 btn-outline-{}", color)],
@@ -154,7 +154,7 @@ fn in_table_button_url(_index: usize, label: &str, color: &str, url: &Url, enabl
   ]
 }
 
-fn in_table_button_msg(_index: usize, label: &str, color: &str, msg: Msg, enabled: bool) -> Node<Msg>
+pub fn in_table_button_msg(label: &str, color: &str, msg: Msg, enabled: bool) -> Node<Msg>
 {
   button![
     C![&format!("btn btn-sm mx-1 btn-outline-{}", color)],

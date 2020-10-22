@@ -2,66 +2,61 @@ use seed::{prelude::*, *};
 
 use super::super::Model;
 use super::super::PageType;
-use super::super::mdf_format::Interface;
-use super::super::mdf_format::InterfaceType;
-use super::super::mdf_format;
-use strum::IntoEnumIterator;
+
+use super::super::mdf_format::Register;
+//use super::super::mdf_format::Address;
+//use super::super::mdf_format::AddressStride;
+//use super::super::mdf_format::AccessType;
+//use super::super::mdf_format::SignalType;
+//use super::super::mdf_format::VectorValue;
+//use super::super::mdf_format::LocationType;
+//use super::super::mdf_format::RadixType;
+//use super::super::mdf_format::CoreSignalProperties;
+//use super::super::mdf_format::Field;
+
+//use super::super::mdf_format;
+//use strum::IntoEnumIterator;
 use super::super::Msg;
-use super::super::Urls;
 
+//use super::super::utils;
 
-use super::super::utils;
-
-use super::edit::in_table_button_url;
-use super::edit::in_table_button_msg;
-
-use super::register;
-
-use std::str::FromStr;
+//use std::str::FromStr;
 
 // URL constants
 const URL_NEW: &str = "new";
-const URL_REGISTER: &str = "register";
 
 // ID constants
-const ID_ADDRESS_WIDTH: &str = "inputAddressWidth";
-const ID_DATA_WIDTH: &str = "inputDataWidth";
+
 
 // ------ ------
 //     Urls
 // ------ ------
-pub enum InterfacePage {
+pub enum RegisterPage {
   Num(usize),
-  NewInterface
+  NewRegister
 }
 
-pub fn interface_url (url: Url, interface_page : InterfacePage) -> Url {
-  match interface_page {
-    InterfacePage::Num(interface_number) =>
-      url.add_path_part(interface_number.to_string()),
+pub fn register_url (url: Url, register_page : RegisterPage) -> Url {
+  match register_page {
+    RegisterPage::Num(register_number) =>
+      url.add_path_part(register_number.to_string()),
 
-    InterfacePage::NewInterface =>
+    RegisterPage::NewRegister =>
       url.add_path_part(URL_NEW),
   }
 }
 
-pub fn change_url(mut url: seed::browser::url::Url, model: &mut Model) -> PageType {
+pub fn change_url(mut url: seed::browser::url::Url, interface_num: usize, model: &mut Model) -> PageType {
   match url.next_path_part()
   {
     None => PageType::NotFound,
-    Some(URL_NEW) => new_interface(model),
+    Some(URL_NEW) => new_register(interface_num, model),
     Some(number_string) => {
       match number_string.parse::<usize>() {
         Ok(index) => {
-          if index < model.mdf_data.interfaces.len()
+          if index < model.mdf_data.interfaces[interface_num].registers.len()
           {
-            // check if we are just refering to the interface (URL stops here) ir a register (URL continues)
-            match url.next_path_part()
-            {
-              None => PageType::Interface(index),
-              Some(URL_REGISTER) => super::register::change_url(url, index, model),
-              Some(_) => PageType::NotFound
-            }
+            PageType::Register(interface_num, index)
           }
           else {
             PageType::NotFound
@@ -75,9 +70,10 @@ pub fn change_url(mut url: seed::browser::url::Url, model: &mut Model) -> PageTy
   }
 }
 
-fn new_interface(model: &mut Model) -> PageType {
-  model.mdf_data.interfaces.push(Interface::new());
-  let new_page_type = PageType::Interface(model.mdf_data.interfaces.len()-1);
+fn new_register(interface: usize, model: &mut Model) -> PageType {
+  model.mdf_data.interfaces[interface].registers.push(Register::new());
+  let new_page_type = PageType::Register(interface, 
+    model.mdf_data.interfaces[interface].registers.len()-1);
 
   super::super::Urls::new(model.base_url.clone())
     .from_page_type(new_page_type)
@@ -91,36 +87,36 @@ fn new_interface(model: &mut Model) -> PageType {
 
 // `Msg` describes the different events you can modify state with.
 #[derive(Clone)]
-pub enum InterfaceMsg {
+pub enum RegisterMsg {
     Delete(usize),
     MoveUp(usize),
     MoveDown(usize),
-    NameChanged(usize, String),
+/*    NameChanged(usize, String),
     TypeChanged(usize, String),
     DescriptionChanged(usize, String),
     AddressWitdhChanged(usize, String),
-    DataWidthChanged(usize, String)
+    DataWidthChanged(usize, String)*/
 }
 
-pub fn update(msg: InterfaceMsg, model: &mut Model, orders: &mut impl Orders<Msg>) {
+pub fn update(msg: RegisterMsg, interface_num: usize, model: &mut Model, orders: &mut impl Orders<Msg>) {
   match msg {
-    InterfaceMsg::Delete(index) => {
-      if index < model.mdf_data.interfaces.len() {
-        model.mdf_data.interfaces.remove(index);
+    RegisterMsg::Delete(index) => {
+      if index < model.mdf_data.interfaces[interface_num].registers.len() {
+        model.mdf_data.interfaces[interface_num].registers.remove(index);
       }
     },
-    InterfaceMsg::MoveUp(index) => {
-      if (index < model.mdf_data.interfaces.len()) && (index > 0) {
-        model.mdf_data.interfaces.swap(index-1, index);
+    RegisterMsg::MoveUp(index) => {
+      if (index < model.mdf_data.interfaces[interface_num].registers.len()) && (index > 0) {
+        model.mdf_data.interfaces[interface_num].registers.swap(index-1, index);
       }
     },
-    InterfaceMsg::MoveDown(index) => {
-      if  index < model.mdf_data.interfaces.len()-1 {
-        model.mdf_data.interfaces.swap(index, index+1);
+    RegisterMsg::MoveDown(index) => {
+      if  index < model.mdf_data.interfaces[interface_num].registers.len()-1 {
+        model.mdf_data.interfaces[interface_num].registers.swap(index, index+1);
       }
     },
 
-    InterfaceMsg::NameChanged(index, new_name) => {
+/*    InterfaceMsg::NameChanged(index, new_name) => {
       model.mdf_data.interfaces[index].name = new_name;
       orders.skip();
     },
@@ -162,10 +158,10 @@ pub fn update(msg: InterfaceMsg, model: &mut Model, orders: &mut impl Orders<Msg
         Err(_) => ()
       };
     }
-
+*/
   }
 }
-
+/*
 
 // ------ ------
 //     View
@@ -364,8 +360,8 @@ pub fn view(model: &Model, index: usize) -> Node<Msg> {
           td![],
           td![],
           td![
-              in_table_button_url("Add", "primary",
-                &Urls::new(&model.base_url).register(index, register::RegisterPage::NewRegister), true), 
+
+            "placeholder for future 'add' button"
           ],           
         ]
       ]
@@ -386,15 +382,15 @@ fn register_table_row(model: &Model, index : usize, reg_index : usize, register 
       utils::opt_vec_str_to_summary(&register.summary),
     ],
     td![
-      in_table_button_url("✎", "primary",
-        &Urls::new(&model.base_url).register(index, register::RegisterPage::Num(reg_index)), true),
-      in_table_button_msg("✖", "danger",
-        Msg::Register(index, register::RegisterMsg::Delete(reg_index)), true),
-      in_table_button_msg("▲", "primary", 
-        Msg::Register(index, register::RegisterMsg::MoveUp(reg_index)), reg_index != 0),
-      in_table_button_msg("▼", "primary",
-        Msg::Register(index, register::RegisterMsg::MoveDown(reg_index)), reg_index != 
-          model.mdf_data.interfaces[index].registers.len()-1),
-    ],    
+/*      in_table_button_url(index, "✎", "primary",
+        &Urls::new(&model.base_url).interface(InterfacePage::Num(index)), true),
+      in_table_button_msg(index, "✖", "danger",
+        Msg::Interface(InterfaceMsg::Delete(index)), true),
+      in_table_button_msg(index, "▲", "primary", 
+        Msg::Interface(InterfaceMsg::MoveUp(index)), index != 0),
+      in_table_button_msg(index, "▼", "primary",
+        Msg::Interface(InterfaceMsg::MoveDown(index)), index != model.mdf_data.interfaces.len()-1),
+*/    ],    
   ]
 }
+*/

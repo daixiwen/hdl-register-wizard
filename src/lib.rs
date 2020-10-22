@@ -16,6 +16,7 @@ mod tests;
 // URLs
 const SETTINGS: &str = "settings";
 const INTERFACE: &str = "interface";
+const REGISTER: &str = "register";
 
 // IDs
 pub const FILE_INPUT_ID: &str = "hidden_file_input";
@@ -52,6 +53,7 @@ pub struct Model {
 pub enum PageType {
     Edit,
     Interface(usize),
+    Register(usize, usize),
     Settings,
     NotFound
 }
@@ -71,12 +73,18 @@ impl<'a> Urls<'a> {
     pub fn interface(self, interface_page : page::interface::InterfacePage) -> Url {
         page::interface::interface_url(self.base_url().add_path_part(INTERFACE), interface_page)
     }
+    pub fn register(self, interface_num : usize, register_page : page::register::RegisterPage) -> Url {
+        page::register::register_url(
+            page::interface::interface_url(self.base_url().add_path_part(INTERFACE), 
+                page::interface::InterfacePage::Num(interface_num)).add_path_part(REGISTER), register_page)
+    }
     fn from_page_type(self, page : PageType) -> Url
     {
         match page {
             PageType::Edit => self.home(),
             PageType::Settings => self.settings(),
             PageType::Interface(index) => self.interface(page::interface::InterfacePage::Num(index)),
+            PageType::Register(interface_num, index) => self.register(interface_num, page::register::RegisterPage::Num(index)), 
             _ => self.home()
         }
     }
@@ -93,6 +101,7 @@ pub enum Msg {
     Menu(navigation::MenuCommand),
     Edit(page::edit::EditMsg),
     Interface(page::interface::InterfaceMsg),
+    Register(usize, page::register::RegisterMsg),
     UploadStart(web_sys::Event),
     UploadText(String)
 }
@@ -105,7 +114,7 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
             model.active_page = match url.next_path_part() {
                 None => PageType::Edit,
                 Some(SETTINGS) => PageType::Settings,
-                Some(INTERFACE) => page::interface::change_url(url.next_path_part(), model),
+                Some(INTERFACE) => page::interface::change_url(url, model),
                 Some(_) => PageType::NotFound
             }
         },
@@ -116,6 +125,8 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
 
         Msg::Interface(interface_msg) => page::interface::update(interface_msg, model, orders),
 
+        Msg::Register(interface_num, register_msg) => page::register::update(register_msg, interface_num, model, orders),
+        
         Msg::UploadStart(event) => {
             file_io::upload_file(event, orders);
             orders.skip();
@@ -148,7 +159,8 @@ fn view(model: &Model) -> Node<Msg> {
         div![C!["container-fluid"],
             div![C!["row"],
                 match model.active_page {
-                    PageType::Edit | PageType::Interface(_) => div![
+                    PageType::Edit | PageType::Interface(_) | 
+                        PageType::Register(_,_) => div![
                             C!["col-md3 col-xl-2 bd-sidebar"],
                             "sidebar",
                         ],

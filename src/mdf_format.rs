@@ -123,7 +123,7 @@ pub struct VectorValue {
   pub radix : RadixType
 }
 
-#[derive(PartialEq, strum_macros::ToString, Debug)]
+#[derive(PartialEq, strum_macros::ToString, Clone, Copy, Debug)]
 pub enum RadixType { Binary, Decimal, Hexadecimal }
 
 impl VectorValue {
@@ -171,6 +171,33 @@ impl fmt::Display for Address {
         Some(inc) =>
           write!(f, "{}:stride:{}:{}", &stride.value.to_string(), &stride.count.to_string(),
             &inc.to_string()),
+      }
+    }
+  }
+}
+
+impl Address {
+  pub fn nice_str(&self) -> String {
+    match &self {
+      Address::Auto =>
+        "auto".to_string(),
+
+      Address::Single(value) =>
+        value.to_string(),
+
+      Address::Stride(stride) =>  {
+        let count_minus_one = VectorValue {
+          value : stride.count.value - 1,
+          radix : stride.count.radix };
+
+        match &stride.increment {
+ 
+        None =>
+          format!("{} + (0..{})", &stride.value.to_string(),&count_minus_one.to_string()),
+        Some(inc) =>
+          format!("{} + (0..{})*{}", &stride.value.to_string(), &count_minus_one.to_string(),
+            &inc.to_string()),
+        }
       }
     }
   }
