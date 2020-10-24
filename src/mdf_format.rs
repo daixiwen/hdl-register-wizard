@@ -318,38 +318,47 @@ impl std::str::FromStr for VectorValue {
     type Err = std::num::ParseIntError;
 
   fn from_str(s: &str) -> Result<Self, std::num::ParseIntError> {
-    match &s[0..2] {
-      "0x" | "0X" => {
-        let value  = u128::from_str_radix(&s[2..],16)?;
-        Ok(VectorValue {
-          value,
-          radix : RadixType::Hexadecimal
-        })
-      },
+    if s.len() < 3 {
+      let value  = u128::from_str_radix(&s,10)?;
+      Ok(VectorValue {
+        value,
+        radix : RadixType::Decimal
+      })      
+    }
+    else {
+      match &s[0..2] {
+        "0x" | "0X" => {
+          let value  = u128::from_str_radix(&s[2..],16)?;
+          Ok(VectorValue {
+            value,
+            radix : RadixType::Hexadecimal
+          })
+        },
 
-      "0d" | "0D" => {
-        let value  = u128::from_str_radix(&s[2..],10)?;
-        Ok(VectorValue {
-          value,
-          radix : RadixType::Decimal
-        })
-      },
+        "0d" | "0D" => {
+          let value  = u128::from_str_radix(&s[2..],10)?;
+          Ok(VectorValue {
+            value,
+            radix : RadixType::Decimal
+          })
+        },
 
-      "0b" | "0B" => {
-        let value  = u128::from_str_radix(&s[2..],2)?;
-        Ok(VectorValue {
-          value,
-          radix : RadixType::Binary
-        })
-      },
+        "0b" | "0B" => {
+          let value  = u128::from_str_radix(&s[2..],2)?;
+          Ok(VectorValue {
+            value,
+            radix : RadixType::Binary
+          })
+        },
 
-      _ => {
-        let value  = u128::from_str_radix(&s,10)?;
-        Ok(VectorValue {
-          value,
-          radix : RadixType::Decimal
-        })
-      },
+        _ => {
+          let value  = u128::from_str_radix(&s,10)?;
+          Ok(VectorValue {
+            value,
+            radix : RadixType::Decimal
+          })
+        },
+      }
     }
   }
 }

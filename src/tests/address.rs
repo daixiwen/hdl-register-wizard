@@ -37,6 +37,19 @@ fn from_str() {
         radix : mdf_format::RadixType::Hexadecimal,
       },
       count : mdf_format::VectorValue {
+        value: 4,
+        radix : mdf_format::RadixType::Decimal,
+      },
+      increment : None}), 
+    mdf_format::Address::from_str("0x40:stride:4").unwrap());
+
+  assert_eq!(
+    mdf_format::Address::Stride( mdf_format::AddressStride {
+      value : mdf_format::VectorValue {
+        value: 64,
+        radix : mdf_format::RadixType::Hexadecimal,
+      },
+      count : mdf_format::VectorValue {
         value: 10,
         radix : mdf_format::RadixType::Decimal,
       },
