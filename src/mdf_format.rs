@@ -72,8 +72,8 @@ pub struct Register {
   pub reset : Option<VectorValue>,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub location : Option<LocationType>,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub core_signal_properties : Option<CoreSignalProperties>,
+  #[serde(default)]
+  pub core_signal_properties : CoreSignalProperties,
   #[serde(default)]
   pub fields : Vec<Field>,
 }
@@ -90,7 +90,9 @@ impl Register {
       signal : Some(SignalType::StdLogicVector),
       reset : Some(VectorValue::new()),
       location : Some(LocationType::Pif),
-      core_signal_properties : None,
+      core_signal_properties : CoreSignalProperties {
+        use_read_enable : None,
+        use_write_enable : None},
       fields : Vec::new()
     }
   }
@@ -110,11 +112,12 @@ pub struct AddressStride {
   pub increment : Option<VectorValue>
 }
 
-#[derive(Serialize, Deserialize, strum_macros::ToString, strum_macros::EnumIter, strum_macros::EnumString, PartialEq)]
+#[derive(Serialize, Deserialize, strum_macros::ToString, strum_macros::EnumIter, strum_macros::EnumString, PartialEq, Clone, Copy)]
 pub enum AccessType { RW, RO, WO}
 
-#[derive(Serialize, Deserialize, strum_macros::ToString, strum_macros::EnumIter, strum_macros::EnumString, PartialEq)]
+#[derive(Serialize, Deserialize, strum_macros::ToString, strum_macros::EnumIter, strum_macros::EnumString, PartialEq, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
 pub enum SignalType { StdLogic, StdLogicVector, Unsigned, Signed, Boolean}
 
 #[derive(Debug, PartialEq)]
@@ -135,11 +138,11 @@ impl VectorValue {
   }
 }
 
-#[derive(Serialize, Deserialize, strum_macros::ToString, strum_macros::EnumIter, strum_macros::EnumString, PartialEq)]
+#[derive(Serialize, Deserialize, strum_macros::ToString, strum_macros::EnumIter, strum_macros::EnumString, PartialEq, Clone, Copy)]
 #[serde(rename_all = "lowercase")]
 pub enum LocationType { Pif, Core }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct CoreSignalProperties {
 

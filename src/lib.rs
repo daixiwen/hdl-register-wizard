@@ -173,6 +173,7 @@ fn view(model: &Model) -> Node<Msg> {
               PageType::Edit => page::edit::view(model),
               PageType::Settings => page::settings::view(model),
               PageType::Interface(index) => page::interface::view(model,index),
+              PageType::Register(interface_num, reg_num) => page::register::view(model, interface_num, reg_num),
               _ => div!["404 not found"],
             },
           ]

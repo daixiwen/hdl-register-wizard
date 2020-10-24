@@ -275,7 +275,7 @@ pub fn view(model: &Model, index: usize) -> Node<Msg> {
           "Address width"
         ],
         div![
-          C!["col-sm-10 was-validated]"],
+          C!["col-sm-10"],
           input![
             C!["form-control"],
             attrs!{
