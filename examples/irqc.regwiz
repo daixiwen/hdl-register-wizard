@@ -30,7 +30,7 @@
       "registers": [
         {
           "name": "IER",
-          "address": "auto",
+          "address": "0x4:stride:4",
           "access": "RW",
           "signal": "std_logic_vector",
           "reset": "0d14",
@@ -45,7 +45,7 @@
         },
         {
           "name": "IRR",
-          "address": "auto",
+          "address": "0x10",
           "access": "RO",
           "signal": "std_logic_vector",
           "reset": "0x0",
@@ -63,7 +63,7 @@
         },
         {
           "name": "IPR",
-          "address": "auto",
+          "address": "0x20",
           "access": "RO",
           "signal": "std_logic_vector",
           "reset": "0x0",

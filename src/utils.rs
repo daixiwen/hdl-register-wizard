@@ -1,5 +1,7 @@
 use seed::{prelude::*, *};
 use super::Msg;
+use super::mdf_format::VectorValue;
+use std::str::FromStr;
 
 // utility to mark a form field as invalid if its contents can't be parsed
 pub fn validate_field<F,T,E>(field_id: &str, field_new_value: &str, decode_value: F) -> Result<T,E> 
@@ -23,6 +25,18 @@ pub fn option_num_from_str(string_input: &str) -> Result<Option<u32>, std::num::
   }
   else {
     match u32::from_str_radix(string_input, 10) {
+      Ok(value) => Ok(Some(value)),
+      Err(error) => Err(error)
+    }
+  }
+}
+
+pub fn option_vectorval_from_str(string_input: &str) -> Result<Option<VectorValue>, std::num::ParseIntError> {
+  if string_input.is_empty() {
+    Ok(None)
+  }
+  else {
+    match VectorValue::from_str(string_input) {
       Ok(value) => Ok(Some(value)),
       Err(error) => Err(error)
     }

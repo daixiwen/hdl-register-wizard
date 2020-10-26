@@ -20,7 +20,7 @@ pub fn do_menu(action: MenuCommand, model: &mut super::Model, orders: &mut impl 
     match action {
         MenuCommand::SaveFile => {
             let filename = format!("{}.regwiz", &model.mdf_data.name);
-            let jsondata = serde_json::to_string(&model.mdf_data).expect("serialize data to json");
+            let jsondata = serde_json::to_string_pretty(&model.mdf_data).expect("serialize data to json");
             super::file_io::download_text(&filename, &jsondata);
             orders.skip();
         },

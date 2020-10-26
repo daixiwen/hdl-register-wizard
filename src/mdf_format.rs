@@ -120,7 +120,7 @@ pub enum AccessType { RW, RO, WO}
 #[strum(serialize_all = "snake_case")]
 pub enum SignalType { StdLogic, StdLogicVector, Unsigned, Signed, Boolean}
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct VectorValue {
   pub value : u128,
   pub radix : RadixType

@@ -5,12 +5,12 @@ use super::super::PageType;
 
 use super::super::mdf_format::Register;
 use super::super::mdf_format::Address;
-//use super::super::mdf_format::AddressStride;
+use super::super::mdf_format::AddressStride;
 use super::super::mdf_format::AccessType;
 use super::super::mdf_format::SignalType;
-//use super::super::mdf_format::VectorValue;
+use super::super::mdf_format::VectorValue;
 use super::super::mdf_format::LocationType;
-//use super::super::mdf_format::RadixType;
+use super::super::mdf_format::RadixType;
 //use super::super::mdf_format::CoreSignalProperties;
 //use super::super::mdf_format::Field;
 
@@ -20,7 +20,7 @@ use super::super::Msg;
 
 use super::super::utils;
 
-//use std::str::FromStr;
+use std::str::FromStr;
 
 // URL constants
 const URL_NEW: &str = "new";
@@ -28,6 +28,11 @@ const URL_NEW: &str = "new";
 // ID constants
 const ID_REG_WIDTH: &str = "inputRegisterWidth";
 const ID_RESET_VALUE: &str = "inputResetValue";
+const ID_ADDR_SINGLE_VALUE: &str = "addrSingleValue";
+const ID_ADDR_STRIDE_VALUE: &str = "addrStrideValue";
+const ID_ADDR_STRIDE_COUNT: &str = "addrStrideCount";
+const ID_ADDR_STRIDE_INCR : &str = "addrStrideIncrement";
+
 
 // text constant
 const TXT_SPEC_IN_FIELDS: &str ="(specify in fields)";
@@ -95,9 +100,19 @@ pub enum RegisterMsg {
     Delete(usize),
     MoveUp(usize),
     MoveDown(usize),
-/*    NameChanged(usize, String),
-    TypeChanged(usize, String),
+    NameChanged(usize, String),
+    AddressAutoSelected(usize),
+    AddressSingleSelected(usize),
+    AddressStrideSelected(usize),
+    SummaryChanged(usize, String),
     DescriptionChanged(usize, String),
+    AddrSingleChanged(usize, String),
+    AddrStrideValueChanged(usize, String),
+    AddrStrideCountChanged(usize, String),
+    AddrStrideIncrementChanged(usize, String)
+/*
+
+    TypeChanged(usize, String),
     AddressWitdhChanged(usize, String),
     DataWidthChanged(usize, String)*/
 }
@@ -120,11 +135,117 @@ pub fn update(msg: RegisterMsg, interface_num: usize, model: &mut Model, orders:
       }
     },
 
-/*    InterfaceMsg::NameChanged(index, new_name) => {
-      model.mdf_data.interfaces[index].name = new_name;
+    RegisterMsg::NameChanged(index, new_name) => {
+      model.mdf_data.interfaces[interface_num].registers[index].name = new_name;
       orders.skip();
     },
-    InterfaceMsg::TypeChanged(index, new_type_name) => {
+    RegisterMsg::AddressAutoSelected(index) => {
+      model.mdf_data.interfaces[interface_num].registers[index].address = 
+        Address::Auto;
+    },
+    RegisterMsg::AddressSingleSelected(index) => {
+      model.mdf_data.interfaces[interface_num].registers[index].address =
+          match &model.mdf_data.interfaces[interface_num].registers[index].address {
+
+        Address::Stride(stride) =>
+             Address::Single(stride.value.clone()),
+        _ => Address::Single(VectorValue::new()),
+      }
+      // no skipping so that the view is refreshed and the correct inputs activated/deactivated
+    },
+    RegisterMsg::AddressStrideSelected(index) => {
+      model.mdf_data.interfaces[interface_num].registers[index].address =
+          match &model.mdf_data.interfaces[interface_num].registers[index].address {
+
+        Address::Single(single) =>
+          Address::Stride(AddressStride{
+            value : single.clone(),
+            count : VectorValue{value: 1, radix: RadixType::Decimal},
+            increment : None}),
+        _ =>
+          Address::Stride(AddressStride{
+            value : VectorValue::new(),
+            count : VectorValue{value: 1, radix: RadixType::Decimal},
+            increment : None}),
+      }
+      // no skipping so that the view is refreshed and the correct inputs activated/deactivated
+    },
+
+    RegisterMsg::SummaryChanged(index, new_summary) => {
+      model.mdf_data.interfaces[interface_num].registers[index].summary =
+          utils::textarea_to_opt_vec_str(&new_summary);
+
+      orders.skip();
+    },
+    RegisterMsg::DescriptionChanged(index, new_description) => {
+      model.mdf_data.interfaces[interface_num].registers[index].description =
+          utils::textarea_to_opt_vec_str(&new_description);
+
+      orders.skip();
+    },
+
+    RegisterMsg::AddrSingleChanged(index, new_addr) => {
+      orders.skip();
+
+      match utils::validate_field(
+          ID_ADDR_SINGLE_VALUE, &new_addr, | field_value |VectorValue::from_str(field_value)) {
+        Ok(value) => model.mdf_data.interfaces[interface_num].registers[index].address = Address::Single(value),
+        Err(_) => ()
+      };
+    },
+
+    RegisterMsg::AddrStrideValueChanged(index, new_addr) => {
+      orders.skip();
+
+      match &model.mdf_data.interfaces[interface_num].registers[index].address {
+        Address::Stride(stride) =>
+          match utils::validate_field(
+              ID_ADDR_STRIDE_VALUE, &new_addr, | field_value |VectorValue::from_str(field_value)) {
+            Ok(value) => model.mdf_data.interfaces[interface_num].registers[index].address =
+              Address::Stride(AddressStride{
+                value, count: stride.count, increment: stride.increment
+              }),
+            Err(_) => ()
+          },
+        _ => ()
+      }
+    },
+
+    RegisterMsg::AddrStrideCountChanged(index, new_count) => {
+      orders.skip();
+
+      match &model.mdf_data.interfaces[interface_num].registers[index].address {
+        Address::Stride(stride) =>
+          match utils::validate_field(
+              ID_ADDR_STRIDE_COUNT, &new_count, | field_value |VectorValue::from_str(field_value)) {
+            Ok(count) => model.mdf_data.interfaces[interface_num].registers[index].address =
+              Address::Stride(AddressStride{
+                value: stride.value, count: count, increment: stride.increment
+              }),
+            Err(_) => ()
+          },
+        _ => ()
+      }
+    },
+
+    RegisterMsg::AddrStrideIncrementChanged(index, new_count) => {
+      orders.skip();
+
+      match &model.mdf_data.interfaces[interface_num].registers[index].address {
+        Address::Stride(stride) =>
+          match utils::validate_field(
+              ID_ADDR_STRIDE_INCR, &new_count, | field_value | utils::option_vectorval_from_str(field_value)) {
+            Ok(increment) => model.mdf_data.interfaces[interface_num].registers[index].address =
+              Address::Stride(AddressStride{
+                value: stride.value, count: stride.count, increment
+              }),
+            Err(_) => ()
+          },
+        _ => ()
+      }
+    },
+
+/*    InterfaceMsg::TypeChanged(index, new_type_name) => {
       match InterfaceType::from_str(&new_type_name)
       {
         Ok(new_type) => {
@@ -135,12 +256,6 @@ pub fn update(msg: RegisterMsg, interface_num: usize, model: &mut Model, orders:
         _ =>
           seed::log!("error while converting from string to interface type"),
       }
-    },
-    InterfaceMsg::DescriptionChanged(index, new_description) => {
-      model.mdf_data.interfaces[index].description =
-          utils::textarea_to_opt_vec_str(&new_description);
-
-      orders.skip();
     },
 
     InterfaceMsg::AddressWitdhChanged(index, new_width) => {
@@ -210,7 +325,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
               At::Id => "inputName",
               At::Value => &register.name,
             },
-//            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::NameChanged(index, input))),
+            input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::NameChanged(register_index, input))),
           ]
         ]
       ],
@@ -234,6 +349,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
               IF!(register.address == Address::Auto =>
                 attrs!{At::Checked => "checked"}),
               id!["addressAuto"],
+              ev(Ev::Click, move | _ | Msg::Register(interface_index, RegisterMsg::AddressAutoSelected(register_index))),
             ],
             label![
               C!["form-check-label"],
@@ -261,6 +377,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                     _ => attrs!{},
                   },
                   id!["addressSingle"],
+                  ev(Ev::Change, move | _ | Msg::Register(interface_index, RegisterMsg::AddressSingleSelected(register_index))),
                 ],
                 label![
                   C!["form-check-label"],
@@ -275,7 +392,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                 label![
                   C!["col-form-label"],
                   attrs!{
-                    At::For => "singleValue",
+                    At::For => ID_ADDR_SINGLE_VALUE,
                   },
                   "Value"
                 ],
@@ -286,17 +403,17 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                   C!["form-control"],
                   attrs!{
                     At::Type => "text",
-                    At::Id => "singleValue",
+                    At::Id => ID_ADDR_SINGLE_VALUE,
                   },
                   match &register.address {
                     Address::Single(v) => attrs!{ At::Value => &v.to_string()},
                     _ => attrs!{At::Disabled => "disabled"},
                   },
-        //            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::NameChanged(index, input))),
-                  div![
-                    C!["invalid-feedback"],
-                    "please use a decimal, hexadecimal (0x*) or binary (0b*) value"
-                  ],
+                  input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::AddrSingleChanged(register_index, input))),
+                ],
+                div![
+                  C!["invalid-feedback"],
+                  "please use a decimal, hexadecimal (0x*) or binary (0b*) value"
                 ],
               ],
             ],
@@ -319,6 +436,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                     _ => attrs!{},
                   },
                   id!["addressStride"],
+                  ev(Ev::Click, move | _ | Msg::Register(interface_index, RegisterMsg::AddressStrideSelected(register_index))),
                 ],
                 label![
                   C!["form-check-label"],
@@ -333,7 +451,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                 label![
                   C!["col-form-label"],
                   attrs!{
-                    At::For => "strideStart",
+                    At::For => ID_ADDR_STRIDE_VALUE,
                   },
                   "Start"
                 ],
@@ -341,20 +459,20 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
               div![
                 C!["col-auto"],
                 input![
-                  C!["form-control"],
+                  C!["form-control mb-2"],
                   attrs!{
                     At::Type => "text",
-                    At::Id => "strideStart",
+                    At::Id => ID_ADDR_STRIDE_VALUE,
                   },
                   match &register.address {
                     Address::Stride(s) => attrs!{ At::Value => &s.value.to_string()},
                     _ => attrs!{At::Disabled => "disabled"},
                   },
-        //            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::NameChanged(index, input))),
-                  div![
-                    C!["invalid-feedback"],
-                    "please use a decimal, hexadecimal (0x*) or binary (0b*) value"
-                  ],
+                  input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::AddrStrideValueChanged(register_index, input))),
+                ],
+                div![
+                  C!["invalid-feedback"],
+                  "please use a decimal, hexadecimal (0x*) or binary (0b*) value"
                 ],
               ],
               div![
@@ -362,7 +480,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                 label![
                   C!["col-form-label"],
                   attrs!{
-                    At::For => "strideCount",
+                    At::For => ID_ADDR_STRIDE_COUNT,
                   },
                   "Count"
                 ],
@@ -370,20 +488,20 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
               div![
                 C!["col-auto"],
                 input![
-                  C!["form-control"],
+                  C!["form-control mb-2"],
                   attrs!{
                     At::Type => "text",
-                    At::Id => "strideCount",
+                    At::Id => ID_ADDR_STRIDE_COUNT,
                   },
                   match &register.address {
                     Address::Stride(s) => attrs!{ At::Value => &s.count.to_string()},
                     _ => attrs!{At::Disabled => "disabled"},
                   },
-        //            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::NameChanged(index, input))),
-                  div![
-                    C!["invalid-feedback"],
-                    "please use a decimal, hexadecimal (0x*) or binary (0b*) value"
-                  ],
+                  input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::AddrStrideCountChanged(register_index, input))),
+                ],
+                div![
+                  C!["invalid-feedback"],
+                  "please use a decimal, hexadecimal (0x*) or binary (0b*) value"
                 ],
               ],
               div![
@@ -391,7 +509,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                 label![
                   C!["col-form-label"],
                   attrs!{
-                    At::For => "strideIncr",
+                    At::For => ID_ADDR_STRIDE_INCR,
                   },
                   "Increment"
                 ],
@@ -399,10 +517,10 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
               div![
                 C!["col-auto"],
                 input![
-                  C!["form-control"],
+                  C!["form-control m-2"],
                   attrs!{
                     At::Type => "text",
-                    At::Id => "strideIncr",
+                    At::Id => ID_ADDR_STRIDE_INCR,
                   },
                   match &register.address {
                     Address::Stride(s) => 
@@ -413,11 +531,11 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                       
                     _ => attrs!{At::Disabled => "disabled"},
                   },
-        //            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::NameChanged(index, input))),
-                  div![
-                    C!["invalid-feedback"],
-                    "please use a decimal, hexadecimal (0x*) or binary (0b*) value or leave empty for auto"
-                  ],
+                  input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::AddrStrideIncrementChanged(register_index, input))),
+                ],
+                div![
+                  C!["invalid-feedback"],
+                  "please use a decimal, hexadecimal (0x*) or binary (0b*) value or leave empty for auto"
                 ],
               ],
             ]
@@ -442,7 +560,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
               At::Id => "inputSummary",
               At::Value => utils::opt_vec_str_to_textarea(&register.summary),
             },
-//            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::DescriptionChanged(index, input))),
+            input_ev(Ev::Change, move | input | Msg::Register(interface_index,RegisterMsg::SummaryChanged(register_index, input))),
           ]
         ]
       ], 
@@ -464,7 +582,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
               At::Id => "inputDescription",
               At::Value => utils::opt_vec_str_to_textarea(&register.description),
             },
-//            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::DescriptionChanged(index, input))),
+            input_ev(Ev::Change, move | input | Msg::Register(interface_index,RegisterMsg::DescriptionChanged(register_index, input))),
           ]
         ]
       ], 
@@ -484,7 +602,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
             attrs!{
               At::Type => "text",
               At::Id => ID_REG_WIDTH,
-              At::Value => match &interface.data_width {
+              At::Value => match &register.width {
                 None => String::new(),
                 Some(width) => width.to_string(),
               },
