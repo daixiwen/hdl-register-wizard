@@ -109,7 +109,13 @@ pub enum RegisterMsg {
     AddrSingleChanged(usize, String),
     AddrStrideValueChanged(usize, String),
     AddrStrideCountChanged(usize, String),
-    AddrStrideIncrementChanged(usize, String)
+    AddrStrideIncrementChanged(usize, String),
+    WidthChanged(usize, String),
+    AccessTypeChanged(usize, String),
+    SignalTypeChanged(usize, String),
+    ResetValueChanged(usize, String),
+    LocationChanged(usize, String)
+
 /*
 
     TypeChanged(usize, String),
@@ -245,20 +251,84 @@ pub fn update(msg: RegisterMsg, interface_num: usize, model: &mut Model, orders:
       }
     },
 
-/*    InterfaceMsg::TypeChanged(index, new_type_name) => {
-      match InterfaceType::from_str(&new_type_name)
-      {
-        Ok(new_type) => {
-          model.mdf_data.interfaces[index].interface_type = new_type;
-          orders.skip();
-        },
+    RegisterMsg::WidthChanged(index, new_width) => {
+      orders.skip();
 
-        _ =>
-          seed::log!("error while converting from string to interface type"),
+      match utils::validate_field(
+          ID_REG_WIDTH, &new_width, | field_value | utils::option_num_from_str(field_value)) {
+        Ok(width) => model.mdf_data.interfaces[interface_num].registers[index].width = width,
+        Err(_) => ()
       }
     },
 
-    InterfaceMsg::AddressWitdhChanged(index, new_width) => {
+    RegisterMsg::AccessTypeChanged(index, new_type_name) => {
+      match AccessType::from_str(&new_type_name)
+      {
+        Ok(new_type) => {
+          model.mdf_data.interfaces[interface_num].registers[index].access = Some(new_type);
+        },
+
+        _ => {
+          if new_type_name == TXT_SPEC_IN_FIELDS {
+            model.mdf_data.interfaces[interface_num].registers[index].access = None;
+          }
+          else {
+            seed::log!("error while converting from string to interface type")
+          }
+        },
+      }
+    },
+
+    RegisterMsg::SignalTypeChanged(index, new_type_name) => {
+      orders.skip();
+
+      match SignalType::from_str(&new_type_name)
+      {
+        Ok(new_type) => {
+          model.mdf_data.interfaces[interface_num].registers[index].signal = Some(new_type);
+        },
+
+        _ => {
+          if new_type_name == TXT_SPEC_IN_FIELDS {
+            model.mdf_data.interfaces[interface_num].registers[index].signal = None;
+          }
+          else {
+            seed::log!("error while converting from string to signal type")
+          }
+        },
+      }
+    },
+
+    RegisterMsg::ResetValueChanged(index, new_value) => {
+      orders.skip();
+
+      match utils::validate_field(
+          ID_RESET_VALUE, &new_value, | field_value | utils::option_vectorval_from_str(field_value)) {
+        Ok(reset_value) => model.mdf_data.interfaces[interface_num].registers[index].reset = reset_value,
+        Err(_) => ()
+      }
+    },
+
+    RegisterMsg::LocationChanged(index, new_location_name) => {
+      match LocationType::from_str(&new_location_name)
+      {
+        Ok(location) => {
+          model.mdf_data.interfaces[interface_num].registers[index].location = Some(location);
+        },
+
+        _ => {
+          if new_location_name == TXT_SPEC_IN_FIELDS {
+            model.mdf_data.interfaces[interface_num].registers[index].location = None;
+          }
+          else {
+            seed::log!("error while converting from string to location")
+          }
+        },
+      }
+    },
+
+
+/*    InterfaceMsg::AddressWitdhChanged(index, new_width) => {
       orders.skip();
 
       match utils::validate_field(
@@ -421,11 +491,11 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
           div![
             C!["form-check"],
             div![
-              C!["form-row align-items-center"],
+              C!["form-row align-items-center form-inline"],
               div![
-                C!["col-auto"],
+                C!["col-auto flex-nowrap form-group ml-n4"],
                 input![
-                  C!["form-check-input"],
+                  C!["form-check-input ml-1"],
                   attrs!{
                     At::Type => "radio",
                     At::Name => "addressRadio",
@@ -447,7 +517,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                 ],
               ],
               div![
-                C!["col-auto"],
+                C!["col-auto  flex-nowrap form-group"],
                 label![
                   C!["col-form-label"],
                   attrs!{
@@ -455,28 +525,28 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                   },
                   "Start"
                 ],
-              ],
-              div![
-                C!["col-auto"],
-                input![
-                  C!["form-control mb-2"],
-                  attrs!{
-                    At::Type => "text",
-                    At::Id => ID_ADDR_STRIDE_VALUE,
-                  },
-                  match &register.address {
-                    Address::Stride(s) => attrs!{ At::Value => &s.value.to_string()},
-                    _ => attrs!{At::Disabled => "disabled"},
-                  },
-                  input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::AddrStrideValueChanged(register_index, input))),
-                ],
                 div![
-                  C!["invalid-feedback"],
-                  "please use a decimal, hexadecimal (0x*) or binary (0b*) value"
+                  C!["m-2"],
+                  input![
+                    C!["form-control"],
+                    attrs!{
+                      At::Type => "text",
+                      At::Id => ID_ADDR_STRIDE_VALUE,
+                    },
+                    match &register.address {
+                      Address::Stride(s) => attrs!{ At::Value => &s.value.to_string()},
+                      _ => attrs!{At::Disabled => "disabled"},
+                    },
+                    input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::AddrStrideValueChanged(register_index, input))),
+                  ],
+                  div![
+                    C!["invalid-feedback"],
+                    "please use a decimal, hexadecimal (0x*) or binary (0b*) value"
+                  ],
                 ],
               ],
               div![
-                C!["col-auto"],
+                C!["col-auto flex-nowrap form-group"],
                 label![
                   C!["col-form-label"],
                   attrs!{
@@ -484,28 +554,28 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                   },
                   "Count"
                 ],
-              ],
-              div![
-                C!["col-auto"],
-                input![
-                  C!["form-control mb-2"],
-                  attrs!{
-                    At::Type => "text",
-                    At::Id => ID_ADDR_STRIDE_COUNT,
-                  },
-                  match &register.address {
-                    Address::Stride(s) => attrs!{ At::Value => &s.count.to_string()},
-                    _ => attrs!{At::Disabled => "disabled"},
-                  },
-                  input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::AddrStrideCountChanged(register_index, input))),
-                ],
                 div![
-                  C!["invalid-feedback"],
-                  "please use a decimal, hexadecimal (0x*) or binary (0b*) value"
+                  C!["m-2"],
+                  input![
+                    C!["form-control"],
+                    attrs!{
+                      At::Type => "text",
+                      At::Id => ID_ADDR_STRIDE_COUNT,
+                    },
+                    match &register.address {
+                      Address::Stride(s) => attrs!{ At::Value => &s.count.to_string()},
+                      _ => attrs!{At::Disabled => "disabled"},
+                    },
+                    input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::AddrStrideCountChanged(register_index, input))),
+                  ],
+                  div![
+                    C!["invalid-feedback"],
+                    "please use a decimal, hexadecimal (0x*) or binary (0b*) value"
+                  ],
                 ],
               ],
               div![
-                C!["col-auto"],
+                C!["col-auto flex-nowrap form-group"],
                 label![
                   C!["col-form-label"],
                   attrs!{
@@ -513,29 +583,29 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                   },
                   "Increment"
                 ],
-              ],
-              div![
-                C!["col-auto"],
-                input![
-                  C!["form-control m-2"],
-                  attrs!{
-                    At::Type => "text",
-                    At::Id => ID_ADDR_STRIDE_INCR,
-                  },
-                  match &register.address {
-                    Address::Stride(s) => 
-                      match &s.increment {
-                        None => attrs!{ At::Value => ""},
-                        Some(incr) => attrs!{ At::Value => &incr.to_string()},
-                      }
-                      
-                    _ => attrs!{At::Disabled => "disabled"},
-                  },
-                  input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::AddrStrideIncrementChanged(register_index, input))),
-                ],
                 div![
-                  C!["invalid-feedback"],
-                  "please use a decimal, hexadecimal (0x*) or binary (0b*) value or leave empty for auto"
+                  C!["m-2"],
+                  input![
+                    C!["form-control m-2"],
+                    attrs!{
+                      At::Type => "text",
+                      At::Id => ID_ADDR_STRIDE_INCR,
+                    },
+                    match &register.address {
+                      Address::Stride(s) => 
+                        match &s.increment {
+                          None => attrs!{ At::Value => ""},
+                          Some(incr) => attrs!{ At::Value => &incr.to_string()},
+                        }
+                        
+                      _ => attrs!{At::Disabled => "disabled"},
+                    },
+                    input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::AddrStrideIncrementChanged(register_index, input))),
+                  ],
+                  div![
+                    C!["invalid-feedback"],
+                    "please use a decimal, hexadecimal (0x*) or binary (0b*) value or leave empty for auto"
+                  ],
                 ],
               ],
             ]
@@ -607,7 +677,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                 Some(width) => width.to_string(),
               },
             },
-//            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::DataWidthChanged(index, input))),
+            input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::WidthChanged(register_index, input))),
           ],
           div![
             C!["invalid-feedback"],
@@ -636,7 +706,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
               None => TXT_SPEC_IN_FIELDS.to_string()
             },
           },
-//            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::TypeChanged(index, input))),
+          input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::AccessTypeChanged(register_index, input))),
           option![
             IF!(&register.access == &Option::<AccessType>::None  =>
               attrs!{
@@ -676,7 +746,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
               None => TXT_SPEC_IN_FIELDS.to_string()
             },
           },
-//            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::TypeChanged(index, input))),
+          input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::SignalTypeChanged(register_index, input))),
           option![
             IF!(&register.signal == &Option::<SignalType>::None  =>
               attrs!{
@@ -717,7 +787,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
             Some(v) => attrs!{ At::Value => &v.to_string()},
             _ => attrs!{},
           },
-  //            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::NameChanged(index, input))),
+          input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::ResetValueChanged(register_index, input))),
         ],
         div![
           C!["invalid-feedback"],
@@ -746,7 +816,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
               None => TXT_SPEC_IN_FIELDS.to_string()
             },
           },
-//            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::TypeChanged(index, input))),
+          input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::LocationChanged(register_index, input))),
           option![
             IF!(&register.location == &Option::<LocationType>::None  =>
               attrs!{
