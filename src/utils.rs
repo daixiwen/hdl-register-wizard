@@ -75,3 +75,15 @@ pub fn textarea_to_opt_vec_str(value_str: &String) -> Option<Vec<String>> {
     Some(value_str.split("\n").map(|s|s.to_string()).collect())
   }
 }
+
+// returns whether the input element that is target from an event is checked or not
+// panics if target is not an input element
+pub fn target_checked(event: &web_sys::Event) -> bool {
+  return event
+    .target()
+    .as_ref()
+    .expect("cant get target")
+    .dyn_ref::<web_sys::HtmlInputElement>()
+    .expect("cant get right element")
+    .checked();
+}

@@ -114,7 +114,9 @@ pub enum RegisterMsg {
     AccessTypeChanged(usize, String),
     SignalTypeChanged(usize, String),
     ResetValueChanged(usize, String),
-    LocationChanged(usize, String)
+    LocationChanged(usize, String),
+    CorePropReadEnable(usize, web_sys::Event),
+    CorePropWriteEnable(usize, web_sys::Event)
 
 /*
 
@@ -266,6 +268,14 @@ pub fn update(msg: RegisterMsg, interface_num: usize, model: &mut Model, orders:
       {
         Ok(new_type) => {
           model.mdf_data.interfaces[interface_num].registers[index].access = Some(new_type);
+
+          // put a default value for use_write_enabled if it is not set yet
+          if (new_type != AccessType::RO) && 
+              (model.mdf_data.interfaces[interface_num].registers[index].location == Some(LocationType::Core)) &&
+              (model.mdf_data.interfaces[interface_num].registers[index].core_signal_properties.use_write_enable.is_none())
+          {
+            model.mdf_data.interfaces[interface_num].registers[index].core_signal_properties.use_write_enable = Some(true);
+          }
         },
 
         _ => {
@@ -314,6 +324,13 @@ pub fn update(msg: RegisterMsg, interface_num: usize, model: &mut Model, orders:
       {
         Ok(location) => {
           model.mdf_data.interfaces[interface_num].registers[index].location = Some(location);
+          // put a default value for use_write_enabled if it is not set yet
+          if (location == LocationType::Core) && 
+              (model.mdf_data.interfaces[interface_num].registers[index].access != Some(AccessType::RO)) &&
+              (model.mdf_data.interfaces[interface_num].registers[index].core_signal_properties.use_write_enable.is_none())
+          {
+            model.mdf_data.interfaces[interface_num].registers[index].core_signal_properties.use_write_enable = Some(true);
+          }
         },
 
         _ => {
@@ -327,6 +344,19 @@ pub fn update(msg: RegisterMsg, interface_num: usize, model: &mut Model, orders:
       }
     },
 
+    RegisterMsg::CorePropReadEnable(index, event) => {
+
+      model.mdf_data.interfaces[interface_num].registers[index]
+          .core_signal_properties.use_read_enable = 
+          Some(utils::target_checked(&event));
+    }
+
+    RegisterMsg::CorePropWriteEnable(index, event) => {
+
+      model.mdf_data.interfaces[interface_num].registers[index]
+          .core_signal_properties.use_write_enable = 
+          Some(utils::target_checked(&event));
+    }
 
 /*    InterfaceMsg::AddressWitdhChanged(index, new_width) => {
       orders.skip();
@@ -856,6 +886,10 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
             },
             IF!(register.core_signal_properties.use_read_enable == Some(true) =>
               attrs!{ At::Checked => "checked"}),
+            IF!((register.location == Some(LocationType::Pif)) ||
+                (register.access == Some(AccessType::WO)) =>
+              attrs!{ At::Disabled => "disabled"}),
+            ev(Ev::Change, move | event | Msg::Register(interface_index, RegisterMsg::CorePropReadEnable(register_index, event))),
           ],
           label![
             C!["form-check-label"],
@@ -876,6 +910,10 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
             },
             IF!(register.core_signal_properties.use_write_enable == Some(true) =>
               attrs!{ At::Checked => "checked"}),
+            IF!((register.location == Some(LocationType::Pif)) ||
+                (register.access == Some(AccessType::RO)) =>
+              attrs!{ At::Disabled => "disabled"}),
+            ev(Ev::Change, move | event | Msg::Register(interface_index, RegisterMsg::CorePropWriteEnable(register_index, event))),
           ],
           label![
             C!["form-check-label"],
