@@ -5,12 +5,12 @@ use super::super::PageType;
 use super::super::mdf_format::Interface;
 use super::super::mdf_format::InterfaceType;
 use super::super::mdf_format;
-use strum::IntoEnumIterator;
 use super::super::Msg;
 use super::super::Urls;
 
 
 use super::super::utils;
+use super::html_elements;
 
 use super::edit::in_table_button_url;
 use super::edit::in_table_button_msg;
@@ -175,8 +175,17 @@ pub fn update(msg: InterfaceMsg, model: &mut Model, orders: &mut impl Orders<Msg
 // `view` describes what to display.
 pub fn view(model: &Model, index: usize) -> Node<Msg> {
   let interface = &model.mdf_data.interfaces[index];
+  let address_width_value = match &interface.address_width {
+      None => String::new(),
+      Some(width) => width.to_string(),
+    };
+  let data_width_value = match &interface.data_width {
+      None => String::new(),
+      Some(width) => width.to_string(),
+    };
 
   div![
+    // Top buttons
     div![
       C!["my-3"],
       a![
@@ -187,176 +196,37 @@ pub fn view(model: &Model, index: usize) -> Node<Msg> {
         "Back"
       ]
     ],
+
+    // Interface fields
     h3![
       C!["my-2"],
-      "Interface"],
-    div![
-      div![
-        C!["form-group row"],
-        label![
-          C!["col-sm-2 col-form-label"],
-          attrs!{
-            At::For => "inputName",
-          },
-          "Name"
-        ],
-        div![
-          C!["col-sm-10"],
-          input![
-            C!["form-control"],
-            attrs!{
-              At::Type => "text",
-              At::Id => "inputName",
-              At::Value => &interface.name,
-            },
-            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::NameChanged(index, input))),
-          ]
-        ]
-      ],
-      div![
-        C!["form-group row"],
-        label![
-          C!["col-sm-2 col-form-label"],
-          attrs!{
-            At::For => "inputType",
-          },
-          "Type"
-        ],
-        div![
-          C!["col-sm-10"],
-          select![
-            C!["form-control"],
-            attrs!{
-              At::Id => "inputType",
-              At::Value => &interface.interface_type.to_string(),
-            },
-            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::TypeChanged(index, input))),
-            InterfaceType::iter().map(|interface_type|
-              option![
-                IF!(&interface_type == &interface.interface_type =>
-                  attrs!{
-                    At::Selected => "selected",
-                  }),
-                interface_type.to_string(),
-              ] 
-            ).collect::<Vec<_>>(),
-          ]
-        ]
-      ],
-      div![
-        C!["form-group row"],
-        label![
-          C!["col-sm-2 col-form-label"],
-          attrs!{
-            At::For => "inputDescription",
-          },
-          "Description"
-        ],
-        div![
-          C!["col-sm-10"],
-          textarea![
-            C!["form-control"],
-            attrs!{
-              At::Type => "text",
-              At::Id => "inputDescription",
-              At::Value => utils::opt_vec_str_to_textarea(&interface.description),
-            },
-            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::DescriptionChanged(index, input))),
-          ]
-        ]
-      ], 
-      div![
-        C!["form-group row"],
-        label![
-          C!["col-sm-2 col-form-label"],
-          attrs!{
-            At::For => ID_ADDRESS_WIDTH,
-          },
-          "Address width"
-        ],
-        div![
-          C!["col-sm-10"],
-          input![
-            C!["form-control"],
-            attrs!{
-              At::Type => "text",
-              At::Id => ID_ADDRESS_WIDTH,
-              At::Value => match &interface.address_width {
-                None => String::new(),
-                Some(width) => width.to_string(),
-              },
-            },
-            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::AddressWitdhChanged(index, input))),
-          ],
-          div![
-            C!["invalid-feedback"],
-            "please write a decimal value or leave empty for automatic"
-          ],
-        ]
-      ],
-      div![
-        C!["form-group row"],
-        label![
-          C!["col-sm-2 col-form-label"],
-          attrs!{
-            At::For => ID_DATA_WIDTH,
-          },
-          "Data width"
-        ],
-        div![
-          C!["col-sm-10"],
-          input![
-            C!["form-control"],
-            attrs!{
-              At::Type => "text",
-              At::Id => ID_DATA_WIDTH,
-              At::Value => match &interface.data_width {
-                None => String::new(),
-                Some(width) => width.to_string(),
-              },
-            },
-            input_ev(Ev::Change, move | input | Msg::Interface(InterfaceMsg::DataWidthChanged(index, input))),
-          ],
-          div![
-            C!["invalid-feedback"],
-            "please write a decimal value or leave empty for automatic"
-          ],
-        ]
-      ],
+      "Interface"
     ],
+
+    html_elements::text_field_full_line("inputName", "Name", &interface.name, 
+      move | input | Msg::Interface(InterfaceMsg::NameChanged(index, input)), None),
+
+    html_elements::select_field_full_line("inputType", "Type", &interface.interface_type,
+      move | input | Msg::Interface(InterfaceMsg::TypeChanged(index, input))),
+
+    html_elements::textarea_field("inputDescription", "Description", &utils::opt_vec_str_to_textarea(&interface.description),
+      move | input | Msg::Interface(InterfaceMsg::DescriptionChanged(index, input))),
+
+    html_elements::text_field_full_line(ID_ADDRESS_WIDTH, "Address width", &address_width_value, 
+      move | input | Msg::Interface(InterfaceMsg::AddressWitdhChanged(index, input)),
+      Some("please write a decimal value or leave empty for automatic")),
+
+    html_elements::text_field_full_line(ID_DATA_WIDTH, "Data width", &data_width_value, 
+      move | input | Msg::Interface(InterfaceMsg::DataWidthChanged(index, input)),
+      Some("please write a decimal value or leave empty for automatic")),
+
+    // Registers table
     h3![
       C!["my-2"],
       "Registers"],
     table![
       C!["table table-striped"],
-      thead![
-        tr![
-          th![
-            attrs!{
-              At::Scope => "col"
-            },
-            "name"
-          ],
-          th![
-            attrs!{
-              At::Scope => "col"
-            },
-            "address"
-          ],
-          th![
-            attrs!{
-              At::Scope => "col"
-            },
-            "summary"
-          ],
-          th![
-            attrs!{
-              At::Scope => "col"
-            },
-            "actions"
-          ],
-        ]
-      ],
+      html_elements::table_header(vec!["name", "address", "summary", "actions"]),
       tbody![
         interface.registers.iter().enumerate().map(|(reg_index, register)| register_table_row(&model, index, reg_index, &register)).collect::<Vec<_>>(),
         tr![
