@@ -1,9 +1,11 @@
+//! several utilities used in the project
+
 use seed::{prelude::*, *};
 use super::Msg;
 use super::mdf_format::VectorValue;
 use std::str::FromStr;
 
-// utility to mark a form field as invalid if its contents can't be parsed
+/// utility to mark a form field as invalid if its contents can't be parsed
 pub fn validate_field<F,T,E>(field_id: &str, field_new_value: &str, decode_value: F) -> Result<T,E> 
     where  F: Fn(&str) -> Result<T,E>
 {
@@ -19,6 +21,7 @@ pub fn validate_field<F,T,E>(field_id: &str, field_new_value: &str, decode_value
   result
 }
 
+/// generate a string from an Option<name>
 pub fn option_num_from_str(string_input: &str) -> Result<Option<u32>, std::num::ParseIntError> {
   if string_input.is_empty() {
     Ok(None)
@@ -31,6 +34,7 @@ pub fn option_num_from_str(string_input: &str) -> Result<Option<u32>, std::num::
   }
 }
 
+/// generate a string from an Option<VectorValue>
 pub fn option_vectorval_from_str(string_input: &str) -> Result<Option<VectorValue>, std::num::ParseIntError> {
   if string_input.is_empty() {
     Ok(None)
@@ -43,7 +47,7 @@ pub fn option_vectorval_from_str(string_input: &str) -> Result<Option<VectorValu
   }
 }
 
-// utilities functions for the fields using arrays of strings (description mostly)
+/// utility function for the fields using arrays of strings (description mostly):
 // convert to string, for example to put in a table. Outputs at most the first line
 pub fn opt_vec_str_to_summary(field : &Option<Vec<String>>) -> Node<Msg> {
   match field {
@@ -58,7 +62,7 @@ pub fn opt_vec_str_to_summary(field : &Option<Vec<String>>) -> Node<Msg> {
   }
 }
 
-// convert to string for a text area, each line separated by an end of line
+/// convert to string for a text area, each line separated by an end of line
 pub fn opt_vec_str_to_textarea(field : &Option<Vec<String>>) -> String {
   match field {
     None => String::new(),
@@ -66,7 +70,7 @@ pub fn opt_vec_str_to_textarea(field : &Option<Vec<String>>) -> String {
   }
 }
 
-// convert from string from a text area, each line separated by an end of line
+/// convert from string from a text area, each line separated by an end of line
 pub fn textarea_to_opt_vec_str(value_str: &String) -> Option<Vec<String>> {
   if value_str.is_empty() {
     None
@@ -76,8 +80,8 @@ pub fn textarea_to_opt_vec_str(value_str: &String) -> Option<Vec<String>> {
   }
 }
 
-// returns whether the input element that is target from an event is checked or not
-// panics if target is not an input element
+/// returns whether the input element that is target from an event is checked or not
+/// panics if target is not an input element
 pub fn target_checked(event: &web_sys::Event) -> bool {
   return event
     .target()

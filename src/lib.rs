@@ -1,16 +1,27 @@
-// (Lines like the one below ignore selected Clippy rules
-//  - it's useful when you want to check your code with `cargo make verify`
-// but some rules are too "annoying" or are not applicable for your case.)
+//! # HDL Register Wizard
+//! 
+//! This is a webapp that can generate VHDL code and documentation to create hardware registers accessible on a memory mapped bus. It can load and save files in the Model Description Format developped by Bitvis for its [Register Wizard](https://bitvis.no/dev-tools/register-wizard/). Files saved by this webapp should be usable by Bitvis' tool.
+//! 
+//! ## Project Status
+//! 
+//! The project is under development and is not currently usable. The aim for the first release is to be able to load and save MDF files, as the [Bitvis Register Wizard](https://bitvis.no/dev-tools/register-wizard/) currently lacks a GUI.
+//! A future release will also be able to generate code and documentation.
+//! 
+//! The code is currently hosted on [Github](https://github.com/daixiwen/hdl-register-wizard).
+//! ## Project License
+//! 
+//! The project uses an MIT license.
+
 #![allow(clippy::wildcard_imports)]
 
 use seed::{prelude::*, *};
 
-mod navigation;
-mod mdf_format;
-mod file_io;
+pub mod navigation;
+pub mod mdf_format;
+pub mod file_io;
 
-mod page;
-mod utils;
+pub mod page;
+pub mod utils;
 mod tests;
 
 // URLs
@@ -19,6 +30,7 @@ const INTERFACE: &str = "interface";
 const REGISTER: &str = "register";
 
 // IDs
+/// HTML ID of a hidden file input element used to open files
 pub const FILE_INPUT_ID: &str = "hidden_file_input";
 
 // ------ ------
@@ -42,13 +54,20 @@ fn init(url: Url, orders: &mut impl Orders<Msg>) -> Model {
 //     Model
 // ------ ------
 
-// `Model` describes our app state.
+/// application state
 pub struct Model {
+  /// URL of the webapp main page.
+  /// All the other URLS used in the app are relative to this one
   base_url : Url,
+
+  /// indicates what page is currently displayed in the app
   active_page : PageType,
+
+  /// structure holding the full registers description
   mdf_data : mdf_format::Mdf
 }
 
+/// enumeration describing the currently displayed page
 #[derive(Copy, Clone, PartialEq)]
 pub enum PageType {
   Edit,
@@ -62,6 +81,7 @@ pub enum PageType {
 //     Urls
 // ------ ------
 
+
 struct_urls!();
 impl<'a> Urls<'a> {
   fn home(self) -> Url {
@@ -70,9 +90,16 @@ impl<'a> Urls<'a> {
   fn settings(self) -> Url {
     self.base_url().add_path_part(SETTINGS)
   }
+
+  /// Generate a URL relative to an interface.
+  ///
+  /// The InterfacePage enum decribes any page that can be displayed in order to work on an interface
   pub fn interface(self, interface_page : page::interface::InterfacePage) -> Url {
     page::interface::interface_url(self.base_url().add_path_part(INTERFACE), interface_page)
   }
+
+  /// Generate a URL relative to a register in an interface
+  /// the RegisterPage enum decribes any page that can be displayed in order to work on a register
   pub fn register(self, interface_num : usize, register_page : page::register::RegisterPage) -> Url {
     page::register::register_url(
       page::interface::interface_url(self.base_url().add_path_part(INTERFACE), 
@@ -94,7 +121,10 @@ impl<'a> Urls<'a> {
 //    Update
 // ------ ------
 
-// `Msg` describes the different events you can modify state with.
+/// Message used to communicate between the GUI and the system core.
+///
+/// Some messages are regrouped under a single entry as an enum holding
+/// more information about a specific message in a specific context.
 #[derive(Clone)]
 pub enum Msg {
   UrlChanged(subs::UrlChanged),
@@ -201,6 +231,7 @@ fn view(model: &Model) -> Node<Msg> {
   ]
 }
 
+/// makes a modal window (alert) appear in front of the rest of the page
 pub fn modal_window(title: &str, content: &str) {
   let modal_window = seed::document()
     .get_element_by_id("modal")
@@ -247,8 +278,8 @@ pub fn modal_window(title: &str, content: &str) {
 //     Start
 // ------ ------
 
-// (This function is invoked by `init` function in `index.html`.)
 #[wasm_bindgen(start)]
+/// This function is invoked by `init` function in `index.html`. Start the application
 pub fn start() {
   // Mount the `app` to the element with the `id` "app".
   App::start("app", init, update, view);

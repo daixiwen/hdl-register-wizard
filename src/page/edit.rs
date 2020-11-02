@@ -1,5 +1,7 @@
 #![allow(clippy::wildcard_imports)]
 
+//! Main edit page, with the model name and the list of interfaces
+
 use seed::{prelude::*, *};
 use super::super::Model;
 use super::super::Msg;
@@ -10,12 +12,14 @@ use super::interface::InterfaceMsg;
 
 use super::super::utils;
 
+/// messages for the edit page
 #[derive(Clone)]
 pub enum EditMsg {
+    /// Model name changed
   NameChanged(String)
 }
 
-// `update` describes how to handle each `Msg`.
+/// message handling for the edit page
 pub fn update(msg: EditMsg, model: &mut Model, orders: &mut impl Orders<Msg>) {
     match msg {
         EditMsg::NameChanged(new_name) => {
@@ -25,7 +29,7 @@ pub fn update(msg: EditMsg, model: &mut Model, orders: &mut impl Orders<Msg>) {
     }
 }
 
-
+/// edit page view
 pub fn view(model: &Model) -> Node<Msg> {
   div![
     div![
@@ -142,6 +146,8 @@ fn interface_table_row(model: &Model, index : usize, interface : &mdf_format::In
   ]
 }
 
+/// add a button that sends to the given url
+/// TODO: move to html_elements
 pub fn in_table_button_url(label: &str, color: &str, url: &Url, enabled: bool) -> Node<Msg>
 {
   a![
@@ -154,6 +160,9 @@ pub fn in_table_button_url(label: &str, color: &str, url: &Url, enabled: bool) -
   ]
 }
 
+
+/// add a button that sends the given message
+/// TODO: move to html_elements
 pub fn in_table_button_msg(label: &str, color: &str, msg: Msg, enabled: bool) -> Node<Msg>
 {
   button![

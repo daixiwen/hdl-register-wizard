@@ -1,3 +1,5 @@
+//! settings page (TBD)
+
 #![allow(clippy::wildcard_imports)]
 
 use seed::{prelude::*, *};

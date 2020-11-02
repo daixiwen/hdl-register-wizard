@@ -1,8 +1,11 @@
+//! file upload/download helper functions
+
 use seed::prelude::*;
 
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
 
+/// make the user download some data as a text file
 pub fn download_text(filename: &str, data: &str) {
 
     let encoded_data: String = js_sys::encode_uri_component(&data).into();
@@ -29,6 +32,7 @@ pub fn download_text(filename: &str, data: &str) {
     element.remove();
 }
 
+/// makes a file selector appear to let the user choose a file to upload
 pub fn choose_upload(input_element_id : &str)
 {
     let element = seed::document()
@@ -46,6 +50,7 @@ pub fn choose_upload(input_element_id : &str)
     let _ = element.dispatch_event(&event);   
 }
 
+/// starts a future to upload the text file and deliver it as a UploadText message 
 pub fn upload_file(event : web_sys::Event, orders: &mut impl Orders<super::Msg>)
 {
     let target = event.target().unwrap().dyn_into::<web_sys::HtmlInputElement>().ok().unwrap();

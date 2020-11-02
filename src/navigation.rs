@@ -1,12 +1,15 @@
+//! webapp navigation: menu top bar and navigation side bar
 #![allow(clippy::wildcard_imports)]
 
 use seed::{prelude::*, *};
 
+/// structure used to describe a menu entry when building the menu in HTML
 pub struct MenuEntry<'a> {
   label : &'a str,
   command : MenuCommand,
 }
 
+/// menu commands, received as messages
 #[derive(Clone, Copy)]
 pub enum MenuCommand {
     LoadFile,
@@ -16,6 +19,7 @@ pub enum MenuCommand {
 // ------ ------
 //     Menu actions
 // ------ ------
+/// execute the required actions when receiving a message from a menu
 pub fn do_menu(action: MenuCommand, model: &mut super::Model, orders: &mut impl Orders<super::Msg>) {
     match action {
         MenuCommand::SaveFile => {
@@ -35,7 +39,7 @@ pub fn do_menu(action: MenuCommand, model: &mut super::Model, orders: &mut impl 
 // ------ ------
 //     Navigation bar
 // ------ ------
-
+/// write the top bar, including the menu, in the HTML document
 pub fn navbar(model: &super::Model) -> Node<super::Msg> {
   let file_menu_entries = vec![
     MenuEntry{
@@ -81,6 +85,7 @@ pub fn navbar(model: &super::Model) -> Node<super::Msg> {
   ]
 }
 
+/// generate a single entry with no submenu in the top navbar
 pub fn navbar_item(label: &str, page_type: super::PageType, model: &super::Model) -> Node<super::Msg> {
   li![
     C!["nav-item"],
@@ -99,6 +104,7 @@ pub fn navbar_item(label: &str, page_type: super::PageType, model: &super::Model
       label]]
 }
 
+/// generate an entry with a submenu in the top navbar
 pub fn navbar_dropdown_menu(label: &str, entries: Vec<MenuEntry>) -> Node<super::Msg> {
   let menu_id = &format!("{}Dropdown", label);
 
@@ -126,7 +132,8 @@ pub fn navbar_dropdown_menu(label: &str, entries: Vec<MenuEntry>) -> Node<super:
   ]
 }
 
-pub fn navbar_dropdown_menu_entry(entry: &MenuEntry) -> Node<super::Msg> {
+/// geterate the HTML description of a single entry in the submenu
+fn navbar_dropdown_menu_entry(entry: &MenuEntry) -> Node<super::Msg> {
   let command = entry.command;
 
   a![

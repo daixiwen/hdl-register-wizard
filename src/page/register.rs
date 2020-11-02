@@ -1,3 +1,5 @@
+//! page to edit a register in the model, with optional fields list
+
 use seed::{prelude::*, *};
 
 use super::super::Model;
@@ -11,10 +13,7 @@ use super::super::mdf_format::SignalType;
 use super::super::mdf_format::VectorValue;
 use super::super::mdf_format::LocationType;
 use super::super::mdf_format::RadixType;
-//use super::super::mdf_format::CoreSignalProperties;
-//use super::super::mdf_format::Field;
 
-//use super::super::mdf_format;
 use strum::IntoEnumIterator;
 use super::super::Msg;
 
@@ -40,11 +39,15 @@ const TXT_SPEC_IN_FIELDS: &str ="(specify in fields)";
 // ------ ------
 //     Urls
 // ------ ------
+/// different pages, each having its url within an interface
 pub enum RegisterPage {
+    /// edit the register with the given number
   Num(usize),
+    /// create a register
   NewRegister
 }
 
+/// generate an url for a specific register page, built upon an interface url
 pub fn register_url (url: Url, register_page : RegisterPage) -> Url {
   match register_page {
     RegisterPage::Num(register_number) =>
@@ -55,6 +58,7 @@ pub fn register_url (url: Url, register_page : RegisterPage) -> Url {
   }
 }
 
+/// called when the url is changed to a register one
 pub fn change_url(mut url: seed::browser::url::Url, interface_num: usize, model: &mut Model) -> PageType {
   match url.next_path_part()
   {
@@ -94,37 +98,52 @@ fn new_register(interface: usize, model: &mut Model) -> PageType {
 //    Update
 // ------ ------
 
-// `Msg` describes the different events you can modify state with.
+/// messages related to registers
 #[derive(Clone)]
 pub enum RegisterMsg {
+      /// delete th register
     Delete(usize),
+      /// move the register up in the list
     MoveUp(usize),
+      /// move the register down in the list
     MoveDown(usize),
+      /// register name changed
     NameChanged(usize, String),
+      /// sent when the address type is changed to `auto`
     AddressAutoSelected(usize),
+      /// sent when the address type is changed to single
     AddressSingleSelected(usize),
+      /// sent when the address type is changed to stride
     AddressStrideSelected(usize),
+      /// sent when the register summary is changed
     SummaryChanged(usize, String),
+      /// sent when the register description is changed
     DescriptionChanged(usize, String),
+      /// sent when the address value in single mode is changed
     AddrSingleChanged(usize, String),
+      /// sent when the address start in stride mode is changed
     AddrStrideValueChanged(usize, String),
+      /// sent when the address stride count is changed
     AddrStrideCountChanged(usize, String),
+      /// sent when the address stride increase is changed
     AddrStrideIncrementChanged(usize, String),
+      /// sent with the register width is changed
     WidthChanged(usize, String),
+      /// sent when the access type of the register is changed
     AccessTypeChanged(usize, String),
+      /// sent when the signal type for the register is changed
     SignalTypeChanged(usize, String),
+      /// sent when the register's reset value is changed
     ResetValueChanged(usize, String),
+      /// sent when the register's location is changed
     LocationChanged(usize, String),
+      /// sent when the read enable core property is changed
     CorePropReadEnable(usize, web_sys::Event),
+      /// sent when the write enable core property is changed
     CorePropWriteEnable(usize, web_sys::Event)
-
-/*
-
-    TypeChanged(usize, String),
-    AddressWitdhChanged(usize, String),
-    DataWidthChanged(usize, String)*/
 }
 
+/// process a register message
 pub fn update(msg: RegisterMsg, interface_num: usize, model: &mut Model, orders: &mut impl Orders<Msg>) {
   match msg {
     RegisterMsg::Delete(index) => {
@@ -357,27 +376,6 @@ pub fn update(msg: RegisterMsg, interface_num: usize, model: &mut Model, orders:
           .core_signal_properties.use_write_enable = 
           Some(utils::target_checked(&event));
     }
-
-/*    InterfaceMsg::AddressWitdhChanged(index, new_width) => {
-      orders.skip();
-
-      match utils::validate_field(
-          ID_ADDRESS_WIDTH, &new_width, | field_value | utils::option_num_from_str(field_value)) {
-        Ok(value) => model.mdf_data.interfaces[index].address_width = value,
-        Err(_) => ()
-      };
-    },
-
-    InterfaceMsg::DataWidthChanged(index, new_width) => {
-      orders.skip();
-
-      match utils::validate_field(
-          ID_DATA_WIDTH, &new_width, | field_value | utils::option_num_from_str(field_value)) {
-        Ok(value) => model.mdf_data.interfaces[index].data_width = value,
-        Err(_) => ()
-      };
-    }
-*/
   }
 }
 
@@ -387,7 +385,7 @@ pub fn update(msg: RegisterMsg, interface_num: usize, model: &mut Model, orders:
 // ------ ------
 
 
-// `view` describes what to display.
+/// build an html view for the register
 pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Node<Msg> {
   let interface = &model.mdf_data.interfaces[interface_index];
   let register = &interface.registers[register_index];

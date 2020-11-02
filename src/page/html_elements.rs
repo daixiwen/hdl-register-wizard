@@ -1,8 +1,9 @@
-// common HTML blocks genetators for different parts of the app
+//! common HTML blocks genetators for different parts of the app
 
 use seed::{prelude::*, *};
 use super::super::Msg;
 
+/// a single line text edit on full width
 pub fn text_field_full_line(id: &str, label: &str, value: &str,
     handler: impl FnOnce(String) -> Msg + 'static + Clone, invalid_feedback : Option<&str>)  -> Node<Msg> {
   div![
@@ -33,6 +34,7 @@ pub fn text_field_full_line(id: &str, label: &str, value: &str,
   ]
 }
 
+/// a select input generated from an enum, on full width
 pub fn select_field_full_line<T: strum::IntoEnumIterator + std::string::ToString + std::cmp::PartialEq<T>>
     (id: &str, label: &str, selected: &T,
     handler: impl FnOnce(String) -> Msg + 'static + Clone)  -> Node<Msg> {
@@ -68,6 +70,7 @@ pub fn select_field_full_line<T: strum::IntoEnumIterator + std::string::ToString
   ]
 }
 
+/// a multiple line text area on full width
 pub fn textarea_field(id: &str, label: &str, value: &str,
     handler: impl FnOnce(String) -> Msg + 'static + Clone)  -> Node<Msg> {
   div![
@@ -94,6 +97,7 @@ pub fn textarea_field(id: &str, label: &str, value: &str,
   ]
 }
 
+/// table header, generated from a vector of strings
 pub fn table_header(labels: Vec<&str>) -> Node<Msg> {
   thead![tr![
     labels.iter().map(|label| th![

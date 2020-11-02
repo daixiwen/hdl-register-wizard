@@ -1,3 +1,5 @@
+//! page to edit an interface, with registers list
+
 use seed::{prelude::*, *};
 
 use super::super::Model;
@@ -27,14 +29,15 @@ const URL_REGISTER: &str = "register";
 const ID_ADDRESS_WIDTH: &str = "inputAddressWidth";
 const ID_DATA_WIDTH: &str = "inputDataWidth";
 
-// ------ ------
-//     Urls
-// ------ ------
+/// types of page for interface edit
 pub enum InterfacePage {
+    /// edit the interface with the given number
   Num(usize),
+    /// create a new interface
   NewInterface
 }
 
+/// generate the url corresponding to an interface page
 pub fn interface_url (url: Url, interface_page : InterfacePage) -> Url {
   match interface_page {
     InterfacePage::Num(interface_number) =>
@@ -45,6 +48,7 @@ pub fn interface_url (url: Url, interface_page : InterfacePage) -> Url {
   }
 }
 
+/// called with the webapp url is changed to an interface page url
 pub fn change_url(mut url: seed::browser::url::Url, model: &mut Model) -> PageType {
   match url.next_path_part()
   {
@@ -89,19 +93,28 @@ fn new_interface(model: &mut Model) -> PageType {
 //    Update
 // ------ ------
 
-// `Msg` describes the different events you can modify state with.
+/// generated messages handling interfaces
 #[derive(Clone)]
 pub enum InterfaceMsg {
+      /// delete the given interface
     Delete(usize),
+      /// move the given interface up in the list
     MoveUp(usize),
+      /// move the given interface down in the list
     MoveDown(usize),
+      /// change an interface name
     NameChanged(usize, String),
+      /// change an interface protocol type
     TypeChanged(usize, String),
+      /// change an interface description
     DescriptionChanged(usize, String),
+      /// change an interface address width
     AddressWitdhChanged(usize, String),
+      /// change an interface data width
     DataWidthChanged(usize, String)
 }
 
+/// process the interface messages
 pub fn update(msg: InterfaceMsg, model: &mut Model, orders: &mut impl Orders<Msg>) {
   match msg {
     InterfaceMsg::Delete(index) => {
@@ -172,7 +185,7 @@ pub fn update(msg: InterfaceMsg, model: &mut Model, orders: &mut impl Orders<Msg
 // ------ ------
 
 
-// `view` describes what to display.
+/// display the interface page
 pub fn view(model: &Model, index: usize) -> Node<Msg> {
   let interface = &model.mdf_data.interfaces[index];
   let address_width_value = match &interface.address_width {
