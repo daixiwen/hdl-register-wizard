@@ -5,17 +5,17 @@ use seed::{prelude::*, *};
 use super::super::Model;
 use super::super::PageType;
 
-use super::super::mdf_format::Register;
+use super::super::mdf_format::AccessType;
 use super::super::mdf_format::Address;
 use super::super::mdf_format::AddressStride;
-use super::super::mdf_format::AccessType;
-use super::super::mdf_format::SignalType;
-use super::super::mdf_format::VectorValue;
 use super::super::mdf_format::LocationType;
 use super::super::mdf_format::RadixType;
+use super::super::mdf_format::Register;
+use super::super::mdf_format::SignalType;
+use super::super::mdf_format::VectorValue;
 
-use strum::IntoEnumIterator;
 use super::super::Msg;
+use strum::IntoEnumIterator;
 
 use super::super::utils;
 
@@ -30,11 +30,10 @@ const ID_RESET_VALUE: &str = "inputResetValue";
 const ID_ADDR_SINGLE_VALUE: &str = "addrSingleValue";
 const ID_ADDR_STRIDE_VALUE: &str = "addrStrideValue";
 const ID_ADDR_STRIDE_COUNT: &str = "addrStrideCount";
-const ID_ADDR_STRIDE_INCR : &str = "addrStrideIncrement";
-
+const ID_ADDR_STRIDE_INCR: &str = "addrStrideIncrement";
 
 // text constant
-const TXT_SPEC_IN_FIELDS: &str ="(specify in fields)";
+const TXT_SPEC_IN_FIELDS: &str = "(specify in fields)";
 
 // ------ ------
 //     Urls
@@ -42,56 +41,55 @@ const TXT_SPEC_IN_FIELDS: &str ="(specify in fields)";
 /// different pages, each having its url within an interface
 pub enum RegisterPage {
     /// edit the register with the given number
-  Num(usize),
+    Num(usize),
     /// create a register
-  NewRegister
+    NewRegister,
 }
 
 /// generate an url for a specific register page, built upon an interface url
-pub fn register_url (url: Url, register_page : RegisterPage) -> Url {
-  match register_page {
-    RegisterPage::Num(register_number) =>
-      url.add_path_part(register_number.to_string()),
+pub fn register_url(url: Url, register_page: RegisterPage) -> Url {
+    match register_page {
+        RegisterPage::Num(register_number) => url.add_path_part(register_number.to_string()),
 
-    RegisterPage::NewRegister =>
-      url.add_path_part(URL_NEW),
-  }
+        RegisterPage::NewRegister => url.add_path_part(URL_NEW),
+    }
 }
 
 /// called when the url is changed to a register one
-pub fn change_url(mut url: seed::browser::url::Url, interface_num: usize, model: &mut Model) -> PageType {
-  match url.next_path_part()
-  {
-    None => PageType::NotFound,
-    Some(URL_NEW) => new_register(interface_num, model),
-    Some(number_string) => {
-      match number_string.parse::<usize>() {
-        Ok(index) => {
-          if index < model.mdf_data.interfaces[interface_num].registers.len()
-          {
-            PageType::Register(interface_num, index)
-          }
-          else {
-            PageType::NotFound
-          }
-        }
-        Err(_) => {
-          PageType::NotFound
-        }
-      }
+pub fn change_url(
+    mut url: seed::browser::url::Url,
+    interface_num: usize,
+    model: &mut Model,
+) -> PageType {
+    match url.next_path_part() {
+        None => PageType::NotFound,
+        Some(URL_NEW) => new_register(interface_num, model),
+        Some(number_string) => match number_string.parse::<usize>() {
+            Ok(index) => {
+                if index < model.mdf_data.interfaces[interface_num].registers.len() {
+                    PageType::Register(interface_num, index)
+                } else {
+                    PageType::NotFound
+                }
+            }
+            Err(_) => PageType::NotFound,
+        },
     }
-  }
 }
 
 fn new_register(interface: usize, model: &mut Model) -> PageType {
-  model.mdf_data.interfaces[interface].registers.push(Register::new());
-  let new_page_type = PageType::Register(interface, 
-    model.mdf_data.interfaces[interface].registers.len()-1);
+    model.mdf_data.interfaces[interface]
+        .registers
+        .push(Register::new());
+    let new_page_type = PageType::Register(
+        interface,
+        model.mdf_data.interfaces[interface].registers.len() - 1,
+    );
 
-  super::super::Urls::new(model.base_url.clone())
-    .from_page_type(new_page_type)
-    .go_and_replace();
-  new_page_type  
+    super::super::Urls::new(model.base_url.clone())
+        .from_page_type(new_page_type)
+        .go_and_replace();
+    new_page_type
 }
 
 // ------ ------
@@ -101,296 +99,342 @@ fn new_register(interface: usize, model: &mut Model) -> PageType {
 /// messages related to registers
 #[derive(Clone)]
 pub enum RegisterMsg {
-      /// delete th register
+    /// delete th register
     Delete(usize),
-      /// move the register up in the list
+    /// move the register up in the list
     MoveUp(usize),
-      /// move the register down in the list
+    /// move the register down in the list
     MoveDown(usize),
-      /// register name changed
+    /// register name changed
     NameChanged(usize, String),
-      /// sent when the address type is changed to `auto`
+    /// sent when the address type is changed to `auto`
     AddressAutoSelected(usize),
-      /// sent when the address type is changed to single
+    /// sent when the address type is changed to single
     AddressSingleSelected(usize),
-      /// sent when the address type is changed to stride
+    /// sent when the address type is changed to stride
     AddressStrideSelected(usize),
-      /// sent when the register summary is changed
+    /// sent when the register summary is changed
     SummaryChanged(usize, String),
-      /// sent when the register description is changed
+    /// sent when the register description is changed
     DescriptionChanged(usize, String),
-      /// sent when the address value in single mode is changed
+    /// sent when the address value in single mode is changed
     AddrSingleChanged(usize, String),
-      /// sent when the address start in stride mode is changed
+    /// sent when the address start in stride mode is changed
     AddrStrideValueChanged(usize, String),
-      /// sent when the address stride count is changed
+    /// sent when the address stride count is changed
     AddrStrideCountChanged(usize, String),
-      /// sent when the address stride increase is changed
+    /// sent when the address stride increase is changed
     AddrStrideIncrementChanged(usize, String),
-      /// sent with the register width is changed
+    /// sent with the register width is changed
     WidthChanged(usize, String),
-      /// sent when the access type of the register is changed
+    /// sent when the access type of the register is changed
     AccessTypeChanged(usize, String),
-      /// sent when the signal type for the register is changed
+    /// sent when the signal type for the register is changed
     SignalTypeChanged(usize, String),
-      /// sent when the register's reset value is changed
+    /// sent when the register's reset value is changed
     ResetValueChanged(usize, String),
-      /// sent when the register's location is changed
+    /// sent when the register's location is changed
     LocationChanged(usize, String),
-      /// sent when the read enable core property is changed
+    /// sent when the read enable core property is changed
     CorePropReadEnable(usize, web_sys::Event),
-      /// sent when the write enable core property is changed
-    CorePropWriteEnable(usize, web_sys::Event)
+    /// sent when the write enable core property is changed
+    CorePropWriteEnable(usize, web_sys::Event),
 }
 
 /// process a register message
-pub fn update(msg: RegisterMsg, interface_num: usize, model: &mut Model, orders: &mut impl Orders<Msg>) {
-  match msg {
-    RegisterMsg::Delete(index) => {
-      if index < model.mdf_data.interfaces[interface_num].registers.len() {
-        model.mdf_data.interfaces[interface_num].registers.remove(index);
-      }
-    },
-    RegisterMsg::MoveUp(index) => {
-      if (index < model.mdf_data.interfaces[interface_num].registers.len()) && (index > 0) {
-        model.mdf_data.interfaces[interface_num].registers.swap(index-1, index);
-      }
-    },
-    RegisterMsg::MoveDown(index) => {
-      if  index < model.mdf_data.interfaces[interface_num].registers.len()-1 {
-        model.mdf_data.interfaces[interface_num].registers.swap(index, index+1);
-      }
-    },
+pub fn update(
+    msg: RegisterMsg,
+    interface_num: usize,
+    model: &mut Model,
+    orders: &mut impl Orders<Msg>,
+) {
+    match msg {
+        RegisterMsg::Delete(index) => {
+            if index < model.mdf_data.interfaces[interface_num].registers.len() {
+                model.mdf_data.interfaces[interface_num]
+                    .registers
+                    .remove(index);
+            }
+        }
+        RegisterMsg::MoveUp(index) => {
+            if (index < model.mdf_data.interfaces[interface_num].registers.len()) && (index > 0) {
+                model.mdf_data.interfaces[interface_num]
+                    .registers
+                    .swap(index - 1, index);
+            }
+        }
+        RegisterMsg::MoveDown(index) => {
+            if index < model.mdf_data.interfaces[interface_num].registers.len() - 1 {
+                model.mdf_data.interfaces[interface_num]
+                    .registers
+                    .swap(index, index + 1);
+            }
+        }
 
-    RegisterMsg::NameChanged(index, new_name) => {
-      model.mdf_data.interfaces[interface_num].registers[index].name = new_name;
-      orders.skip();
-    },
-    RegisterMsg::AddressAutoSelected(index) => {
-      model.mdf_data.interfaces[interface_num].registers[index].address = 
-        Address::Auto;
-    },
-    RegisterMsg::AddressSingleSelected(index) => {
-      model.mdf_data.interfaces[interface_num].registers[index].address =
-          match &model.mdf_data.interfaces[interface_num].registers[index].address {
+        RegisterMsg::NameChanged(index, new_name) => {
+            model.mdf_data.interfaces[interface_num].registers[index].name = new_name;
+            orders.skip();
+        }
+        RegisterMsg::AddressAutoSelected(index) => {
+            model.mdf_data.interfaces[interface_num].registers[index].address = Address::Auto;
+        }
+        RegisterMsg::AddressSingleSelected(index) => {
+            model.mdf_data.interfaces[interface_num].registers[index].address =
+                match &model.mdf_data.interfaces[interface_num].registers[index].address {
+                    Address::Stride(stride) => Address::Single(stride.value.clone()),
+                    _ => Address::Single(VectorValue::new()),
+                }
+            // no skipping so that the view is refreshed and the correct inputs activated/deactivated
+        }
+        RegisterMsg::AddressStrideSelected(index) => {
+            model.mdf_data.interfaces[interface_num].registers[index].address =
+                match &model.mdf_data.interfaces[interface_num].registers[index].address {
+                    Address::Single(single) => Address::Stride(AddressStride {
+                        value: single.clone(),
+                        count: VectorValue {
+                            value: 1,
+                            radix: RadixType::Decimal,
+                        },
+                        increment: None,
+                    }),
+                    _ => Address::Stride(AddressStride {
+                        value: VectorValue::new(),
+                        count: VectorValue {
+                            value: 1,
+                            radix: RadixType::Decimal,
+                        },
+                        increment: None,
+                    }),
+                }
+            // no skipping so that the view is refreshed and the correct inputs activated/deactivated
+        }
 
-        Address::Stride(stride) =>
-             Address::Single(stride.value.clone()),
-        _ => Address::Single(VectorValue::new()),
-      }
-      // no skipping so that the view is refreshed and the correct inputs activated/deactivated
-    },
-    RegisterMsg::AddressStrideSelected(index) => {
-      model.mdf_data.interfaces[interface_num].registers[index].address =
-          match &model.mdf_data.interfaces[interface_num].registers[index].address {
+        RegisterMsg::SummaryChanged(index, new_summary) => {
+            model.mdf_data.interfaces[interface_num].registers[index].summary =
+                utils::textarea_to_opt_vec_str(&new_summary);
 
-        Address::Single(single) =>
-          Address::Stride(AddressStride{
-            value : single.clone(),
-            count : VectorValue{value: 1, radix: RadixType::Decimal},
-            increment : None}),
-        _ =>
-          Address::Stride(AddressStride{
-            value : VectorValue::new(),
-            count : VectorValue{value: 1, radix: RadixType::Decimal},
-            increment : None}),
-      }
-      // no skipping so that the view is refreshed and the correct inputs activated/deactivated
-    },
+            orders.skip();
+        }
+        RegisterMsg::DescriptionChanged(index, new_description) => {
+            model.mdf_data.interfaces[interface_num].registers[index].description =
+                utils::textarea_to_opt_vec_str(&new_description);
 
-    RegisterMsg::SummaryChanged(index, new_summary) => {
-      model.mdf_data.interfaces[interface_num].registers[index].summary =
-          utils::textarea_to_opt_vec_str(&new_summary);
+            orders.skip();
+        }
 
-      orders.skip();
-    },
-    RegisterMsg::DescriptionChanged(index, new_description) => {
-      model.mdf_data.interfaces[interface_num].registers[index].description =
-          utils::textarea_to_opt_vec_str(&new_description);
+        RegisterMsg::AddrSingleChanged(index, new_addr) => {
+            orders.skip();
 
-      orders.skip();
-    },
+            match utils::validate_field(ID_ADDR_SINGLE_VALUE, &new_addr, |field_value| {
+                VectorValue::from_str(field_value)
+            }) {
+                Ok(value) => {
+                    model.mdf_data.interfaces[interface_num].registers[index].address =
+                        Address::Single(value)
+                }
+                Err(_) => (),
+            };
+        }
 
-    RegisterMsg::AddrSingleChanged(index, new_addr) => {
-      orders.skip();
+        RegisterMsg::AddrStrideValueChanged(index, new_addr) => {
+            orders.skip();
 
-      match utils::validate_field(
-          ID_ADDR_SINGLE_VALUE, &new_addr, | field_value |VectorValue::from_str(field_value)) {
-        Ok(value) => model.mdf_data.interfaces[interface_num].registers[index].address = Address::Single(value),
-        Err(_) => ()
-      };
-    },
+            match &model.mdf_data.interfaces[interface_num].registers[index].address {
+                Address::Stride(stride) => {
+                    match utils::validate_field(ID_ADDR_STRIDE_VALUE, &new_addr, |field_value| {
+                        VectorValue::from_str(field_value)
+                    }) {
+                        Ok(value) => {
+                            model.mdf_data.interfaces[interface_num].registers[index].address =
+                                Address::Stride(AddressStride {
+                                    value,
+                                    count: stride.count,
+                                    increment: stride.increment,
+                                })
+                        }
+                        Err(_) => (),
+                    }
+                }
+                _ => (),
+            }
+        }
 
-    RegisterMsg::AddrStrideValueChanged(index, new_addr) => {
-      orders.skip();
+        RegisterMsg::AddrStrideCountChanged(index, new_count) => {
+            orders.skip();
 
-      match &model.mdf_data.interfaces[interface_num].registers[index].address {
-        Address::Stride(stride) =>
-          match utils::validate_field(
-              ID_ADDR_STRIDE_VALUE, &new_addr, | field_value |VectorValue::from_str(field_value)) {
-            Ok(value) => model.mdf_data.interfaces[interface_num].registers[index].address =
-              Address::Stride(AddressStride{
-                value, count: stride.count, increment: stride.increment
-              }),
-            Err(_) => ()
-          },
-        _ => ()
-      }
-    },
+            match &model.mdf_data.interfaces[interface_num].registers[index].address {
+                Address::Stride(stride) => {
+                    match utils::validate_field(ID_ADDR_STRIDE_COUNT, &new_count, |field_value| {
+                        VectorValue::from_str(field_value)
+                    }) {
+                        Ok(count) => {
+                            model.mdf_data.interfaces[interface_num].registers[index].address =
+                                Address::Stride(AddressStride {
+                                    value: stride.value,
+                                    count: count,
+                                    increment: stride.increment,
+                                })
+                        }
+                        Err(_) => (),
+                    }
+                }
+                _ => (),
+            }
+        }
 
-    RegisterMsg::AddrStrideCountChanged(index, new_count) => {
-      orders.skip();
+        RegisterMsg::AddrStrideIncrementChanged(index, new_count) => {
+            orders.skip();
 
-      match &model.mdf_data.interfaces[interface_num].registers[index].address {
-        Address::Stride(stride) =>
-          match utils::validate_field(
-              ID_ADDR_STRIDE_COUNT, &new_count, | field_value |VectorValue::from_str(field_value)) {
-            Ok(count) => model.mdf_data.interfaces[interface_num].registers[index].address =
-              Address::Stride(AddressStride{
-                value: stride.value, count: count, increment: stride.increment
-              }),
-            Err(_) => ()
-          },
-        _ => ()
-      }
-    },
+            match &model.mdf_data.interfaces[interface_num].registers[index].address {
+                Address::Stride(stride) => {
+                    match utils::validate_field(ID_ADDR_STRIDE_INCR, &new_count, |field_value| {
+                        utils::option_vectorval_from_str(field_value)
+                    }) {
+                        Ok(increment) => {
+                            model.mdf_data.interfaces[interface_num].registers[index].address =
+                                Address::Stride(AddressStride {
+                                    value: stride.value,
+                                    count: stride.count,
+                                    increment,
+                                })
+                        }
+                        Err(_) => (),
+                    }
+                }
+                _ => (),
+            }
+        }
 
-    RegisterMsg::AddrStrideIncrementChanged(index, new_count) => {
-      orders.skip();
+        RegisterMsg::WidthChanged(index, new_width) => {
+            orders.skip();
 
-      match &model.mdf_data.interfaces[interface_num].registers[index].address {
-        Address::Stride(stride) =>
-          match utils::validate_field(
-              ID_ADDR_STRIDE_INCR, &new_count, | field_value | utils::option_vectorval_from_str(field_value)) {
-            Ok(increment) => model.mdf_data.interfaces[interface_num].registers[index].address =
-              Address::Stride(AddressStride{
-                value: stride.value, count: stride.count, increment
-              }),
-            Err(_) => ()
-          },
-        _ => ()
-      }
-    },
+            match utils::validate_field(ID_REG_WIDTH, &new_width, |field_value| {
+                utils::option_num_from_str(field_value)
+            }) {
+                Ok(width) => {
+                    model.mdf_data.interfaces[interface_num].registers[index].width = width
+                }
+                Err(_) => (),
+            }
+        }
 
-    RegisterMsg::WidthChanged(index, new_width) => {
-      orders.skip();
+        RegisterMsg::AccessTypeChanged(index, new_type_name) => {
+            match AccessType::from_str(&new_type_name) {
+                Ok(new_type) => {
+                    model.mdf_data.interfaces[interface_num].registers[index].access =
+                        Some(new_type);
 
-      match utils::validate_field(
-          ID_REG_WIDTH, &new_width, | field_value | utils::option_num_from_str(field_value)) {
-        Ok(width) => model.mdf_data.interfaces[interface_num].registers[index].width = width,
-        Err(_) => ()
-      }
-    },
+                    // put a default value for use_write_enabled if it is not set yet
+                    if (new_type != AccessType::RO)
+                        && (model.mdf_data.interfaces[interface_num].registers[index].location
+                            == Some(LocationType::Core))
+                        && (model.mdf_data.interfaces[interface_num].registers[index]
+                            .core_signal_properties
+                            .use_write_enable
+                            .is_none())
+                    {
+                        model.mdf_data.interfaces[interface_num].registers[index]
+                            .core_signal_properties
+                            .use_write_enable = Some(true);
+                    }
+                }
 
-    RegisterMsg::AccessTypeChanged(index, new_type_name) => {
-      match AccessType::from_str(&new_type_name)
-      {
-        Ok(new_type) => {
-          model.mdf_data.interfaces[interface_num].registers[index].access = Some(new_type);
+                _ => {
+                    if new_type_name == TXT_SPEC_IN_FIELDS {
+                        model.mdf_data.interfaces[interface_num].registers[index].access = None;
+                    } else {
+                        seed::log!("error while converting from string to interface type")
+                    }
+                }
+            }
+        }
 
-          // put a default value for use_write_enabled if it is not set yet
-          if (new_type != AccessType::RO) && 
-              (model.mdf_data.interfaces[interface_num].registers[index].location == Some(LocationType::Core)) &&
-              (model.mdf_data.interfaces[interface_num].registers[index].core_signal_properties.use_write_enable.is_none())
-          {
-            model.mdf_data.interfaces[interface_num].registers[index].core_signal_properties.use_write_enable = Some(true);
-          }
-        },
+        RegisterMsg::SignalTypeChanged(index, new_type_name) => {
+            orders.skip();
 
-        _ => {
-          if new_type_name == TXT_SPEC_IN_FIELDS {
-            model.mdf_data.interfaces[interface_num].registers[index].access = None;
-          }
-          else {
-            seed::log!("error while converting from string to interface type")
-          }
-        },
-      }
-    },
+            match SignalType::from_str(&new_type_name) {
+                Ok(new_type) => {
+                    model.mdf_data.interfaces[interface_num].registers[index].signal =
+                        Some(new_type);
+                }
 
-    RegisterMsg::SignalTypeChanged(index, new_type_name) => {
-      orders.skip();
+                _ => {
+                    if new_type_name == TXT_SPEC_IN_FIELDS {
+                        model.mdf_data.interfaces[interface_num].registers[index].signal = None;
+                    } else {
+                        seed::log!("error while converting from string to signal type")
+                    }
+                }
+            }
+        }
 
-      match SignalType::from_str(&new_type_name)
-      {
-        Ok(new_type) => {
-          model.mdf_data.interfaces[interface_num].registers[index].signal = Some(new_type);
-        },
+        RegisterMsg::ResetValueChanged(index, new_value) => {
+            orders.skip();
 
-        _ => {
-          if new_type_name == TXT_SPEC_IN_FIELDS {
-            model.mdf_data.interfaces[interface_num].registers[index].signal = None;
-          }
-          else {
-            seed::log!("error while converting from string to signal type")
-          }
-        },
-      }
-    },
+            match utils::validate_field(ID_RESET_VALUE, &new_value, |field_value| {
+                utils::option_vectorval_from_str(field_value)
+            }) {
+                Ok(reset_value) => {
+                    model.mdf_data.interfaces[interface_num].registers[index].reset = reset_value
+                }
+                Err(_) => (),
+            }
+        }
 
-    RegisterMsg::ResetValueChanged(index, new_value) => {
-      orders.skip();
+        RegisterMsg::LocationChanged(index, new_location_name) => {
+            match LocationType::from_str(&new_location_name) {
+                Ok(location) => {
+                    model.mdf_data.interfaces[interface_num].registers[index].location =
+                        Some(location);
+                    // put a default value for use_write_enabled if it is not set yet
+                    if (location == LocationType::Core)
+                        && (model.mdf_data.interfaces[interface_num].registers[index].access
+                            != Some(AccessType::RO))
+                        && (model.mdf_data.interfaces[interface_num].registers[index]
+                            .core_signal_properties
+                            .use_write_enable
+                            .is_none())
+                    {
+                        model.mdf_data.interfaces[interface_num].registers[index]
+                            .core_signal_properties
+                            .use_write_enable = Some(true);
+                    }
+                }
 
-      match utils::validate_field(
-          ID_RESET_VALUE, &new_value, | field_value | utils::option_vectorval_from_str(field_value)) {
-        Ok(reset_value) => model.mdf_data.interfaces[interface_num].registers[index].reset = reset_value,
-        Err(_) => ()
-      }
-    },
+                _ => {
+                    if new_location_name == TXT_SPEC_IN_FIELDS {
+                        model.mdf_data.interfaces[interface_num].registers[index].location = None;
+                    } else {
+                        seed::log!("error while converting from string to location")
+                    }
+                }
+            }
+        }
 
-    RegisterMsg::LocationChanged(index, new_location_name) => {
-      match LocationType::from_str(&new_location_name)
-      {
-        Ok(location) => {
-          model.mdf_data.interfaces[interface_num].registers[index].location = Some(location);
-          // put a default value for use_write_enabled if it is not set yet
-          if (location == LocationType::Core) && 
-              (model.mdf_data.interfaces[interface_num].registers[index].access != Some(AccessType::RO)) &&
-              (model.mdf_data.interfaces[interface_num].registers[index].core_signal_properties.use_write_enable.is_none())
-          {
-            model.mdf_data.interfaces[interface_num].registers[index].core_signal_properties.use_write_enable = Some(true);
-          }
-        },
+        RegisterMsg::CorePropReadEnable(index, event) => {
+            model.mdf_data.interfaces[interface_num].registers[index]
+                .core_signal_properties
+                .use_read_enable = Some(utils::target_checked(&event));
+        }
 
-        _ => {
-          if new_location_name == TXT_SPEC_IN_FIELDS {
-            model.mdf_data.interfaces[interface_num].registers[index].location = None;
-          }
-          else {
-            seed::log!("error while converting from string to location")
-          }
-        },
-      }
-    },
-
-    RegisterMsg::CorePropReadEnable(index, event) => {
-
-      model.mdf_data.interfaces[interface_num].registers[index]
-          .core_signal_properties.use_read_enable = 
-          Some(utils::target_checked(&event));
+        RegisterMsg::CorePropWriteEnable(index, event) => {
+            model.mdf_data.interfaces[interface_num].registers[index]
+                .core_signal_properties
+                .use_write_enable = Some(utils::target_checked(&event));
+        }
     }
-
-    RegisterMsg::CorePropWriteEnable(index, event) => {
-
-      model.mdf_data.interfaces[interface_num].registers[index]
-          .core_signal_properties.use_write_enable = 
-          Some(utils::target_checked(&event));
-    }
-  }
 }
-
 
 // ------ ------
 //     View
 // ------ ------
 
-
 /// build an html view for the register
 pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Node<Msg> {
-  let interface = &model.mdf_data.interfaces[interface_index];
-  let register = &interface.registers[register_index];
+    let interface = &model.mdf_data.interfaces[interface_index];
+    let register = &interface.registers[register_index];
 
-  div![
+    div![
     div![
       C!["my-3"],
       a![
@@ -620,12 +664,12 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                       At::Id => ID_ADDR_STRIDE_INCR,
                     },
                     match &register.address {
-                      Address::Stride(s) => 
+                      Address::Stride(s) =>
                         match &s.increment {
                           None => attrs!{ At::Value => ""},
                           Some(incr) => attrs!{ At::Value => &incr.to_string()},
                         }
-                        
+
                       _ => attrs!{At::Disabled => "disabled"},
                     },
                     input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::AddrStrideIncrementChanged(register_index, input))),
@@ -637,7 +681,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                 ],
               ],
             ]
-          ],    
+          ],
         ],
       ],
       div![
@@ -661,7 +705,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
             input_ev(Ev::Change, move | input | Msg::Register(interface_index,RegisterMsg::SummaryChanged(register_index, input))),
           ]
         ]
-      ], 
+      ],
       div![
         C!["form-group row"],
         label![
@@ -683,7 +727,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
             input_ev(Ev::Change, move | input | Msg::Register(interface_index,RegisterMsg::DescriptionChanged(register_index, input))),
           ]
         ]
-      ], 
+      ],
       div![
         C!["form-group row"],
         label![
@@ -749,7 +793,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                   At::Selected => "selected",
                 }),
               access_type.to_string(),
-            ] 
+            ]
           ).collect::<Vec<_>>(),
         ]
       ]
@@ -789,7 +833,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                   At::Selected => "selected",
                 }),
               signal_type.to_string(),
-            ] 
+            ]
           ).collect::<Vec<_>>(),
         ]
       ]
@@ -823,7 +867,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
         ],
       ],
     ],
-  
+
     div![
       C!["form-group row"],
       label![
@@ -859,7 +903,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                   At::Selected => "selected",
                 }),
               location_type.to_string(),
-            ] 
+            ]
           ).collect::<Vec<_>>(),
         ]
       ]

@@ -7,7 +7,6 @@ use wasm_bindgen_futures::JsFuture;
 
 /// make the user download some data as a text file
 pub fn download_text(filename: &str, data: &str) {
-
     let encoded_data: String = js_sys::encode_uri_component(&data).into();
     let mime = String::from("data:text/plain;charset=utf-8");
 
@@ -33,12 +32,11 @@ pub fn download_text(filename: &str, data: &str) {
 }
 
 /// makes a file selector appear to let the user choose a file to upload
-pub fn choose_upload(input_element_id : &str)
-{
+pub fn choose_upload(input_element_id: &str) {
     let element = seed::document()
         .get_element_by_id(input_element_id)
         .unwrap();
-    
+
     // simulate a click on it
     let event = seed::document()
         .create_event("MouseEvents")
@@ -47,13 +45,17 @@ pub fn choose_upload(input_element_id : &str)
         .ok()
         .expect("should be a MouseEvent");
     event.init_mouse_event_with_can_bubble_arg_and_cancelable_arg("click", true, true);
-    let _ = element.dispatch_event(&event);   
+    let _ = element.dispatch_event(&event);
 }
 
-/// starts a future to upload the text file and deliver it as a UploadText message 
-pub fn upload_file(event : web_sys::Event, orders: &mut impl Orders<super::Msg>)
-{
-    let target = event.target().unwrap().dyn_into::<web_sys::HtmlInputElement>().ok().unwrap();
+/// starts a future to upload the text file and deliver it as a UploadText message
+pub fn upload_file(event: web_sys::Event, orders: &mut impl Orders<super::Msg>) {
+    let target = event
+        .target()
+        .unwrap()
+        .dyn_into::<web_sys::HtmlInputElement>()
+        .ok()
+        .unwrap();
     let file = target.files().unwrap().get(0).expect("should get a file");
     orders.perform_cmd(async move {
         let text = JsFuture::from(file.text())

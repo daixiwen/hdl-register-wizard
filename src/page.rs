@@ -1,7 +1,7 @@
 //! web app pages
 
 pub mod edit;
-pub mod settings;
+pub mod html_elements;
 pub mod interface;
 pub mod register;
-pub mod html_elements;
+pub mod settings;

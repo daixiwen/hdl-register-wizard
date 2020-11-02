@@ -1,7 +1,6 @@
 #[cfg(test)]
-mod vector_value;
+mod address;
 #[cfg(test)]
 mod opt_vec_str;
 #[cfg(test)]
-mod address;
-
+mod vector_value;
