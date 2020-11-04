@@ -6,6 +6,7 @@ use super::super::mdf_format;
 use super::super::Model;
 use super::super::Msg;
 use super::super::Urls;
+use super::html_elements;
 use super::interface::InterfaceMsg;
 use super::interface::InterfacePage;
 use seed::{prelude::*, *};
@@ -44,60 +45,17 @@ pub fn view(model: &Model) -> Node<Msg> {
         ],
         div![
             h3![C!["my-2"], "Model Description File"],
-            div![div![
-                C!["form-group row"],
-                label![
-                    C!["col-sm-2 col-form-label"],
-                    attrs! {
-                      At::For => "inputName",
-                    },
-                    "Name"
-                ],
-                div![
-                    C!["col-sm-10"],
-                    input![
-                        C!["form-control"],
-                        attrs! {
-                          At::Type => "text",
-                          At::Id => "inputName",
-                          At::Value => &model.mdf_data.name,
-                        },
-                        //              ev(Ev::Change, |new_text| Msg::Edit(EditMsg::NameChanged(new_text))),
-                        input_ev(Ev::Change, move |input| Msg::Edit(EditMsg::NameChanged(
-                            input
-                        ))),
-                    ]
-                ]
-            ]],
+            html_elements::text_field_full_line(
+                "inputName",
+                "Name",
+                &model.mdf_data.name,
+                move |input| Msg::Edit(EditMsg::NameChanged(input)),
+                None
+            ),
             h3![C!["my-2"], "Interfaces"],
             table![
                 C!["table table-striped"],
-                thead![tr![
-                    th![
-                        attrs! {
-                          At::Scope => "col"
-                        },
-                        "name"
-                    ],
-                    th![
-                        attrs! {
-                          At::Scope => "col"
-                        },
-                        "type"
-                    ],
-                    th![
-                        attrs! {
-                          At::Scope => "col"
-                        },
-                        "description"
-                    ],
-                    th![
-                        attrs! {
-                          At::Scope => "col"
-                        },
-                        "actions"
-                    ],
-                ]],
+                html_elements::table_header(vec!["name", "type", "description", "actions"]),
                 tbody![
                     model
                         .mdf_data
@@ -110,7 +68,7 @@ pub fn view(model: &Model) -> Node<Msg> {
                         td![],
                         td![],
                         td![],
-                        td![in_table_button_url(
+                        td![html_elements::in_table_button_url(
                             "Add",
                             "primary",
                             &Urls::new(&model.base_url).interface(InterfacePage::NewInterface),
@@ -133,57 +91,30 @@ fn interface_table_row(
         td![interface.interface_type.to_string()],
         td![utils::opt_vec_str_to_summary(&interface.description),],
         td![
-            in_table_button_url(
+            html_elements::in_table_button_url(
                 "✎",
                 "primary",
                 &Urls::new(&model.base_url).interface(InterfacePage::Num(index)),
                 true
             ),
-            in_table_button_msg(
+            html_elements::in_table_button_msg(
                 "✖",
                 "danger",
                 Msg::Interface(InterfaceMsg::Delete(index)),
                 true
             ),
-            in_table_button_msg(
+            html_elements::in_table_button_msg(
                 "▲",
                 "primary",
                 Msg::Interface(InterfaceMsg::MoveUp(index)),
                 index != 0
             ),
-            in_table_button_msg(
+            html_elements::in_table_button_msg(
                 "▼",
                 "primary",
                 Msg::Interface(InterfaceMsg::MoveDown(index)),
                 index != model.mdf_data.interfaces.len() - 1
             ),
         ],
-    ]
-}
-
-/// add a button that sends to the given url
-/// TODO: move to html_elements
-pub fn in_table_button_url(label: &str, color: &str, url: &Url, enabled: bool) -> Node<Msg> {
-    a![
-        C![&format!("btn btn-sm mx-1 btn-outline-{}", color)],
-        attrs! {
-          At::Href => url
-        },
-        IF![! enabled => attrs!{ At::Disabled => "disaled"}],
-        label
-    ]
-}
-
-/// add a button that sends the given message
-/// TODO: move to html_elements
-pub fn in_table_button_msg(label: &str, color: &str, msg: Msg, enabled: bool) -> Node<Msg> {
-    button![
-        C![&format!("btn btn-sm mx-1 btn-outline-{}", color)],
-        attrs! {
-          At::Type => "button"
-        },
-        IF![! enabled => attrs!{ At::Disabled => "disaled"}],
-        label,
-        ev(Ev::Click, move |_| msg),
     ]
 }

@@ -13,9 +13,6 @@ use super::super::Urls;
 use super::super::utils;
 use super::html_elements;
 
-use super::edit::in_table_button_msg;
-use super::edit::in_table_button_url;
-
 use super::register;
 
 use std::str::FromStr;
@@ -250,7 +247,7 @@ pub fn view(model: &Model, index: usize) -> Node<Msg> {
                     td![],
                     td![],
                     td![],
-                    td![in_table_button_url(
+                    td![html_elements::in_table_button_url(
                         "Add",
                         "primary",
                         &Urls::new(&model.base_url)
@@ -274,25 +271,25 @@ fn register_table_row(
         td![&register.address.nice_str()],
         td![utils::opt_vec_str_to_summary(&register.summary),],
         td![
-            in_table_button_url(
+            html_elements::in_table_button_url(
                 "✎",
                 "primary",
                 &Urls::new(&model.base_url).register(index, register::RegisterPage::Num(reg_index)),
                 true
             ),
-            in_table_button_msg(
+            html_elements::in_table_button_msg(
                 "✖",
                 "danger",
                 Msg::Register(index, register::RegisterMsg::Delete(reg_index)),
                 true
             ),
-            in_table_button_msg(
+            html_elements::in_table_button_msg(
                 "▲",
                 "primary",
                 Msg::Register(index, register::RegisterMsg::MoveUp(reg_index)),
                 reg_index != 0
             ),
-            in_table_button_msg(
+            html_elements::in_table_button_msg(
                 "▼",
                 "primary",
                 Msg::Register(index, register::RegisterMsg::MoveDown(reg_index)),

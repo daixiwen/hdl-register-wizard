@@ -15,9 +15,9 @@ use super::super::mdf_format::SignalType;
 use super::super::mdf_format::VectorValue;
 
 use super::super::Msg;
-use strum::IntoEnumIterator;
 
 use super::super::utils;
+use super::html_elements;
 
 use std::str::FromStr;
 
@@ -449,28 +449,13 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
       C!["my-2"],
       "Register in Interface ", &interface.name],
     div![
-      div![
-        C!["form-group row"],
-        label![
-          C!["col-sm-2 col-form-label"],
-          attrs!{
-            At::For => "inputName",
-          },
-          "Name"
-        ],
-        div![
-          C!["col-sm-10"],
-          input![
-            C!["form-control"],
-            attrs!{
-              At::Type => "text",
-              At::Id => "inputName",
-              At::Value => &register.name,
-            },
-            input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::NameChanged(register_index, input))),
-          ]
-        ]
-      ],
+        html_elements::text_field_full_line(
+            "inputName",
+            "Name",
+            &register.name,
+            move | input | Msg::Register(interface_index, RegisterMsg::NameChanged(register_index, input)),
+            None
+        ),
       div![
         C!["form-group row"],
         div![
@@ -502,13 +487,13 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
             ]
           ],
           div![
-            C!["form-check"],
+            C!["form-check my-2"],
             div![
-              C!["form-row align-items-center my-2"],
+              C!["form-row align-items-center form-inline"],
               div![
-                C!["col-auto"],
+                C!["col-auto flex-nowrap form-group ml-n4"],
                 input![
-                  C!["form-check-input"],
+                  C!["form-check-input ml-1"],
                   attrs!{
                     At::Type => "radio",
                     At::Name => "addressRadio",
@@ -529,35 +514,17 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                   "Single:"
                 ]
               ],
-              div![
-                C!["col-auto"],
-                label![
-                  C!["col-form-label"],
-                  attrs!{
-                    At::For => ID_ADDR_SINGLE_VALUE,
-                  },
-                  "Value"
-                ],
-              ],
-              div![
-                C!["col-auto"],
-                input![
-                  C!["form-control"],
-                  attrs!{
-                    At::Type => "text",
-                    At::Id => ID_ADDR_SINGLE_VALUE,
-                  },
-                  match &register.address {
-                    Address::Single(v) => attrs!{ At::Value => &v.to_string()},
-                    _ => attrs!{At::Disabled => "disabled"},
-                  },
-                  input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::AddrSingleChanged(register_index, input))),
-                ],
-                div![
-                  C!["invalid-feedback"],
-                  "please use a decimal, hexadecimal (0x*) or binary (0b*) value"
-                ],
-              ],
+              html_elements::text_field_sub_line(
+                ID_ADDR_SINGLE_VALUE,
+                "Value",
+                & match &register.address {
+                    Address::Single(v) => v.to_string(),
+                    _ => String::new() },
+                match &register.address {
+                    Address::Single(_) => false,
+                    _ => true },
+                move | input | Msg::Register(interface_index, RegisterMsg::AddrSingleChanged(register_index, input)),
+                Some("please use a decimal, hexadecimal (0x*) or binary (0b*) value")),
             ],
           ],
           div![
@@ -588,327 +555,136 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                   "Stride:"
                 ],
               ],
-              div![
-                C!["col-auto  flex-nowrap form-group"],
-                label![
-                  C!["col-form-label"],
-                  attrs!{
-                    At::For => ID_ADDR_STRIDE_VALUE,
-                  },
-                  "Start"
-                ],
-                div![
-                  C!["m-2"],
-                  input![
-                    C!["form-control"],
-                    attrs!{
-                      At::Type => "text",
-                      At::Id => ID_ADDR_STRIDE_VALUE,
+              html_elements::text_field_sub_line(
+                  ID_ADDR_STRIDE_VALUE,
+                  "Start",
+                  & match &register.address {
+                      Address::Stride(s) => s.value.to_string(),
+                      _ => String::new(),
                     },
-                    match &register.address {
-                      Address::Stride(s) => attrs!{ At::Value => &s.value.to_string()},
-                      _ => attrs!{At::Disabled => "disabled"},
+                  match &register.address {
+                      Address::Stride(_) => false,
+                      _ => true },
+                  move | input | Msg::Register(interface_index, RegisterMsg::AddrStrideValueChanged(register_index, input)),
+                  Some("please use a decimal, hexadecimal (0x*) or binary (0b*) value")
+              ),
+              html_elements::text_field_sub_line(
+                  ID_ADDR_STRIDE_COUNT,
+                  "Count",
+                  & match &register.address {
+                      Address::Stride(s) => s.count.to_string(),
+                      _ => String::new(),
                     },
-                    input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::AddrStrideValueChanged(register_index, input))),
-                  ],
-                  div![
-                    C!["invalid-feedback"],
-                    "please use a decimal, hexadecimal (0x*) or binary (0b*) value"
-                  ],
-                ],
-              ],
-              div![
-                C!["col-auto flex-nowrap form-group"],
-                label![
-                  C!["col-form-label"],
-                  attrs!{
-                    At::For => ID_ADDR_STRIDE_COUNT,
-                  },
-                  "Count"
-                ],
-                div![
-                  C!["m-2"],
-                  input![
-                    C!["form-control"],
-                    attrs!{
-                      At::Type => "text",
-                      At::Id => ID_ADDR_STRIDE_COUNT,
-                    },
-                    match &register.address {
-                      Address::Stride(s) => attrs!{ At::Value => &s.count.to_string()},
-                      _ => attrs!{At::Disabled => "disabled"},
-                    },
-                    input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::AddrStrideCountChanged(register_index, input))),
-                  ],
-                  div![
-                    C!["invalid-feedback"],
-                    "please use a decimal, hexadecimal (0x*) or binary (0b*) value"
-                  ],
-                ],
-              ],
-              div![
-                C!["col-auto flex-nowrap form-group"],
-                label![
-                  C!["col-form-label"],
-                  attrs!{
-                    At::For => ID_ADDR_STRIDE_INCR,
-                  },
-                  "Increment"
-                ],
-                div![
-                  C!["m-2"],
-                  input![
-                    C!["form-control m-2"],
-                    attrs!{
-                      At::Type => "text",
-                      At::Id => ID_ADDR_STRIDE_INCR,
-                    },
-                    match &register.address {
+                  match &register.address {
+                      Address::Stride(_) => false,
+                      _ => true },
+                  move | input | Msg::Register(interface_index, RegisterMsg::AddrStrideCountChanged(register_index, input)),
+                  Some("please use a decimal, hexadecimal (0x*) or binary (0b*) value")
+              ),
+              html_elements::text_field_sub_line(
+                  ID_ADDR_STRIDE_INCR,
+                  "Increment",
+                  & match &register.address {
                       Address::Stride(s) =>
                         match &s.increment {
-                          None => attrs!{ At::Value => ""},
-                          Some(incr) => attrs!{ At::Value => &incr.to_string()},
-                        }
+                          None => String::new(),
+                          Some(incr) => incr.to_string()},
+                      _ => String::new(),
+                      },
+                  match &register.address {
+                      Address::Stride(_) => false,
+                      _ => true },
+                  move | input | Msg::Register(interface_index, RegisterMsg::AddrStrideIncrementChanged(register_index, input)),
+                  Some("please use a decimal, hexadecimal (0x*) or binary (0b*) value or leave empty for auto")
+              ),
+            ]
+          ],
+        ],
+      ],
+      html_elements::textarea_field(
+          "inputSummary",
+          "Summary",
+          &utils::opt_vec_str_to_textarea(&register.summary),
+          move | input | Msg::Register(interface_index,RegisterMsg::SummaryChanged(register_index, input))
+      ),
+      html_elements::textarea_field(
+          "inputDescription",
+          "Description",
+          &utils::opt_vec_str_to_textarea(&register.description),
+          move | input | Msg::Register(interface_index,RegisterMsg::DescriptionChanged(register_index, input))
+      ),
+    ],
+    div![
+        C!["form-group row"],
+        div![
+            C!["col-sm-2 col-form-label"],
+            "Signal"
+        ],
+        div![
+            C!["col-sm-10"],
+            div![
+                C!["form-row align-items-center form-inline"],
+            html_elements::select_option_field_sub_line(
+                "inputSignal",
+                "type:",
+                &register.signal,
+                TXT_SPEC_IN_FIELDS,
+                move | input | Msg::Register(interface_index, RegisterMsg::SignalTypeChanged(register_index, input))
+            ),
+            html_elements::select_option_field_sub_line(
+                "inputAccess",
+                "access:",
+                &register.access,
+                TXT_SPEC_IN_FIELDS,
+                move | input | Msg::Register(interface_index, RegisterMsg::AccessTypeChanged(register_index, input))
+            ),
+            html_elements::select_option_field_sub_line(
+                "inputLocation",
+                "location:",
+                &register.location,
+                TXT_SPEC_IN_FIELDS,
+                move | input | Msg::Register(interface_index, RegisterMsg::LocationChanged(register_index, input))
+            ),
 
-                      _ => attrs!{At::Disabled => "disabled"},
+            ]
+        ]
+    ],
+
+    div![
+        C!["form-group row"],
+        div![
+            C!["col-sm-2 col-form-label"],
+            "Value"
+        ],
+        div![
+            C!["col-sm-10"],
+            div![
+                C!["form-row align-items-center form-inline"],
+                html_elements::text_field_sub_line(
+                    ID_REG_WIDTH,
+                    "Width (bits):",
+                    & match &register.width {
+                        None => String::new(),
+                        Some(width) => width.to_string(),
                     },
-                    input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::AddrStrideIncrementChanged(register_index, input))),
-                  ],
-                  div![
-                    C!["invalid-feedback"],
-                    "please use a decimal, hexadecimal (0x*) or binary (0b*) value or leave empty for auto"
-                  ],
-                ],
-              ],
+                    false,
+                    move | input | Msg::Register(interface_index, RegisterMsg::WidthChanged(register_index, input)),
+                    Some("please write a decimal value or leave empty for automatic when using fields")
+                ),
+                html_elements::text_field_sub_line(
+                    ID_RESET_VALUE,
+                    "Reset:",
+                    & match &register.reset {
+                        None => String::new(),
+                        Some(value) => value.to_string(),
+                    },
+                    false,
+                    move | input | Msg::Register(interface_index, RegisterMsg::ResetValueChanged(register_index, input)),
+                    Some("please use a decimal, hexadecimal (0x*) or binary (0b*) value or leave empty when using fields")
+                ),
             ]
-          ],
-        ],
-      ],
-      div![
-        C!["form-group row"],
-        label![
-          C!["col-sm-2 col-form-label"],
-          attrs!{
-            At::For => "inputSummary",
-          },
-          "Summary"
-        ],
-        div![
-          C!["col-sm-10"],
-          textarea![
-            C!["form-control"],
-            attrs!{
-              At::Type => "text",
-              At::Id => "inputSummary",
-              At::Value => utils::opt_vec_str_to_textarea(&register.summary),
-            },
-            input_ev(Ev::Change, move | input | Msg::Register(interface_index,RegisterMsg::SummaryChanged(register_index, input))),
-          ]
         ]
-      ],
-      div![
-        C!["form-group row"],
-        label![
-          C!["col-sm-2 col-form-label"],
-          attrs!{
-            At::For => "inputDescription",
-          },
-          "Description"
-        ],
-        div![
-          C!["col-sm-10"],
-          textarea![
-            C!["form-control"],
-            attrs!{
-              At::Type => "text",
-              At::Id => "inputDescription",
-              At::Value => utils::opt_vec_str_to_textarea(&register.description),
-            },
-            input_ev(Ev::Change, move | input | Msg::Register(interface_index,RegisterMsg::DescriptionChanged(register_index, input))),
-          ]
-        ]
-      ],
-      div![
-        C!["form-group row"],
-        label![
-          C!["col-sm-2 col-form-label"],
-          attrs!{
-            At::For => ID_REG_WIDTH,
-          },
-          "Width (bits)"
-        ],
-        div![
-          C!["col-sm-10"],
-          input![
-            C!["form-control"],
-            attrs!{
-              At::Type => "text",
-              At::Id => ID_REG_WIDTH,
-              At::Value => match &register.width {
-                None => String::new(),
-                Some(width) => width.to_string(),
-              },
-            },
-            input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::WidthChanged(register_index, input))),
-          ],
-          div![
-            C!["invalid-feedback"],
-            "please write a decimal value or leave empty for automatic when using fields"
-          ],
-        ]
-      ],
     ],
-    div![
-      C!["form-group row"],
-      label![
-        C!["col-sm-2 col-form-label"],
-        attrs!{
-          At::For => "inputAccess",
-        },
-        "Access type"
-      ],
-      div![
-        C!["col-sm-10"],
-        select![
-          C!["form-control"],
-          attrs!{
-            At::Id => "inputAccess",
-            At::Value => match &register.access {
-              Some(access) => access.to_string(),
-              None => TXT_SPEC_IN_FIELDS.to_string()
-            },
-          },
-          input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::AccessTypeChanged(register_index, input))),
-          option![
-            IF!(&register.access == &Option::<AccessType>::None  =>
-              attrs!{
-                At::Selected => "selected",
-              }),
-            TXT_SPEC_IN_FIELDS,
-          ],
-          AccessType::iter().map(|access_type|
-            option![
-              IF!(&register.access == &Some(access_type)=>
-                attrs!{
-                  At::Selected => "selected",
-                }),
-              access_type.to_string(),
-            ]
-          ).collect::<Vec<_>>(),
-        ]
-      ]
-    ],
-    div![
-      C!["form-group row"],
-      label![
-        C!["col-sm-2 col-form-label"],
-        attrs!{
-          At::For => "inputSignal",
-        },
-        "Signal type"
-      ],
-      div![
-        C!["col-sm-10"],
-        select![
-          C!["form-control"],
-          attrs!{
-            At::Id => "inputSignal",
-            At::Value => match &register.signal {
-              Some(signal) => signal.to_string(),
-              None => TXT_SPEC_IN_FIELDS.to_string()
-            },
-          },
-          input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::SignalTypeChanged(register_index, input))),
-          option![
-            IF!(&register.signal == &Option::<SignalType>::None  =>
-              attrs!{
-                At::Selected => "selected",
-              }),
-            TXT_SPEC_IN_FIELDS,
-          ],
-          SignalType::iter().map(|signal_type|
-            option![
-              IF!(&register.signal == &Some(signal_type)=>
-                attrs!{
-                  At::Selected => "selected",
-                }),
-              signal_type.to_string(),
-            ]
-          ).collect::<Vec<_>>(),
-        ]
-      ]
-    ],
-    div![
-      C!["form-group row"],
-      label![
-        C!["col-sm-2 col-form-label"],
-        attrs!{
-          At::For => ID_RESET_VALUE,
-        },
-        "Reset value"
-      ],
-      div![
-        C!["col-sm-10"],
-        input![
-          C!["form-control"],
-          attrs!{
-            At::Type => "text",
-            At::Id => ID_RESET_VALUE,
-          },
-          match &register.reset {
-            Some(v) => attrs!{ At::Value => &v.to_string()},
-            _ => attrs!{},
-          },
-          input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::ResetValueChanged(register_index, input))),
-        ],
-        div![
-          C!["invalid-feedback"],
-          "please use a decimal, hexadecimal (0x*) or binary (0b*) value"
-        ],
-      ],
-    ],
-
-    div![
-      C!["form-group row"],
-      label![
-        C!["col-sm-2 col-form-label"],
-        attrs!{
-          At::For => "inputLocation",
-        },
-        "Location"
-      ],
-      div![
-        C!["col-sm-10"],
-        select![
-          C!["form-control"],
-          attrs!{
-            At::Id => "inputLocation",
-            At::Value => match &register.location {
-              Some(loc) => loc.to_string(),
-              None => TXT_SPEC_IN_FIELDS.to_string()
-            },
-          },
-          input_ev(Ev::Change, move | input | Msg::Register(interface_index, RegisterMsg::LocationChanged(register_index, input))),
-          option![
-            IF!(&register.location == &Option::<LocationType>::None  =>
-              attrs!{
-                At::Selected => "selected",
-              }),
-            TXT_SPEC_IN_FIELDS,
-          ],
-          LocationType::iter().map(|location_type|
-            option![
-              IF!(&register.location == &Some(location_type)=>
-                attrs!{
-                  At::Selected => "selected",
-                }),
-              location_type.to_string(),
-            ]
-          ).collect::<Vec<_>>(),
-        ]
-      ]
-    ],
-
     div![
       C!["form-group row"],
       label![
