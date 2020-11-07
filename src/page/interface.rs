@@ -233,7 +233,7 @@ pub fn view(model: &Model, index: usize) -> Node<Msg> {
         h3![C!["my-2"], "Registers"],
         table![
             C!["table table-striped"],
-            html_elements::table_header(vec!["name", "address", "summary", "actions"]),
+            html_elements::table_header(vec!["", "name", "address", "summary"]),
             tbody![
                 interface
                     .registers
@@ -244,16 +244,15 @@ pub fn view(model: &Model, index: usize) -> Node<Msg> {
                     ))
                     .collect::<Vec<_>>(),
                 tr![
-                    td![],
-                    td![],
-                    td![],
                     td![html_elements::in_table_button_url(
-                        "Add",
-                        "primary",
+                        "add",
                         &Urls::new(&model.base_url)
                             .register(index, register::RegisterPage::NewRegister),
                         true
                     ),],
+                    td![],
+                    td![],
+                    td![],
                 ]
             ]
         ]
@@ -267,34 +266,39 @@ fn register_table_row(
     register: &mdf_format::Register,
 ) -> Node<Msg> {
     tr![
-        td![&register.name],
-        td![&register.address.nice_str()],
-        td![utils::opt_vec_str_to_summary(&register.summary),],
         td![
-            html_elements::in_table_button_url(
-                "✎",
-                "primary",
-                &Urls::new(&model.base_url).register(index, register::RegisterPage::Num(reg_index)),
-                true
-            ),
-            html_elements::in_table_button_msg(
-                "✖",
-                "danger",
-                Msg::Register(index, register::RegisterMsg::Delete(reg_index)),
-                true
-            ),
-            html_elements::in_table_button_msg(
-                "▲",
-                "primary",
-                Msg::Register(index, register::RegisterMsg::MoveUp(reg_index)),
-                reg_index != 0
-            ),
-            html_elements::in_table_button_msg(
-                "▼",
-                "primary",
-                Msg::Register(index, register::RegisterMsg::MoveDown(reg_index)),
-                reg_index != model.mdf_data.interfaces[index].registers.len() - 1
-            ),
+            div![
+                C!["text-nowrap btn-group"],
+                html_elements::in_table_button_url(
+                    "edit",
+                    &Urls::new(&model.base_url).register(index, register::RegisterPage::Num(reg_index)),
+                    true
+                ),
+                html_elements::in_table_button_msg(
+                    "delete",
+                    Msg::Register(index, register::RegisterMsg::Delete(reg_index)),
+                    true
+                ),
+                html_elements::in_table_button_msg(
+                    "up",
+                    Msg::Register(index, register::RegisterMsg::MoveUp(reg_index)),
+                    reg_index != 0
+                ),
+                html_elements::in_table_button_msg(
+                    "down",
+                    Msg::Register(index, register::RegisterMsg::MoveDown(reg_index)),
+                    reg_index != model.mdf_data.interfaces[index].registers.len() - 1
+                ),
+            ],
         ],
+        td![
+            C!["text-nowrap"],
+            &register.name],
+        td![
+            C!["text-nowrap"],
+            &register.address.nice_str()],
+        td![
+            C!["w-100"],
+            utils::opt_vec_str_to_summary(&register.summary),],
     ]
 }

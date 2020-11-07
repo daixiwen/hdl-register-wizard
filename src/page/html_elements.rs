@@ -215,26 +215,43 @@ pub fn table_header(labels: Vec<&str>) -> Node<Msg> {
 }
 
 /// add a button that sends to the given url
-pub fn in_table_button_url(label: &str, color: &str, url: &Url, enabled: bool) -> Node<Msg> {
+pub fn in_table_button_url(label: &str, url: &Url, enabled: bool) -> Node<Msg> {
+    let url_str = if enabled {
+        url.to_string()
+    }
+    else {
+        "#".to_string()
+    };
+
     a![
-        C![&format!("btn btn-sm mx-1 btn-outline-{}", color)],
+        C![&format!("cstm-toolbar-btn cstm-{}-btn mx-1", label)],
+        IF![enabled => 
+            C![&format!("cstm-{}-btn-enabled", label)]
+        ],
         attrs! {
-          At::Href => url
+            At::Href => &url_str
         },
-        IF![! enabled => attrs!{ At::Disabled => "disaled"}],
-        label
+        span![
+            label,
+        ],
     ]
 }
 
 /// add a button that sends the given message
-pub fn in_table_button_msg(label: &str, color: &str, msg: Msg, enabled: bool) -> Node<Msg> {
-    button![
-        C![&format!("btn btn-sm mx-1 btn-outline-{}", color)],
+pub fn in_table_button_msg(label: &str, msg: Msg, enabled: bool) -> Node<Msg> {
+    a![
+        C![&format!("cstm-toolbar-btn cstm-{}-btn mx-1", label)],
         attrs! {
-          At::Type => "button"
+            At::Href => "#"
         },
-        IF![! enabled => attrs!{ At::Disabled => "disaled"}],
-        label,
-        ev(Ev::Click, move |_| msg),
+        IF![enabled => 
+            C![&format!("cstm-{}-btn-enabled", label)]
+        ],
+        span![
+            label,
+        ],
+        IF![enabled => 
+            ev(Ev::Click, move |_| msg)
+        ],
     ]
 }

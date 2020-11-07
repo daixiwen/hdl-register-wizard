@@ -55,7 +55,7 @@ pub fn view(model: &Model) -> Node<Msg> {
             h3![C!["my-2"], "Interfaces"],
             table![
                 C!["table table-striped"],
-                html_elements::table_header(vec!["name", "type", "description", "actions"]),
+                html_elements::table_header(vec!["", "name", "type", "description"]),
                 tbody![
                     model
                         .mdf_data
@@ -65,15 +65,16 @@ pub fn view(model: &Model) -> Node<Msg> {
                         .map(|(index, interface)| interface_table_row(&model, index, &interface))
                         .collect::<Vec<_>>(),
                     tr![
-                        td![],
-                        td![],
-                        td![],
                         td![html_elements::in_table_button_url(
-                            "Add",
-                            "primary",
+                            "add",
                             &Urls::new(&model.base_url).interface(InterfacePage::NewInterface),
                             true
                         ),],
+                        td![],
+                        td![],
+                        td![
+                            C!["w-100"],
+                        ],
                     ]
                 ]
             ]
@@ -87,34 +88,39 @@ fn interface_table_row(
     interface: &mdf_format::Interface,
 ) -> Node<Msg> {
     tr![
-        td![&interface.name],
-        td![interface.interface_type.to_string()],
-        td![utils::opt_vec_str_to_summary(&interface.description),],
         td![
-            html_elements::in_table_button_url(
-                "✎",
-                "primary",
-                &Urls::new(&model.base_url).interface(InterfacePage::Num(index)),
-                true
-            ),
-            html_elements::in_table_button_msg(
-                "✖",
-                "danger",
-                Msg::Interface(InterfaceMsg::Delete(index)),
-                true
-            ),
-            html_elements::in_table_button_msg(
-                "▲",
-                "primary",
-                Msg::Interface(InterfaceMsg::MoveUp(index)),
-                index != 0
-            ),
-            html_elements::in_table_button_msg(
-                "▼",
-                "primary",
-                Msg::Interface(InterfaceMsg::MoveDown(index)),
-                index != model.mdf_data.interfaces.len() - 1
-            ),
+            div![
+                C!["text-nowrap btn-group"],
+                html_elements::in_table_button_url(
+                    "edit",
+                    &Urls::new(&model.base_url).interface(InterfacePage::Num(index)),
+                    true
+                ),
+                html_elements::in_table_button_msg(
+                    "delete",
+                    Msg::Interface(InterfaceMsg::Delete(index)),
+                    true
+                ),
+                html_elements::in_table_button_msg(
+                    "up",
+                    Msg::Interface(InterfaceMsg::MoveUp(index)),
+                    index != 0
+                ),
+                html_elements::in_table_button_msg(
+                    "down",
+                    Msg::Interface(InterfaceMsg::MoveDown(index)),
+                    index != model.mdf_data.interfaces.len() - 1
+                ),
+            ]
         ],
+        td![
+            C!["text-nowrap"],
+            &interface.name],
+        td![
+            C!["text-nowrap"],
+            interface.interface_type.to_string()],
+        td![
+            C!["w-100"],
+            utils::opt_vec_str_to_summary(&interface.description),],
     ]
 }
