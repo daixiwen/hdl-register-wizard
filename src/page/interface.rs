@@ -185,14 +185,12 @@ pub fn view(model: &Model, index: usize) -> Node<Msg> {
     div![
         // Top buttons
         div![
-            C!["my-3"],
-            a![
-                C!["btn btn-primary"],
-                attrs! {
-                  At::Href => super::super::Urls::new(&model.base_url).from_page_type(PageType::Edit),
-                },
-                "Back"
-            ]
+            C!["my-3 cstm-big-btn"],
+            html_elements::toolbar_button_url(
+                "back",
+                &super::super::Urls::new(&model.base_url).from_page_type(PageType::Edit),
+                true
+            ),
         ],
         // Interface fields
         h3![C!["my-2"], "Interface"],
@@ -244,7 +242,9 @@ pub fn view(model: &Model, index: usize) -> Node<Msg> {
                     ))
                     .collect::<Vec<_>>(),
                 tr![
-                    td![html_elements::in_table_button_url(
+                    td![
+                        C!["cstm-small-btn"],
+                        html_elements::toolbar_button_url(
                         "add",
                         &Urls::new(&model.base_url)
                             .register(index, register::RegisterPage::NewRegister),
@@ -268,23 +268,23 @@ fn register_table_row(
     tr![
         td![
             div![
-                C!["text-nowrap btn-group"],
-                html_elements::in_table_button_url(
+                C!["text-nowrap btn-group cstm-small-btn"],
+                html_elements::toolbar_button_url(
                     "edit",
                     &Urls::new(&model.base_url).register(index, register::RegisterPage::Num(reg_index)),
                     true
                 ),
-                html_elements::in_table_button_msg(
+                html_elements::toolbar_button_msg(
                     "delete",
                     Msg::Register(index, register::RegisterMsg::Delete(reg_index)),
                     true
                 ),
-                html_elements::in_table_button_msg(
+                html_elements::toolbar_button_msg(
                     "up",
                     Msg::Register(index, register::RegisterMsg::MoveUp(reg_index)),
                     reg_index != 0
                 ),
-                html_elements::in_table_button_msg(
+                html_elements::toolbar_button_msg(
                     "down",
                     Msg::Register(index, register::RegisterMsg::MoveDown(reg_index)),
                     reg_index != model.mdf_data.interfaces[index].registers.len() - 1

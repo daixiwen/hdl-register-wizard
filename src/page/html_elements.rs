@@ -215,7 +215,7 @@ pub fn table_header(labels: Vec<&str>) -> Node<Msg> {
 }
 
 /// add a button that sends to the given url
-pub fn in_table_button_url(label: &str, url: &Url, enabled: bool) -> Node<Msg> {
+pub fn toolbar_button_url(label: &str, url: &Url, enabled: bool) -> Node<Msg> {
     let url_str = if enabled {
         url.to_string()
     }
@@ -238,7 +238,7 @@ pub fn in_table_button_url(label: &str, url: &Url, enabled: bool) -> Node<Msg> {
 }
 
 /// add a button that sends the given message
-pub fn in_table_button_msg(label: &str, msg: Msg, enabled: bool) -> Node<Msg> {
+pub fn toolbar_button_msg(label: &str, msg: Msg, enabled: bool) -> Node<Msg> {
     a![
         C![&format!("cstm-toolbar-btn cstm-{}-btn mx-1", label)],
         attrs! {

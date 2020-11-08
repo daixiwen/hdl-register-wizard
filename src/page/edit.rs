@@ -34,14 +34,12 @@ pub fn update(msg: EditMsg, model: &mut Model, orders: &mut impl Orders<Msg>) {
 pub fn view(model: &Model) -> Node<Msg> {
     div![
         div![
-            C!["my-3"],
-            button![
-                attrs! {
-                  At::Type => "button",
-                  At::Class => "btn btn-primary",
-                },
-                "New Model"
-            ]
+            C!["my-3 cstm-big-btn"],
+            html_elements::toolbar_button_url(
+                "new",
+                &Urls::new(&model.base_url).home(),
+                true
+            ),
         ],
         div![
             h3![C!["my-2"], "Model Description File"],
@@ -65,7 +63,9 @@ pub fn view(model: &Model) -> Node<Msg> {
                         .map(|(index, interface)| interface_table_row(&model, index, &interface))
                         .collect::<Vec<_>>(),
                     tr![
-                        td![html_elements::in_table_button_url(
+                        td![
+                            C!["cstm-small-btn"],
+                            html_elements::toolbar_button_url(
                             "add",
                             &Urls::new(&model.base_url).interface(InterfacePage::NewInterface),
                             true
@@ -90,23 +90,23 @@ fn interface_table_row(
     tr![
         td![
             div![
-                C!["text-nowrap btn-group"],
-                html_elements::in_table_button_url(
+                C!["text-nowrap btn-group cstm-small-btn"],
+                html_elements::toolbar_button_url(
                     "edit",
                     &Urls::new(&model.base_url).interface(InterfacePage::Num(index)),
                     true
                 ),
-                html_elements::in_table_button_msg(
+                html_elements::toolbar_button_msg(
                     "delete",
                     Msg::Interface(InterfaceMsg::Delete(index)),
                     true
                 ),
-                html_elements::in_table_button_msg(
+                html_elements::toolbar_button_msg(
                     "up",
                     Msg::Interface(InterfaceMsg::MoveUp(index)),
                     index != 0
                 ),
-                html_elements::in_table_button_msg(
+                html_elements::toolbar_button_msg(
                     "down",
                     Msg::Interface(InterfaceMsg::MoveDown(index)),
                     index != model.mdf_data.interfaces.len() - 1
