@@ -183,15 +183,6 @@ pub fn view(model: &Model, index: usize) -> Node<Msg> {
     };
 
     div![
-        // Top buttons
-        div![
-            C!["my-3 cstm-big-btn"],
-            html_elements::toolbar_button_url(
-                "back",
-                &super::super::Urls::new(&model.base_url).from_page_type(PageType::Edit),
-                true
-            ),
-        ],
         // Interface fields
         h3![C!["my-2"], "Interface"],
         html_elements::text_field_full_line(

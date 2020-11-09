@@ -2,6 +2,10 @@
 #![allow(clippy::wildcard_imports)]
 
 use seed::{prelude::*, *};
+use super::PageType;
+use super::Urls;
+use super::page::html_elements;
+use super::page;
 
 /// structure used to describe a menu entry when building the menu in HTML
 pub struct MenuEntry<'a> {
@@ -56,32 +60,47 @@ pub fn navbar(model: &super::Model) -> Node<super::Msg> {
         },
     ];
 
-    nav![
-        C!["navbar navbar-expand-lg navbar-dark bg-dark"],
-        div![C!["navbar-brand"], "RegWizard"],
-        button![
-            C!["navbar-toggler"],
-            attrs! {
-                At::Type => "button",
-                At::from("data-toggle") => "collapse",
-                At::from("data-target") => "#navbarSupportedContent",
-                At::AriaControls => "navbarSupportedContent",
-                At::AriaExpanded => "false",
-                At::AriaLabel => "Toggle navigation"
-            },
-            span![C!["navbar-toggler-icon"]]
-        ],
-        div![
-            C!["collapse navbar-collapse"],
-            attrs! {At::Id => "navbarSupportedContent"},
-            ul![
-                C!["navbar-nav mr-auto"],
-                navbar_dropdown_menu("File", file_menu_entries),
-                navbar_item("Edit", super::PageType::Edit, model),
-                navbar_dropdown_menu("Export", Vec::<MenuEntry>::new()),
-                navbar_item("Settings", super::PageType::Settings, model),
+    div![
+        C!["fixed-top"],
+        nav![
+            C!["navbar navbar-expand-lg navbar-dark bg-dark"],
+            div![C!["navbar-brand"], "RegWizard"],
+            button![
+                C!["navbar-toggler"],
+                attrs! {
+                    At::Type => "button",
+                    At::from("data-toggle") => "collapse",
+                    At::from("data-target") => "#navbarSupportedContent",
+                    At::AriaControls => "navbarSupportedContent",
+                    At::AriaExpanded => "false",
+                    At::AriaLabel => "Toggle navigation"
+                },
+                span![C!["navbar-toggler-icon"]]
+            ],
+            div![
+                C!["collapse navbar-collapse"],
+                attrs! {At::Id => "navbarSupportedContent"},
+                ul![
+                    C!["navbar-nav mr-auto"],
+                    navbar_dropdown_menu("File", file_menu_entries),
+                    navbar_item("Edit", super::PageType::Edit, model),
+                    navbar_dropdown_menu("Export", Vec::<MenuEntry>::new()),
+                    navbar_item("Settings", super::PageType::Settings, model),
+                ],
             ],
         ],
+        div![
+            C!["row bg-light"],
+            match model.active_page {
+                PageType::Edit | PageType::Interface(_) | PageType::Register(_, _) =>
+                    div![C!["col-md3 col-xl-2 mx-3 text-secondary"], " ",],
+                _ => empty![],
+            },
+            div![
+                C!["col"],
+                top_toolbar(model),
+            ]
+        ]
     ]
 }
 
@@ -137,7 +156,7 @@ pub fn navbar_dropdown_menu(label: &str, entries: Vec<MenuEntry>) -> Node<super:
     ]
 }
 
-/// geterate the HTML description of a single entry in the submenu
+/// generate the HTML description of a single entry in the submenu
 fn navbar_dropdown_menu_entry(entry: &MenuEntry) -> Node<super::Msg> {
     let command = entry.command;
 
@@ -148,5 +167,127 @@ fn navbar_dropdown_menu_entry(entry: &MenuEntry) -> Node<super::Msg> {
         },
         ev(Ev::Click, move |_| super::Msg::Menu(command)),
         entry.label
+    ]
+}
+
+/// generate the icons toolbar
+fn top_toolbar(model: &super::Model) -> Node<super::Msg> {
+    // find the different urls
+    let page_back = match model.active_page {
+        PageType::Edit                        => None,
+        PageType::Interface(_)                => Some(PageType::Edit),
+        PageType::Register(interface_num, _)  => Some(PageType::Interface(interface_num)),
+        PageType::Settings                    => None,
+        _                           => None,
+    };
+    let page_prev = match model.active_page {
+        PageType::Edit                        => None,
+        PageType::Interface(interface_num) => 
+            if interface_num > 0
+            {
+                Some(PageType::Interface(interface_num-1))
+            }
+            else {
+                None
+            },
+        PageType::Register(interface_num, reg_num) =>             
+            if reg_num > 0
+            {
+                Some(PageType::Register(interface_num,reg_num-1))
+            }
+            else {
+                None
+            },
+        PageType::Settings                    => None,
+        _                                     => None,
+    };
+    let page_next = match model.active_page {
+        PageType::Edit                        => None,
+        PageType::Interface(interface_num) => 
+            if interface_num < model.mdf_data.interfaces.len()-1
+            {
+                Some(PageType::Interface(interface_num+1))
+            }
+            else {
+                None
+            },
+        PageType::Register(interface_num, reg_num) =>             
+            if interface_num < model.mdf_data.interfaces.len() &&
+                reg_num < model.mdf_data.interfaces[interface_num].registers.len()-1
+            {
+                Some(PageType::Register(interface_num,reg_num+1))
+            }
+            else {
+                None
+            },
+        PageType::Settings                    => None,
+        _                                     => None,
+    };
+    let url_new = match model.active_page {
+        PageType::Edit                        => None,
+        PageType::Interface(_)                =>
+            Some(Urls::new(&model.base_url).interface(page::interface::InterfacePage::NewInterface)),
+        PageType::Register(interface_num, _)  =>             
+            Some(Urls::new(&model.base_url)
+                            .register(interface_num, page::register::RegisterPage::NewRegister)),
+        PageType::Settings                    => None,
+        _                                     => None,
+    };
+    div![
+        C!["my-1 cstm-big-btn"],
+        IF![model.active_page == PageType::Edit =>
+            html_elements::toolbar_button_url(
+                "new",
+                &Urls::new(&model.base_url).home(),
+                true
+            )
+        ],
+        match page_back {
+            Some(page)  =>    
+                html_elements::toolbar_button_url(
+                    "back",
+                    &Urls::new(&model.base_url).from_page_type(page),
+                    true
+            ),
+
+            None =>
+                empty!(),
+        },
+        match page_prev {
+            Some(page)  =>    
+                html_elements::toolbar_button_url(
+                    "left",
+                    &Urls::new(&model.base_url).from_page_type(page),
+                    true
+                ),
+
+            None =>
+                html_elements::toolbar_button_url(
+                    "left",
+                    &model.base_url,
+                    false
+                )
+        },
+        match page_next {
+            Some(page)  =>    
+                html_elements::toolbar_button_url(
+                    "right",
+                    &Urls::new(&model.base_url).from_page_type(page),
+                    true
+                ),
+            None =>
+                html_elements::toolbar_button_url(
+                    "right",
+                    &model.base_url,
+                    false
+                )
+        },
+        IF!(url_new.is_some() =>
+            html_elements::toolbar_button_url(
+                "add",
+                &url_new.unwrap(),
+                true
+            )
+        )
     ]
 }

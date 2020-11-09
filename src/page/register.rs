@@ -435,14 +435,6 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
     let register = &interface.registers[register_index];
 
     div![
-    div![
-        C!["my-3  cstm-big-btn"],
-        html_elements::toolbar_button_url(
-            "back",
-            &super::super::Urls::new(&model.base_url).from_page_type(PageType::Interface(interface_index)),
-            true
-        ),
-    ],
     h3![
       C!["my-2"],
       "Register in Interface ", &interface.name],
