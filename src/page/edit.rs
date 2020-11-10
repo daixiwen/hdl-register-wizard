@@ -34,7 +34,6 @@ pub fn update(msg: EditMsg, model: &mut Model, orders: &mut impl Orders<Msg>) {
 pub fn view(model: &Model) -> Node<Msg> {
     div![
         div![
-            h3![C!["my-2"], "Model Description File"],
             html_elements::text_field_full_line(
                 "inputName",
                 "Name",

@@ -184,7 +184,6 @@ pub fn view(model: &Model, index: usize) -> Node<Msg> {
 
     div![
         // Interface fields
-        h3![C!["my-2"], "Interface"],
         html_elements::text_field_full_line(
             "inputName",
             "Name",
@@ -192,32 +191,45 @@ pub fn view(model: &Model, index: usize) -> Node<Msg> {
             move |input| Msg::Interface(InterfaceMsg::NameChanged(index, input)),
             None
         ),
-        html_elements::select_field_full_line(
-            "inputType",
-            "Type",
-            &interface.interface_type,
-            move |input| Msg::Interface(InterfaceMsg::TypeChanged(index, input))
-        ),
         html_elements::textarea_field(
             "inputDescription",
             "Description",
             &utils::opt_vec_str_to_textarea(&interface.description),
             move |input| Msg::Interface(InterfaceMsg::DescriptionChanged(index, input))
         ),
-        html_elements::text_field_full_line(
-            ID_ADDRESS_WIDTH,
-            "Address width",
-            &address_width_value,
-            move |input| Msg::Interface(InterfaceMsg::AddressWitdhChanged(index, input)),
-            Some("please write a decimal value or leave empty for automatic")
-        ),
-        html_elements::text_field_full_line(
-            ID_DATA_WIDTH,
-            "Data width",
-            &data_width_value,
-            move |input| Msg::Interface(InterfaceMsg::DataWidthChanged(index, input)),
-            Some("please write a decimal value or leave empty for automatic")
-        ),
+        div![
+            C!["form-group row"],
+            div![
+                C!["col-sm-2 col-form-label"],
+                "Parameters"
+            ],
+            div![
+                C!["col-sm-10"],
+                div![
+                    C!["form-row align-items-center form-inline ml-4"],
+                    html_elements::select_field_full_line(
+                        "inputType",
+                        "Protocol",
+                        &interface.interface_type,
+                        move |input| Msg::Interface(InterfaceMsg::TypeChanged(index, input))
+                    ),
+                    html_elements::text_field_full_line(
+                        ID_ADDRESS_WIDTH,
+                        "Address width",
+                        &address_width_value,
+                        move |input| Msg::Interface(InterfaceMsg::AddressWitdhChanged(index, input)),
+                        Some("please write a decimal value or leave empty for automatic")
+                    ),
+                    html_elements::text_field_full_line(
+                        ID_DATA_WIDTH,
+                        "Data width",
+                        &data_width_value,
+                        move |input| Msg::Interface(InterfaceMsg::DataWidthChanged(index, input)),
+                        Some("please write a decimal value or leave empty for automatic")
+                    )
+                ]
+            ]
+        ],
         // Registers table
         h3![C!["my-2"], "Registers"],
         table![

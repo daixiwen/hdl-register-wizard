@@ -200,7 +200,7 @@ fn view(model: &Model) -> Node<Msg> {
         navigation::navbar(model),
         div![
             C!["container-fluid"],
-            style![St::MarginTop => "6em"],
+            style![St::MarginTop => "7.5em"],
             div![
                 C!["row"],
                 match model.active_page {

@@ -234,60 +234,87 @@ fn top_toolbar(model: &super::Model) -> Node<super::Msg> {
         _                                     => None,
     };
     div![
-        C!["my-1 cstm-big-btn"],
-        IF![model.active_page == PageType::Edit =>
-            html_elements::toolbar_button_url(
-                "new",
-                &Urls::new(&model.base_url).home(),
-                true
-            )
+        C!["my-1"],
+        span![
+            C!["h2 mr-4"],
+            match model.active_page {
+                PageType::Edit                        => "File summary".to_string(),
+                PageType::Interface(_)                => "Interface".to_string(),
+                PageType::Register(interface_num, _)  =>             
+                    {
+                        let interface_name = if interface_num < model.mdf_data.interfaces.len() {
+                            &model.mdf_data.interfaces[interface_num].name
+                        }
+                        else {
+                            ""
+                        };
+                        if interface_name.is_empty() {
+                            "Register".to_string()
+                        }
+                        else {
+                            format!("{} / register", interface_name)
+                        }
+                    },
+                PageType::Settings                    => "Settings".to_string(),
+                PageType::NotFound                    => "Not found".to_string(),
+            }
         ],
-        match page_back {
-            Some(page)  =>    
+        span![
+            C!["cstm-big-btn"],
+            IF![model.active_page == PageType::Edit =>
                 html_elements::toolbar_button_url(
-                    "back",
-                    &Urls::new(&model.base_url).from_page_type(page),
+                    "new",
+                    &Urls::new(&model.base_url).home(),
                     true
-            ),
-
-            None =>
-                empty!(),
-        },
-        match page_prev {
-            Some(page)  =>    
-                html_elements::toolbar_button_url(
-                    "left",
-                    &Urls::new(&model.base_url).from_page_type(page),
-                    true
+                )
+            ],
+            match page_back {
+                Some(page)  =>    
+                    html_elements::toolbar_button_url(
+                        "back",
+                        &Urls::new(&model.base_url).from_page_type(page),
+                        true
                 ),
 
-            None =>
+                None =>
+                    empty!(),
+            },
+            match page_prev {
+                Some(page)  =>    
+                    html_elements::toolbar_button_url(
+                        "left",
+                        &Urls::new(&model.base_url).from_page_type(page),
+                        true
+                    ),
+
+                None =>
+                    html_elements::toolbar_button_url(
+                        "left",
+                        &model.base_url,
+                        false
+                    )
+            },
+            match page_next {
+                Some(page)  =>    
+                    html_elements::toolbar_button_url(
+                        "right",
+                        &Urls::new(&model.base_url).from_page_type(page),
+                        true
+                    ),
+                None =>
+                    html_elements::toolbar_button_url(
+                        "right",
+                        &model.base_url,
+                        false
+                    )
+            },
+            IF!(url_new.is_some() =>
                 html_elements::toolbar_button_url(
-                    "left",
-                    &model.base_url,
-                    false
-                )
-        },
-        match page_next {
-            Some(page)  =>    
-                html_elements::toolbar_button_url(
-                    "right",
-                    &Urls::new(&model.base_url).from_page_type(page),
+                    "add",
+                    &url_new.unwrap(),
                     true
-                ),
-            None =>
-                html_elements::toolbar_button_url(
-                    "right",
-                    &model.base_url,
-                    false
                 )
-        },
-        IF!(url_new.is_some() =>
-            html_elements::toolbar_button_url(
-                "add",
-                &url_new.unwrap(),
-                true
             )
-        )
+        ]
     ]
 }

@@ -435,9 +435,6 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
     let register = &interface.registers[register_index];
 
     div![
-    h3![
-      C!["my-2"],
-      "Register in Interface ", &interface.name],
     div![
         html_elements::text_field_full_line(
             "inputName",
@@ -614,28 +611,27 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
             C!["col-sm-10"],
             div![
                 C!["form-row align-items-center form-inline"],
-            html_elements::select_option_field_sub_line(
-                "inputSignal",
-                "type:",
-                &register.signal,
-                TXT_SPEC_IN_FIELDS,
-                move | input | Msg::Register(interface_index, RegisterMsg::SignalTypeChanged(register_index, input))
-            ),
-            html_elements::select_option_field_sub_line(
-                "inputAccess",
-                "access:",
-                &register.access,
-                TXT_SPEC_IN_FIELDS,
-                move | input | Msg::Register(interface_index, RegisterMsg::AccessTypeChanged(register_index, input))
-            ),
-            html_elements::select_option_field_sub_line(
-                "inputLocation",
-                "location:",
-                &register.location,
-                TXT_SPEC_IN_FIELDS,
-                move | input | Msg::Register(interface_index, RegisterMsg::LocationChanged(register_index, input))
-            ),
-
+                html_elements::select_option_field_sub_line(
+                    "inputSignal",
+                    "Type:",
+                    &register.signal,
+                    TXT_SPEC_IN_FIELDS,
+                    move | input | Msg::Register(interface_index, RegisterMsg::SignalTypeChanged(register_index, input))
+                ),
+                html_elements::select_option_field_sub_line(
+                    "inputAccess",
+                    "Access:",
+                    &register.access,
+                    TXT_SPEC_IN_FIELDS,
+                    move | input | Msg::Register(interface_index, RegisterMsg::AccessTypeChanged(register_index, input))
+                ),
+                html_elements::select_option_field_sub_line(
+                    "inputLocation",
+                    "Location:",
+                    &register.location,
+                    TXT_SPEC_IN_FIELDS,
+                    move | input | Msg::Register(interface_index, RegisterMsg::LocationChanged(register_index, input))
+                ),
             ]
         ]
     ],

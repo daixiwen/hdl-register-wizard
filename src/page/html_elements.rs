@@ -228,6 +228,9 @@ pub fn toolbar_button_url(label: &str, url: &Url, enabled: bool) -> Node<Msg> {
         IF![enabled => 
             C![&format!("cstm-{}-btn-enabled", label)]
         ],
+        IF![!enabled => 
+            C![&format!("cstm-{}-btn-disabled", label)]
+        ],
         attrs! {
             At::Href => &url_str
         },
@@ -246,6 +249,9 @@ pub fn toolbar_button_msg(label: &str, msg: Msg, enabled: bool) -> Node<Msg> {
         },
         IF![enabled => 
             C![&format!("cstm-{}-btn-enabled", label)]
+        ],
+        IF![!enabled => 
+            C![&format!("cstm-{}-btn-disabled", label)]
         ],
         span![
             label,
