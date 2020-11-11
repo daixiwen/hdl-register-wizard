@@ -16,6 +16,7 @@ pub struct MenuEntry<'a> {
 /// menu commands, received as messages
 #[derive(Clone, Copy)]
 pub enum MenuCommand {
+    NewFile,
     LoadFile,
     SaveFile,
 }
@@ -41,6 +42,9 @@ pub fn do_menu(
             super::file_io::choose_upload(super::FILE_INPUT_ID);
             orders.skip();
         }
+        MenuCommand::NewFile => {
+            orders.skip();
+        }
     }
 }
 
@@ -50,6 +54,10 @@ pub fn do_menu(
 /// write the top bar, including the menu, in the HTML document
 pub fn navbar(model: &super::Model) -> Node<super::Msg> {
     let file_menu_entries = vec![
+        MenuEntry {
+            label: "New",
+            command: MenuCommand::NewFile,
+        },
         MenuEntry {
             label: "Load",
             command: MenuCommand::LoadFile,
@@ -242,17 +250,12 @@ fn top_toolbar(model: &super::Model) -> Node<super::Msg> {
                 PageType::Interface(_)                => "Interface".to_string(),
                 PageType::Register(interface_num, _)  =>             
                     {
-                        let interface_name = if interface_num < model.mdf_data.interfaces.len() {
-                            &model.mdf_data.interfaces[interface_num].name
-                        }
-                        else {
-                            ""
-                        };
-                        if interface_name.is_empty() {
+                        let int_name = interface_name(model, interface_num);
+                        if int_name.is_empty() {
                             "Register".to_string()
                         }
                         else {
-                            format!("{} / register", interface_name)
+                            format!("{} / register", int_name)
                         }
                     },
                 PageType::Settings                    => "Settings".to_string(),
@@ -261,13 +264,6 @@ fn top_toolbar(model: &super::Model) -> Node<super::Msg> {
         ],
         span![
             C!["cstm-big-btn"],
-            IF![model.active_page == PageType::Edit =>
-                html_elements::toolbar_button_url(
-                    "new",
-                    &Urls::new(&model.base_url).home(),
-                    true
-                )
-            ],
             match page_back {
                 Some(page)  =>    
                     html_elements::toolbar_button_url(
@@ -317,4 +313,69 @@ fn top_toolbar(model: &super::Model) -> Node<super::Msg> {
             )
         ]
     ]
+}
+
+/// generate the sidebar
+pub fn sidebar(model: &super::Model) -> Node<super::Msg> {
+    nav![
+        C!["nav flex-column nav-pills"],
+        model
+            .mdf_data
+            .interfaces
+            .iter()
+            .enumerate()
+            .map(|(index, interface)| sidebar_interface(&model, index, &interface))
+            .collect::<Vec<_>>(),
+    ]
+}
+
+fn sidebar_interface(model: &super::Model, int_index: usize, interface: &super::mdf_format::Interface) -> Node<super::Msg> {
+    div![
+        IF!(model.mdf_data.interfaces.len() > 1 =>
+            a![
+                C!["nav-link"],
+                IF!(model.active_page == PageType::Interface(int_index) =>
+                    C!["active"]),
+                attrs![
+                    At::Href => 
+                        &Urls::new(&model.base_url).interface(page::interface::InterfacePage::Num(int_index))
+                ],
+                IF!(interface.name.is_empty() =>
+                    em!["interface"]), 
+                IF!(!interface.name.is_empty() =>
+                    &interface.name)
+            ]
+        ),
+        interface
+            .registers
+            .iter()
+            .enumerate()
+            .map(|(reg_index, register)| sidebar_register(&model, int_index, reg_index, &register))
+            .collect::<Vec<_>>(),
+    ]
+}
+
+fn sidebar_register(model: &super::Model, int_index: usize, reg_index: usize, register: &super::mdf_format::Register) -> Node<super::Msg> {
+    a![
+        C!["nav-link ml-3"],
+        IF!(model.active_page == PageType::Register(int_index, reg_index) =>
+            C!["active"]),
+        attrs![
+            At::Href => 
+                &Urls::new(&model.base_url).register(int_index, page::register::RegisterPage::Num(reg_index))
+        ],
+        IF!(register.name.is_empty() =>
+            em!["register"]), 
+        IF!(!register.name.is_empty() =>
+            &register.name)
+    ]
+}
+
+fn interface_name ( model: &super::Model, number: usize) -> &str {
+    if number < model.mdf_data.interfaces.len() {
+        &model.mdf_data.interfaces[number].name
+    }
+    else {
+        ""
+    }
 }

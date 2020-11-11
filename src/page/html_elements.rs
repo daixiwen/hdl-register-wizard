@@ -170,6 +170,50 @@ pub fn select_option_field_sub_line<
     ]
 }
 
+/// a select input generated from an option enum, on sub line
+pub fn select_field_sub_line<
+    T: strum::IntoEnumIterator + std::string::ToString + std::cmp::PartialEq<T>,
+>(
+    id: &str,
+    label: &str,
+    selected: &T,
+    handler: impl FnOnce(String) -> Msg + 'static + Clone,
+) -> Node<Msg> {
+    div![
+        C!["col-auto flex-nowrap form-group"],
+        label![
+            C!["col-sm-2 col-form-label"],
+            attrs! {
+              At::For => id,
+            },
+            label
+        ],
+        div![
+            C!["col-sm-10"],
+            form![
+                // workaround a 15 years old bug in Firefox where it wouldn't always show the selected option if the select tag is not inside a form tag
+                select![
+                    C!["form-control"],
+                    attrs! {
+                      At::Id => id,
+                    },
+                    input_ev(Ev::Change, handler),
+                    T::iter()
+                        .map(|entry| option![
+                            IF!(selected == &entry =>
+                                attrs!{
+                                    At::Selected => "selected",
+                                }
+                            ),
+                            entry.to_string(),
+                        ])
+                        .collect::<Vec<_>>(),
+                ]
+            ]
+        ]
+    ]
+}
+
 /// a multiple line text area on full width
 pub fn textarea_field(
     id: &str,

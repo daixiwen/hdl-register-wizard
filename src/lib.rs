@@ -205,7 +205,10 @@ fn view(model: &Model) -> Node<Msg> {
                 C!["row"],
                 match model.active_page {
                     PageType::Edit | PageType::Interface(_) | PageType::Register(_, _) =>
-                        div![C!["col-md3 col-xl-2 bd-sidebar"], "sidebar",],
+                        div![
+                            C!["col-md3 col-xl-2 bd-sidebar"],
+                            navigation::sidebar(model),
+                        ],
                     _ => empty![],
                 },
                 div![
