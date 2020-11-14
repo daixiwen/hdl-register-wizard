@@ -25,6 +25,7 @@ mod tests;
 pub mod utils;
 
 // URLs
+const EDIT: &str = "edit";
 const SETTINGS: &str = "settings";
 const INTERFACE: &str = "interface";
 const REGISTER: &str = "register";
@@ -33,6 +34,9 @@ const FIELD: &str = "field";
 // IDs
 /// HTML ID of a hidden file input element used to open files
 pub const FILE_INPUT_ID: &str = "hidden_file_input";
+
+// Test
+const HOME_MD_DATA: &'static str = include_str!("intro-page.md");
 
 // ------ ------
 //     Init
@@ -71,6 +75,7 @@ pub struct Model {
 /// enumeration describing the currently displayed page
 #[derive(Copy, Clone, PartialEq)]
 pub enum PageType {
+    Home,
     Edit,
     Interface(usize),
     Register(usize, usize),
@@ -87,6 +92,9 @@ struct_urls!();
 impl<'a> Urls<'a> {
     fn home(self) -> Url {
         self.base_url()
+    }
+    fn edit(self) -> Url {
+        self.base_url().add_path_part(EDIT)
     }
     fn settings(self) -> Url {
         self.base_url().add_path_part(SETTINGS)
@@ -140,7 +148,8 @@ impl<'a> Urls<'a> {
 
     fn from_page_type(self, page: PageType) -> Url {
         match page {
-            PageType::Edit => self.home(),
+            PageType::Home => self.home(),
+            PageType::Edit => self.edit(),
             PageType::Settings => self.settings(),
             PageType::Interface(index) => {
                 self.interface(page::interface::InterfacePage::Num(index))
@@ -181,7 +190,8 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
     match msg {
         Msg::UrlChanged(subs::UrlChanged(mut url)) => {
             model.active_page = match url.next_path_part() {
-                None => PageType::Edit,
+                None => PageType::Home,
+                Some(EDIT) => PageType::Edit,
                 Some(SETTINGS) => PageType::Settings,
                 Some(INTERFACE) => page::interface::change_url(url, model),
                 Some(_) => PageType::NotFound,
@@ -239,7 +249,7 @@ fn view(model: &Model) -> Node<Msg> {
                 match model.active_page {
                     PageType::Edit | PageType::Interface(_) | PageType::Register(_, _) | PageType::Field(_, _, _) =>
                         div![
-                            C!["col-md3 col-xl-2 bd-sidebar"],
+                            C!["d-none d-md-block col-md-3 col-xl-2 bd-sidebar"],
                             navigation::sidebar(model),
                         ],
                     _ => empty![],
@@ -247,6 +257,7 @@ fn view(model: &Model) -> Node<Msg> {
                 div![
                     C!["col"],
                     div![match model.active_page {
+                        PageType::Home => div![md![HOME_MD_DATA]],
                         PageType::Edit => page::edit::view(model),
                         PageType::Settings => page::settings::view(model),
                         PageType::Interface(index) => page::interface::view(model, index),

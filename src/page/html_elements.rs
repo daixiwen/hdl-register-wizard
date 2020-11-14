@@ -49,7 +49,7 @@ pub fn text_field_sub_line(
     invalid_feedback: Option<&str>,
 ) -> Node<Msg> {
     div![
-        C!["col-auto flex-nowrap form-group"], //
+        C!["col-auto flex-nowrap form-group mb-2"], //
         label![
             C!["col-form-label"],
             attrs! {
@@ -129,7 +129,7 @@ pub fn select_option_field_sub_line<
     handler: impl FnOnce(String) -> Msg + 'static + Clone,
 ) -> Node<Msg> {
     div![
-        C!["col-auto flex-nowrap form-group"],
+        C!["col-auto flex-nowrap form-group mb-2"],
         label![
             C!["col-sm-2 col-form-label"],
             attrs! {
@@ -184,7 +184,7 @@ pub fn select_field_sub_line<
     handler: impl FnOnce(String) -> Msg + 'static + Clone,
 ) -> Node<Msg> {
     div![
-        C!["col-auto flex-nowrap form-group"],
+        C!["col-auto flex-nowrap form-group mb-2"],
         label![
             C!["col-sm-2 col-form-label"],
             attrs! {

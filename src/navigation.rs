@@ -101,8 +101,8 @@ pub fn navbar(model: &super::Model) -> Node<super::Msg> {
             C!["row bg-light"],
             match model.active_page {
                 PageType::Edit | PageType::Interface(_) | PageType::Register(_, _) | PageType::Field(_, _, _) =>
-                    div![C!["col-md3 col-xl-2 mx-3 text-secondary"], " ",],
-                _ => empty![],
+                    div![C!["d-none d-md-block col-md-3 col-xl-2 mx-3 text-secondary"], " ",],
+                _ => div![C!["mx-3"]," "],
             },
             div![
                 C!["col"],
@@ -268,6 +268,7 @@ fn top_toolbar(model: &super::Model) -> Node<super::Msg> {
         span![
             C!["h2 mr-4"],
             match model.active_page {
+                PageType::Home                        => "Home".to_string(),
                 PageType::Edit                        => "File summary".to_string(),
                 PageType::Interface(_)                => "Interface".to_string(),
                 PageType::Register(interface_num, _)  =>             
