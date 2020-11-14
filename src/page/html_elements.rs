@@ -140,11 +140,15 @@ pub fn select_option_field_sub_line<
         div![
             C!["col-sm-10"],
             form![
+                attrs!{
+                    At::AutoComplete => "off"
+                },
                 // workaround a 15 years old bug in Firefox where it wouldn't always show the selected option if the select tag is not inside a form tag
                 select![
                     C!["form-control"],
                     attrs! {
-                      At::Id => id,
+                        At::Id => id,
+                        At::AutoComplete => "off"
                     },
                     input_ev(Ev::Change, handler),
                     option![
@@ -192,10 +196,14 @@ pub fn select_field_sub_line<
             C!["col-sm-10"],
             form![
                 // workaround a 15 years old bug in Firefox where it wouldn't always show the selected option if the select tag is not inside a form tag
+                attrs!{
+                    At::AutoComplete => "off"
+                },
                 select![
                     C!["form-control"],
                     attrs! {
-                      At::Id => id,
+                        At::Id => id,
+                        At::AutoComplete => "off"
                     },
                     input_ev(Ev::Change, handler),
                     T::iter()

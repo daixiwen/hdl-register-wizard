@@ -28,6 +28,7 @@ pub mod utils;
 const SETTINGS: &str = "settings";
 const INTERFACE: &str = "interface";
 const REGISTER: &str = "register";
+const FIELD: &str = "field";
 
 // IDs
 /// HTML ID of a hidden file input element used to open files
@@ -73,6 +74,7 @@ pub enum PageType {
     Edit,
     Interface(usize),
     Register(usize, usize),
+    Field(usize, usize, usize),
     Settings,
     NotFound,
 }
@@ -113,6 +115,29 @@ impl<'a> Urls<'a> {
             register_page,
         )
     }
+
+    /// Generate a URL relative to a field in a register in an interface
+    /// the RegisterPage enum decribes any page that can be displayed in order to work on a register
+    pub fn field(
+        self,
+        interface_num: usize,
+        register_num: usize,
+        field_page: page::field::FieldPage,
+    ) -> Url {
+        page::field::field_url(
+            page::register::register_url(
+                page::interface::interface_url(
+                    self.base_url().add_path_part(INTERFACE),
+                    page::interface::InterfacePage::Num(interface_num)
+                )
+                .add_path_part(REGISTER),
+                page::register::RegisterPage::Num(register_num)
+            )
+            .add_path_part(FIELD),
+            field_page
+        )
+    }
+
     fn from_page_type(self, page: PageType) -> Url {
         match page {
             PageType::Edit => self.home(),
@@ -122,6 +147,9 @@ impl<'a> Urls<'a> {
             }
             PageType::Register(interface_num, index) => {
                 self.register(interface_num, page::register::RegisterPage::Num(index))
+            }
+            PageType::Field(interface_num, register_num, index) => {
+                self.field(interface_num, register_num, page::field::FieldPage::Num(index))
             }
             _ => self.home(),
         }
@@ -143,6 +171,7 @@ pub enum Msg {
     Edit(page::edit::EditMsg),
     Interface(page::interface::InterfaceMsg),
     Register(usize, page::register::RegisterMsg),
+    Field(usize, usize, page::field::FieldMsg),
     UploadStart(web_sys::Event),
     UploadText(String),
 }
@@ -166,6 +195,10 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
 
         Msg::Register(interface_num, register_msg) => {
             page::register::update(register_msg, interface_num, model, orders)
+        }
+
+        Msg::Field(interface_num, register_num, field_msg) => {
+            page::field::update(field_msg, interface_num, register_num, model, orders)
         }
 
         Msg::UploadStart(event) => {
@@ -204,7 +237,7 @@ fn view(model: &Model) -> Node<Msg> {
             div![
                 C!["row"],
                 match model.active_page {
-                    PageType::Edit | PageType::Interface(_) | PageType::Register(_, _) =>
+                    PageType::Edit | PageType::Interface(_) | PageType::Register(_, _) | PageType::Field(_, _, _) =>
                         div![
                             C!["col-md3 col-xl-2 bd-sidebar"],
                             navigation::sidebar(model),
@@ -219,6 +252,8 @@ fn view(model: &Model) -> Node<Msg> {
                         PageType::Interface(index) => page::interface::view(model, index),
                         PageType::Register(interface_num, reg_num) =>
                             page::register::view(model, interface_num, reg_num),
+                        PageType::Field(interface_num, reg_num, field_num) =>
+                            page::field::view(model, interface_num, reg_num, field_num),
                         _ => div!["404 not found"],
                     },]
                 ]

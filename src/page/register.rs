@@ -4,7 +4,9 @@ use seed::{prelude::*, *};
 
 use super::super::Model;
 use super::super::PageType;
+use super::super::Urls;
 
+use super::super::mdf_format;
 use super::super::mdf_format::AccessType;
 use super::super::mdf_format::Address;
 use super::super::mdf_format::AddressStride;
@@ -18,11 +20,13 @@ use super::super::Msg;
 
 use super::super::utils;
 use super::html_elements;
+use super::field;
 
 use std::str::FromStr;
 
 // URL constants
 const URL_NEW: &str = "new";
+const URL_FIELD: &str = "field";
 
 // ID constants
 const ID_REG_WIDTH: &str = "inputRegisterWidth";
@@ -67,7 +71,12 @@ pub fn change_url(
         Some(number_string) => match number_string.parse::<usize>() {
             Ok(index) => {
                 if index < model.mdf_data.interfaces[interface_num].registers.len() {
-                    PageType::Register(interface_num, index)
+                    // check if we are just refering to the interface (URL stops here) ir a register (URL continues)
+                    match url.next_path_part() {
+                        None => PageType::Register(interface_num, index),
+                        Some(URL_FIELD) => super::field::change_url(url, interface_num, index, model),
+                        Some(_) => PageType::NotFound,
+                    }
                 } else {
                     PageType::NotFound
                 }
@@ -729,5 +738,81 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
         ],
       ],
     ],
+    // Fields table
+    h3![C!["my-2"], "Fields"],
+    table![
+        C!["table table-striped"],
+        html_elements::table_header(vec!["", "name", "position", "description"]),
+        tbody![
+            register
+                .fields
+                .iter()
+                .enumerate()
+                .map(|(field_index, field)| field_table_row(
+                    &model, interface_index, register_index, field_index, &field
+                ))
+                .collect::<Vec<_>>(),
+            tr![
+                td![
+                    C!["cstm-small-btn"],
+                    html_elements::toolbar_button_url(
+                    "add",
+                    &Urls::new(&model.base_url)
+                        .field(interface_index, register_index, field::FieldPage::NewField),
+                    true
+                ),],
+                td![],
+                td![],
+                td![
+                    C!["w-100"],
+                ],
+            ]
+        ]
+    ]
   ]
+}
+
+fn field_table_row(
+    model: &Model,
+    interface_index: usize,
+    register_index: usize,
+    field_index: usize,
+    field: &mdf_format::Field,
+) -> Node<Msg> {
+    tr![
+        td![
+            div![
+                C!["text-nowrap btn-group cstm-small-btn"],
+                html_elements::toolbar_button_url(
+                    "edit",
+                    &Urls::new(&model.base_url).field(interface_index, register_index, field::FieldPage::Num(field_index)),
+                    true
+                ),
+                html_elements::toolbar_button_msg(
+                    "delete",
+                    Msg::Field(interface_index, register_index, field::FieldMsg::Delete(field_index)),
+                    true
+                ),
+                html_elements::toolbar_button_msg(
+                    "up",
+                    Msg::Field(interface_index, register_index, field::FieldMsg::MoveUp(field_index)),
+                    field_index != 0
+                ),
+                html_elements::toolbar_button_msg(
+                    "down",
+                    Msg::Field(interface_index, register_index, field::FieldMsg::MoveDown(field_index)),
+                    field_index != model.mdf_data.interfaces[interface_index].registers[register_index].fields.len() - 1
+                ),
+            ],
+        ],
+        td![
+            C!["text-nowrap"],
+            &field.name],
+        td![
+            C!["text-nowrap"],
+            &field.position.to_string()],
+        td![
+            C!["w-100"],
+            utils::opt_vec_str_to_summary(&field.description),],
+    ]
 }

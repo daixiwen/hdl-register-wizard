@@ -100,7 +100,7 @@ pub fn navbar(model: &super::Model) -> Node<super::Msg> {
         div![
             C!["row bg-light"],
             match model.active_page {
-                PageType::Edit | PageType::Interface(_) | PageType::Register(_, _) =>
+                PageType::Edit | PageType::Interface(_) | PageType::Register(_, _) | PageType::Field(_, _, _) =>
                     div![C!["col-md3 col-xl-2 mx-3 text-secondary"], " ",],
                 _ => empty![],
             },
@@ -185,6 +185,7 @@ fn top_toolbar(model: &super::Model) -> Node<super::Msg> {
         PageType::Edit                        => None,
         PageType::Interface(_)                => Some(PageType::Edit),
         PageType::Register(interface_num, _)  => Some(PageType::Interface(interface_num)),
+        PageType::Field(int_num, reg_num, _)  => Some(PageType::Register(int_num, reg_num)),
         PageType::Settings                    => None,
         _                           => None,
     };
@@ -202,6 +203,14 @@ fn top_toolbar(model: &super::Model) -> Node<super::Msg> {
             if reg_num > 0
             {
                 Some(PageType::Register(interface_num,reg_num-1))
+            }
+            else {
+                None
+            },
+        PageType::Field(interface_num, reg_num, field_num) =>             
+            if field_num > 0
+            {
+                Some(PageType::Field(interface_num,reg_num, field_num-1))
             }
             else {
                 None
@@ -228,6 +237,16 @@ fn top_toolbar(model: &super::Model) -> Node<super::Msg> {
             else {
                 None
             },
+        PageType::Field(interface_num, reg_num, field_num) =>             
+            if interface_num < model.mdf_data.interfaces.len() &&
+                reg_num < model.mdf_data.interfaces[interface_num].registers.len() &&
+                field_num < model.mdf_data.interfaces[interface_num].registers[reg_num].fields.len()-1
+            {
+                Some(PageType::Field(interface_num,reg_num, field_num+1))
+            }
+            else {
+                None
+            },
         PageType::Settings                    => None,
         _                                     => None,
     };
@@ -238,6 +257,9 @@ fn top_toolbar(model: &super::Model) -> Node<super::Msg> {
         PageType::Register(interface_num, _)  =>             
             Some(Urls::new(&model.base_url)
                             .register(interface_num, page::register::RegisterPage::NewRegister)),
+        PageType::Field(interface_num, register_num, _)  =>             
+            Some(Urls::new(&model.base_url)
+                            .field(interface_num, register_num, page::field::FieldPage::NewField)),
         PageType::Settings                    => None,
         _                                     => None,
     };
@@ -252,10 +274,27 @@ fn top_toolbar(model: &super::Model) -> Node<super::Msg> {
                     {
                         let int_name = interface_name(model, interface_num);
                         if int_name.is_empty() {
-                            "Register".to_string()
+                            "register".to_string()
                         }
                         else {
                             format!("{} / register", int_name)
+                        }
+                    },
+                PageType::Field(interface_num, register_num, _)  =>             
+                    {
+                        let int_name = interface_name(model, interface_num);
+                        let int_part = if int_name.is_empty() {
+                            "".to_string()
+                        }
+                        else {
+                            format!("{} / ", int_name)
+                        };
+                        let reg_name = register_name(model, interface_num, register_num);
+                        if reg_name.is_empty() {
+                            "field".to_string()
+                        }
+                        else {
+                            format!("{}{} / field", int_part, reg_name)
                         }
                     },
                 PageType::Settings                    => "Settings".to_string(),
@@ -374,6 +413,20 @@ fn sidebar_register(model: &super::Model, int_index: usize, reg_index: usize, re
 fn interface_name ( model: &super::Model, number: usize) -> &str {
     if number < model.mdf_data.interfaces.len() {
         &model.mdf_data.interfaces[number].name
+    }
+    else {
+        ""
+    }
+}
+
+fn register_name ( model: &super::Model, interface: usize, number: usize) -> &str {
+    if interface < model.mdf_data.interfaces.len() {
+        if number < model.mdf_data.interfaces[interface].registers.len() {
+            &model.mdf_data.interfaces[interface].registers[number].name
+        }
+        else {
+            ""
+        }
     }
     else {
         ""

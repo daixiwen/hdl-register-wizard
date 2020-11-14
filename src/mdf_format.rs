@@ -5,6 +5,7 @@ use serde::{de::Error, Deserialize, Serialize};
 use std::fmt;
 use std::str::FromStr;
 use strum_macros;
+use std::convert::TryInto;
 
 #[derive(Serialize, Deserialize)]
 /// model description file. This structure hold all the model, and can be
@@ -274,7 +275,56 @@ pub struct CoreSignalProperties {
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 /// structure representing a field element in a register
-pub struct Field {}
+pub struct Field {
+    /// field name
+    pub name: String,
+    /// field position
+    pub position: FieldPosition,
+    /// description of the register field
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<Vec<String>>,
+    /// read/write access type for register. Can be None if fields are used and every field has an access type
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub access: Option<AccessType>,
+    /// signal type
+    pub signal: SignalType,
+    /// reset value
+    pub reset: VectorValue,
+    /// register location.  Can be None if fields are used and every field has a location
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub location: Option<LocationType>,
+    /// signal properties
+    #[serde(default)]
+    pub core_signal_properties: CoreSignalProperties,
+}
+
+impl Field {
+    /// create a new field, with a single bit 0, type std_logic
+    pub fn new() -> Field {
+        Field {
+            name: String::new(),
+            position: FieldPosition::Single(0),
+            description: None,
+            access: Some(AccessType::RW),
+            signal: SignalType::StdLogic,
+            reset: VectorValue::new(),
+            location: Some(LocationType::Pif),
+            core_signal_properties: CoreSignalProperties {
+                use_read_enable: None,
+                use_write_enable: None,
+            },
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
+/// diferent ways of defining a field position
+pub enum FieldPosition {
+    /// single bit
+    Single(u32),
+    /// field(msb, lsb)
+    Field(u32, u32),
+}
 
 impl fmt::Display for Address {
     /// conversion to string
@@ -520,6 +570,69 @@ impl<'de> Deserialize<'de> for VectorValue {
                 value: n.into(),
                 radix: RadixType::Decimal,
             }),
+        }
+    }
+}
+
+impl fmt::Display for FieldPosition {
+    /// conversion to string
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self {
+            FieldPosition::Single(position) => 
+                write!(f, "{}", position),
+
+            FieldPosition::Field(msb, lsb) => 
+                write!(f, "{}:{}", msb, lsb),
+
+        }
+    }
+}
+
+impl Serialize for FieldPosition {
+    /// address serializing. The MDF model gives a special string format for stride addresses instead of using several fields
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl std::str::FromStr for FieldPosition {
+    type Err = std::num::ParseIntError;
+
+    /// conversion from string to field position, using the format described in the mdf specification: single value, or msb:lsb
+    fn from_str(s: &str) -> Result<Self, std::num::ParseIntError> {
+        let elements: Vec<&str> = s.split(":").collect();
+        match elements.len() {
+            1 => Ok(FieldPosition::Single(u32::from_str(s)?)),
+            2 => Ok(FieldPosition::Field(
+                        u32::from_str(elements[0])?,
+                        u32::from_str(elements[1])?)),
+
+            _ => Err(u32::from_str("abc").err().unwrap()),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for FieldPosition {
+    /// deserialize into a field position
+    fn deserialize<D>(deserializer: D) -> Result<FieldPosition, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let raw = StrOrNum::deserialize(deserializer)?;
+
+        match raw {
+            StrOrNum::Str(s) => match FieldPosition::from_str(s) {
+                Ok(a) => Ok(a),
+                Err(_) => Err(D::Error::custom(&format!(
+                    "couldn't parse string '{}' as a field position",
+                    s
+                ))),
+            },
+
+            StrOrNum::Num(n) => Ok(FieldPosition::Single(n.try_into().unwrap())),
         }
     }
 }
