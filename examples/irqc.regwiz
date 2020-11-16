@@ -30,10 +30,10 @@
       "registers": [
         {
           "name": "IER",
-          "address": "0x4:stride:4",
+          "address": "auto",
           "access": "RW",
           "signal": "std_logic_vector",
-          "reset": "0d14",
+          "reset": "0x0",
           "width": 32,
           "location": "pif",
           "summary": [
@@ -45,7 +45,7 @@
         },
         {
           "name": "IRR",
-          "address": "0x10",
+          "address": "auto",
           "access": "RO",
           "signal": "std_logic_vector",
           "reset": "0x0",
@@ -63,7 +63,7 @@
         },
         {
           "name": "IPR",
-          "address": "0x20",
+          "address": "auto",
           "access": "RO",
           "signal": "std_logic_vector",
           "reset": "0x0",
