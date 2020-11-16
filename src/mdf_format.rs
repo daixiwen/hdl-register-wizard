@@ -115,9 +115,11 @@ pub struct Register {
     pub location: Option<LocationType>,
     /// signal properties
     #[serde(default)]
+    #[serde(skip_serializing_if = "CoreSignalProperties::must_skip")]
     pub core_signal_properties: CoreSignalProperties,
     /// list of fields elements
     #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub fields: Vec<Field>,
 }
 
@@ -270,6 +272,12 @@ pub struct CoreSignalProperties {
     /// generate a signal to indicate to the core when the signal is written
     #[serde(skip_serializing_if = "Option::is_none")]
     pub use_write_enable: Option<bool>,
+}
+
+impl CoreSignalProperties {
+    pub fn must_skip ( &self) -> bool {
+        return self.use_read_enable.is_none() && self.use_write_enable.is_none();
+    }
 }
 
 #[derive(Serialize, Deserialize)]

@@ -71,7 +71,7 @@ fn new_interface(model: &mut Model) -> PageType {
     model.mdf_data.interfaces.push(Interface::new());
     let new_page_type = PageType::Interface(model.mdf_data.interfaces.len() - 1);
 
-    super::super::Urls::new(model.base_url.clone())
+    super::super::Urls::new(&model.base_url)
         .from_page_type(new_page_type)
         .go_and_replace();
     new_page_type

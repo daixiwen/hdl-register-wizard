@@ -72,7 +72,14 @@ pub fn navbar(model: &super::Model) -> Node<super::Msg> {
         C!["fixed-top"],
         nav![
             C!["navbar navbar-expand-lg navbar-dark bg-dark"],
-            div![C!["navbar-brand"], "RegWizard"],
+            div![C!["navbar-brand"],
+                a![ 
+                    "RegWizard",
+                    attrs!{
+                        At::Href => super::Urls::new(&model.base_url).home()
+                    }
+                ],
+            ],
             button![
                 C!["navbar-toggler"],
                 attrs! {

@@ -219,7 +219,13 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
         Msg::UploadText(text) => {
             let decode: Result<mdf_format::Mdf, serde_json::Error> = serde_json::from_str(&text);
             match decode {
-                Ok(decoded) => model.mdf_data = decoded,
+                Ok(decoded) => {
+                    model.mdf_data = decoded;
+                    Urls::new(&model.base_url)
+                        .edit()
+                        .go_and_replace();
+                    model.active_page = PageType::Edit;
+                },
 
                 Err(error) => {
                     modal_window(
