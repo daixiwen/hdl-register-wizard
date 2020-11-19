@@ -83,6 +83,10 @@ fn new_field(interface: usize, register: usize, model: &mut Model) -> PageType {
         model.mdf_data.interfaces[interface].registers[register].fields.len() - 1,
     );
 
+    // remove some of the register options that become illegal
+    // if fields are present
+    model.mdf_data.interfaces[interface].registers[register].clean();
+
     super::super::Urls::new(model.base_url.clone())
         .from_page_type(new_page_type)
         .go_and_replace();
@@ -138,6 +142,16 @@ pub fn update(
                 model.mdf_data.interfaces[interface_num].registers[register_num]
                     .fields
                     .remove(index);
+
+                if model.mdf_data.interfaces[interface_num].registers[register_num].fields.is_empty() {
+                    // if fields become empty again, put back some default values
+                    // in the register parameters that were removed
+                    let reg = &mut model.mdf_data.interfaces[interface_num].registers[register_num];
+                    reg.width = Some(32);
+                    reg.access = Some(AccessType::RW);
+                    reg.signal = Some(SignalType::StdLogicVector);
+                    reg.reset = Some(VectorValue::new());
+                }
             }
         }
         FieldMsg::MoveUp(index) => {
@@ -246,20 +260,33 @@ pub fn update(
                             .core_signal_properties
                             .use_write_enable = Some(true);
                     }
+                    else {
+                        // in some cases the core signal properties need to be cleaned
+                        let reg_location = model.mdf_data.interfaces[interface_num].registers[register_num].location;
+                        model.mdf_data.interfaces[interface_num].registers[register_num].fields[index].clean(reg_location);
+                    }
                 }
 
-                _ =>  seed::log!("error while converting from string to location")
-            }
+                _ => {
+                    if new_location_name == TXT_SPEC_IN_REGISTER {
+                        model.mdf_data.interfaces[interface_num].registers[register_num].fields[index].location = None;
+                        let reg_location = model.mdf_data.interfaces[interface_num].registers[register_num].location;
+                        model.mdf_data.interfaces[interface_num].registers[register_num].fields[index].clean(reg_location);
+                    } else {
+                        seed::log!("error while converting from string to location")
+                    }
+                }
+           }
         }
 
         FieldMsg::CorePropReadEnable(index, event) => {
-            model.mdf_data.interfaces[interface_num].registers[index]
+            model.mdf_data.interfaces[interface_num].registers[register_num].fields[index]
                 .core_signal_properties
                 .use_read_enable = Some(utils::target_checked(&event));
         }
 
         FieldMsg::CorePropWriteEnable(index, event) => {
-            model.mdf_data.interfaces[interface_num].registers[index]
+            model.mdf_data.interfaces[interface_num].registers[register_num].fields[index]
                 .core_signal_properties
                 .use_write_enable = Some(utils::target_checked(&event));
         }
@@ -322,7 +349,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize, field_
                     &field.reset.to_string(),
                     false,
                     move | input | Msg::Field(interface_index, register_index, FieldMsg::ResetValueChanged(field_index, input)),
-                    Some("please use a decimal, hexadecimal (0x*) or binary (0b*) value or leave empty when using fields")
+                    Some("please use a decimal, hexadecimal (0x*) or binary (0b*) value")
                 ),
             ]
         ]

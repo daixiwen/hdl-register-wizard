@@ -18,6 +18,7 @@ use seed::{prelude::*, *};
 
 pub mod file_io;
 pub mod mdf_format;
+pub mod mdf_process;
 pub mod navigation;
 
 pub mod page;

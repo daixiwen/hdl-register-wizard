@@ -32,6 +32,7 @@ pub fn do_menu(
 ) {
     match action {
         MenuCommand::SaveFile => {
+            model.mdf_data.clean();
             let filename = format!("{}.regwiz", &model.mdf_data.name);
             let jsondata =
                 serde_json::to_string_pretty(&model.mdf_data).expect("serialize data to json");

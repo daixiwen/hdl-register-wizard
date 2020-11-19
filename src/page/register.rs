@@ -408,6 +408,12 @@ pub fn update(
                             .core_signal_properties
                             .use_write_enable = Some(true);
                     }
+                    // peform a cleanup of the now illegal core properties
+                    // if location was just changed to pif
+                    else if location == LocationType::Pif
+                    {
+                        model.mdf_data.interfaces[interface_num].registers[index].clean();
+                    }
                 }
 
                 _ => {
@@ -624,14 +630,14 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                     "inputSignal",
                     "Type:",
                     &register.signal,
-                    TXT_SPEC_IN_FIELDS,
+                    "",
                     move | input | Msg::Register(interface_index, RegisterMsg::SignalTypeChanged(register_index, input))
                 ),
                 html_elements::select_option_field_sub_line(
                     "inputAccess",
                     "Access:",
                     &register.access,
-                    TXT_SPEC_IN_FIELDS,
+                    "",
                     move | input | Msg::Register(interface_index, RegisterMsg::AccessTypeChanged(register_index, input))
                 ),
                 html_elements::select_option_field_sub_line(
@@ -662,7 +668,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                         None => String::new(),
                         Some(width) => width.to_string(),
                     },
-                    false,
+                    !register.fields.is_empty(),
                     move | input | Msg::Register(interface_index, RegisterMsg::WidthChanged(register_index, input)),
                     Some("please write a decimal value or leave empty for automatic when using fields")
                 ),
@@ -673,7 +679,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize) -> Nod
                         None => String::new(),
                         Some(value) => value.to_string(),
                     },
-                    false,
+                    !register.fields.is_empty(),
                     move | input | Msg::Register(interface_index, RegisterMsg::ResetValueChanged(register_index, input)),
                     Some("please use a decimal, hexadecimal (0x*) or binary (0b*) value or leave empty when using fields")
                 ),

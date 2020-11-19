@@ -150,24 +150,32 @@ pub fn select_option_field_sub_line<
                         At::Id => id,
                         At::AutoComplete => "off"
                     },
-                    input_ev(Ev::Change, handler),
-                    option![
-                        IF!(selected.is_none() =>
-                        attrs!{
-                            At::Selected => "selected",
+                    IF!(text_if_none.is_empty() && selected.is_none() =>
+                        attrs! {
+                            At::Disabled => "disabled"
                         }),
-                        text_if_none,
-                    ],
-                    T::iter()
-                        .map(|entry| option![
-                            IF!(selected == &Some(entry) =>
-                                attrs!{
-                                    At::Selected => "selected",
-                                }
-                            ),
-                            entry.to_string(),
-                        ])
-                        .collect::<Vec<_>>(),
+                    input_ev(Ev::Change, handler),
+                    IF!(!text_if_none.is_empty() =>
+                        option![
+                            IF!(selected.is_none() =>
+                            attrs!{
+                                At::Selected => "selected",
+                            }),
+                            text_if_none,
+                        ]
+                    ),
+                    IF!(!text_if_none.is_empty() || selected.is_some() =>
+                        T::iter()
+                            .map(|entry| option![
+                                IF!(selected == &Some(entry) =>
+                                    attrs!{
+                                        At::Selected => "selected",
+                                    }
+                                ),
+                                entry.to_string(),
+                            ])
+                            .collect::<Vec<_>>()
+                    ),
                 ]
             ]
         ]
