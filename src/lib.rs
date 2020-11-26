@@ -24,6 +24,7 @@ pub mod navigation;
 pub mod page;
 mod tests;
 pub mod utils;
+pub mod undo;
 
 // URLs
 const EDIT: &str = "edit";
@@ -53,6 +54,7 @@ fn init(url: Url, orders: &mut impl Orders<Msg>) -> Model {
         base_url,
         active_page: PageType::Edit,
         mdf_data: mdf_format::Mdf::new(),
+        undo: undo::Undo::new()
     }
 }
 
@@ -71,6 +73,9 @@ pub struct Model {
 
     /// structure holding the full registers description
     mdf_data: mdf_format::Mdf,
+
+    /// undo system
+    undo: undo::Undo,
 }
 
 /// enumeration describing the currently displayed page
@@ -178,6 +183,7 @@ impl<'a> Urls<'a> {
 pub enum Msg {
     UrlChanged(subs::UrlChanged),
     Menu(navigation::MenuCommand),
+    Undo(undo::UndoMsg),
     Edit(page::edit::EditMsg),
     Interface(page::interface::InterfaceMsg),
     Register(usize, page::register::RegisterMsg),
@@ -188,6 +194,15 @@ pub enum Msg {
 
 // `update` describes how to handle each `Msg`.
 fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
+    let reverse_msg = undo::reverse_msg(msg.clone(), model);
+    let current_page = model.active_page;
+    model.undo.register_message(reverse_msg, current_page);
+    process_message(msg, model, orders);
+}
+
+/// execute the action described in a message, either received from the ui, or from
+/// an undo/redo operation
+pub fn process_message(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
     match msg {
         Msg::UrlChanged(subs::UrlChanged(mut url)) => {
             model.active_page = match url.next_path_part() {
@@ -199,6 +214,8 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
             }
         }
         Msg::Menu(action) => navigation::do_menu(action, model, orders),
+
+        Msg::Undo(undo_msg) => undo::update(undo_msg,model, orders),
 
         Msg::Edit(edit_msg) => page::edit::update(edit_msg, model, orders),
 

@@ -358,7 +358,17 @@ fn top_toolbar(model: &super::Model) -> Node<super::Msg> {
                     &url_new.unwrap(),
                     true
                 )
-            )
+            ),
+            html_elements::toolbar_button_msg(
+                "undo",
+                super::Msg::Undo(super::undo::UndoMsg::Undo),
+                model.undo.has_undo()
+            ),
+            html_elements::toolbar_button_url(
+                "redo",
+                &Urls::new(&model.base_url).home(),
+                false
+            ),
         ]
     ]
 }

@@ -86,6 +86,8 @@ fn new_interface(model: &mut Model) -> PageType {
 pub enum InterfaceMsg {
     /// delete the given interface
     Delete(usize),
+    /// restore a deleted interface (undo)
+    Restore(usize, std::rc::Rc<Interface>),
     /// move the given interface up in the list
     MoveUp(usize),
     /// move the given interface down in the list
@@ -103,11 +105,21 @@ pub enum InterfaceMsg {
 }
 
 /// process the interface messages
-pub fn update(msg: InterfaceMsg, model: &mut Model, orders: &mut impl Orders<Msg>) {
+pub fn update(msg: InterfaceMsg, model: &mut Model, _orders: &mut impl Orders<Msg>) {
     match msg {
         InterfaceMsg::Delete(index) => {
             if index < model.mdf_data.interfaces.len() {
-                model.mdf_data.interfaces.remove(index);
+                // move the deleted interface into the undo message
+                model.undo.register_message(Some(Msg::Interface(InterfaceMsg::Restore(index,
+                    std::rc::Rc::new(model.mdf_data.interfaces.remove(index))))),
+                    model.active_page);
+            }
+        }
+
+        InterfaceMsg::Restore(index, interface) => {
+            match std::rc::Rc::<mdf_format::Interface>::try_unwrap(interface) {
+                Ok(interface_obj) => model.mdf_data.interfaces.insert(index,interface_obj),
+                _ => seed::log!("error recovering interface object"),
             }
         }
         InterfaceMsg::MoveUp(index) => {
@@ -123,13 +135,11 @@ pub fn update(msg: InterfaceMsg, model: &mut Model, orders: &mut impl Orders<Msg
 
         InterfaceMsg::NameChanged(index, new_name) => {
             model.mdf_data.interfaces[index].name = new_name;
-            orders.skip();
         }
         InterfaceMsg::TypeChanged(index, new_type_name) => {
             match InterfaceType::from_str(&new_type_name) {
                 Ok(new_type) => {
                     model.mdf_data.interfaces[index].interface_type = new_type;
-                    orders.skip();
                 }
 
                 _ => seed::log!("error while converting from string to interface type"),
@@ -138,12 +148,9 @@ pub fn update(msg: InterfaceMsg, model: &mut Model, orders: &mut impl Orders<Msg
         InterfaceMsg::DescriptionChanged(index, new_description) => {
             model.mdf_data.interfaces[index].description =
                 utils::textarea_to_opt_vec_str(&new_description);
-
-            orders.skip();
         }
 
         InterfaceMsg::AddressWitdhChanged(index, new_width) => {
-            orders.skip();
 
             match utils::validate_field(ID_ADDRESS_WIDTH, &new_width, |field_value| {
                 utils::option_num_from_str(field_value)
@@ -154,7 +161,6 @@ pub fn update(msg: InterfaceMsg, model: &mut Model, orders: &mut impl Orders<Msg
         }
 
         InterfaceMsg::DataWidthChanged(index, new_width) => {
-            orders.skip();
 
             match utils::validate_field(ID_DATA_WIDTH, &new_width, |field_value| {
                 utils::option_num_from_str(field_value)
