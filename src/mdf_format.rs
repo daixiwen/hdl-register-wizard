@@ -73,6 +73,7 @@ impl Interface {
     strum_macros::EnumIter,
     strum_macros::EnumString,
     PartialEq,
+    Clone,
 )]
 /// type of interface. Only SBI is officially spported by the Bitvis tool RegisterWizard
 pub enum InterfaceType {

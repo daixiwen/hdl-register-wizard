@@ -120,6 +120,80 @@ pub fn select_field_full_line<
 
 /// a select input generated from an option enum, on sub line
 pub fn select_option_field_sub_line<
+    T: 'static +  strum::IntoEnumIterator + std::string::ToString + std::cmp::PartialEq<T> + Copy,
+>(
+    id: &str,
+    label: &str,
+    selected: &Option<T>,
+    text_if_none: &'static str,
+    handler: impl FnOnce(String) -> Msg + 'static + Clone + Copy,
+) -> Node<Msg> {
+    div![
+        C!["col-auto flex-nowrap form-group mb-2"],
+        label![
+            C!["col-form-label"],
+            attrs! {
+              At::For => id,
+            },
+            label
+        ],
+        div![
+            button![
+                C!["mx-3 form-control btn btn-outline-dark dropdown-toggle"],
+                attrs! {
+                    At::Id => id,
+                    At::Type => "button",
+                    At::from("data-toggle") => "dropdown",
+                    At::AriaHasPopup => "true",
+                    At::AriaExpanded => "false"
+                },
+                IF!(text_if_none.is_empty() && selected.is_none() =>
+                    attrs! {
+                        At::Disabled => "disabled"
+                    }),
+                IF!(selected.is_none() => text_if_none ),
+                IF!(selected.is_some() => selected.unwrap().to_string()),
+            ],
+            div![
+                C!["dropdown-menu"],
+                attrs! {
+                    At::AriaLabelledBy => id
+                },
+                IF!(!text_if_none.is_empty() =>
+                    button![
+                        C!["dropdown-item"],
+                        attrs!{
+                            At::Type => "button"
+                        },
+                        IF!(selected.is_none() =>
+                            C!["active"]
+                        ),
+                        text_if_none,
+                        ev(Ev::Click, move |_| handler(text_if_none.to_string()))
+                    ]
+                ),
+                IF!(!text_if_none.is_empty() || selected.is_some() =>
+                    T::iter()
+                        .map(|entry| button![
+                            C!["dropdown-item"],
+                            attrs!{
+                                At::Type => "button"
+                            },                            
+                            IF!(selected == &Some(entry) =>
+                                C!["active"]
+                            ),
+                            entry.to_string(),
+                            ev(Ev::Click, move |_| handler(entry.to_string()))
+                        ])
+                        .collect::<Vec<_>>()
+                ),
+            ]
+        ]
+    ]
+}
+
+/// a select input generated from an option enum, on sub line (old version with a select html element)
+pub fn old_select_option_field_sub_line<
     T: strum::IntoEnumIterator + std::string::ToString + std::cmp::PartialEq<T> + Copy,
 >(
     id: &str,
@@ -184,6 +258,59 @@ pub fn select_option_field_sub_line<
 
 /// a select input generated from an option enum, on sub line
 pub fn select_field_sub_line<
+    T: 'static +  strum::IntoEnumIterator + std::string::ToString + std::cmp::PartialEq<T> + std::clone::Clone,
+>(
+    id: &str,
+    label: &str,
+    selected: &T,
+    handler: impl FnOnce(String) -> Msg + 'static + Clone + Copy,
+) -> Node<Msg> {
+    div![
+        C!["col-auto flex-nowrap form-group mb-2"],
+        label![
+            C!["col-form-label"],
+            attrs! {
+              At::For => id,
+            },
+            label
+        ],
+        div![
+            button![
+                C!["mx-3 form-control btn btn-outline-dark dropdown-toggle"],
+                attrs! {
+                    At::Id => id,
+                    At::Type => "button",
+                    At::from("data-toggle") => "dropdown",
+                    At::AriaHasPopup => "true",
+                    At::AriaExpanded => "false"
+                },
+                selected.to_string()
+            ],
+            div![
+                C!["dropdown-menu"],
+                attrs! {
+                    At::AriaLabelledBy => id
+                },
+                T::iter()
+                    .map(|entry| button![
+                        C!["dropdown-item"],
+                        attrs!{
+                            At::Type => "button"
+                        },                            
+                        IF!(selected == &entry =>
+                            C!["active"]
+                        ),
+                        entry.to_string(),
+                        ev(Ev::Click, move |_| handler(entry.to_string()))
+                    ])
+                    .collect::<Vec<_>>(),
+            ]
+        ]
+    ]
+}
+
+/// a select input generated from an option enum, on sub line
+pub fn old_select_field_sub_line<
     T: strum::IntoEnumIterator + std::string::ToString + std::cmp::PartialEq<T>,
 >(
     id: &str,
@@ -203,7 +330,7 @@ pub fn select_field_sub_line<
         div![
             C!["col-sm-10"],
             form![
-                // workaround a 15 years old bug in Firefox where it wouldn't always show the selected option if the select tag is not inside a form tag
+                // workaround a 15 years old bug in Firefox where it wouldn't always show the selected option if the select tag is not inside a form tag (still doesnt work always)
                 attrs!{
                     At::AutoComplete => "off"
                 },
