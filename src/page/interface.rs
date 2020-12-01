@@ -43,9 +43,11 @@ pub fn interface_url(url: Url, interface_page: InterfacePage) -> Url {
 }
 
 /// called with the webapp url is changed to an interface page url
-pub fn change_url(mut url: seed::browser::url::Url, model: &mut Model) -> PageType {
+/// returns the page to display and possibly a message to undo the
+/// operation executed with switching to that url
+pub fn change_url(mut url: seed::browser::url::Url, model: &mut Model) -> (PageType, Option<Msg>) {
     match url.next_path_part() {
-        None => PageType::NotFound,
+        None => (PageType::NotFound, None),
         Some(URL_NEW) => new_interface(model),
         Some(number_string) => {
             match number_string.parse::<usize>() {
@@ -53,28 +55,32 @@ pub fn change_url(mut url: seed::browser::url::Url, model: &mut Model) -> PageTy
                     if index < model.mdf_data.interfaces.len() {
                         // check if we are just refering to the interface (URL stops here) ir a register (URL continues)
                         match url.next_path_part() {
-                            None => PageType::Interface(index),
-                            Some(URL_REGISTER) => super::register::change_url(url, index, model),
-                            Some(_) => PageType::NotFound,
+                            None => (PageType::Interface(index), None),
+                            Some(URL_REGISTER) => (super::register::change_url(url, index, model), None),
+                            Some(_) => (PageType::NotFound, None),
                         }
                     } else {
-                        PageType::NotFound
+                        (PageType::NotFound, None)
                     }
                 }
-                Err(_) => PageType::NotFound,
+                Err(_) => (PageType::NotFound, None),
             }
         }
     }
 }
 
-fn new_interface(model: &mut Model) -> PageType {
+fn new_interface(model: &mut Model) -> (PageType, Option<Msg>) {
     model.mdf_data.interfaces.push(Interface::new());
-    let new_page_type = PageType::Interface(model.mdf_data.interfaces.len() - 1);
+    let interface_number = model.mdf_data.interfaces.len() - 1;
+    let new_page_type = PageType::Interface(interface_number);
+
+    // generate the undo action
+    let undo = Msg::Interface(InterfaceMsg::Delete(interface_number));
 
     super::super::Urls::new(&model.base_url)
         .from_page_type(new_page_type)
         .go_and_replace();
-    new_page_type
+    (new_page_type, Some(undo))
 }
 
 // ------ ------
@@ -104,70 +110,110 @@ pub enum InterfaceMsg {
     DataWidthChanged(usize, String),
 }
 
-/// process the interface messages
-pub fn update(msg: InterfaceMsg, model: &mut Model, _orders: &mut impl Orders<Msg>) {
+/// process the interface messages. Returns a message that can be used
+/// to undo the operation described in the message
+pub fn update(msg: InterfaceMsg, model: &mut Model, _orders: &mut impl Orders<Msg>) -> Option<Msg> {
     match msg {
         InterfaceMsg::Delete(index) => {
             if index < model.mdf_data.interfaces.len() {
                 // move the deleted interface into the undo message
-                model.undo.register_message(Some(Msg::Interface(InterfaceMsg::Restore(index,
-                    std::rc::Rc::new(model.mdf_data.interfaces.remove(index))))),
-                    model.active_page);
+                Some(Msg::Interface(InterfaceMsg::Restore(index,
+                    std::rc::Rc::new(model.mdf_data.interfaces.remove(index)))))
+            }
+            else {
+                None
             }
         }
 
         InterfaceMsg::Restore(index, interface) => {
             match std::rc::Rc::<mdf_format::Interface>::try_unwrap(interface) {
-                Ok(interface_obj) => model.mdf_data.interfaces.insert(index,interface_obj),
-                _ => seed::log!("error recovering interface object"),
+                Ok(interface_obj) => { 
+                    model.mdf_data.interfaces.insert(index,interface_obj);
+                    Some(Msg::Interface(InterfaceMsg::Delete(index)))
+                },
+                _ => {
+                    seed::log!("error recovering interface object");
+                    None
+                },
             }
         }
         InterfaceMsg::MoveUp(index) => {
             if (index < model.mdf_data.interfaces.len()) && (index > 0) {
                 model.mdf_data.interfaces.swap(index - 1, index);
+                Some(Msg::Interface(InterfaceMsg::MoveDown(index-1)))
+            }
+            else {
+                None
             }
         }
         InterfaceMsg::MoveDown(index) => {
             if index < model.mdf_data.interfaces.len() - 1 {
                 model.mdf_data.interfaces.swap(index, index + 1);
+                Some(Msg::Interface(InterfaceMsg::MoveUp(index+1)))
+            }
+            else {
+                None
             }
         }
 
         InterfaceMsg::NameChanged(index, new_name) => {
+            let old_name = model.mdf_data.interfaces[index].name.clone();
             model.mdf_data.interfaces[index].name = new_name;
+            Some(Msg::Interface(InterfaceMsg::NameChanged(index,old_name)))
         }
+
         InterfaceMsg::TypeChanged(index, new_type_name) => {
             match InterfaceType::from_str(&new_type_name) {
                 Ok(new_type) => {
+                    let old_type = model.mdf_data.interfaces[index].interface_type.to_string();
                     model.mdf_data.interfaces[index].interface_type = new_type;
+                    Some(Msg::Interface(InterfaceMsg::TypeChanged(index, old_type )))
                 }
 
-                _ => seed::log!("error while converting from string to interface type"),
+                _ => {
+                    seed::log!("error while converting from string to interface type");
+                    None
+                }
             }
         }
         InterfaceMsg::DescriptionChanged(index, new_description) => {
+            let old_description = utils::opt_vec_str_to_textarea(&model.mdf_data.interfaces[index].description);
             model.mdf_data.interfaces[index].description =
                 utils::textarea_to_opt_vec_str(&new_description);
+            Some(Msg::Interface(InterfaceMsg::DescriptionChanged(index, old_description)))
         }
 
         InterfaceMsg::AddressWitdhChanged(index, new_width) => {
 
+            let old_add_width = match model.mdf_data.interfaces[index].address_width {
+                        None => String::new(),
+                        Some(width) => width.to_string()
+            };
             match utils::validate_field(ID_ADDRESS_WIDTH, &new_width, |field_value| {
                 utils::option_num_from_str(field_value)
             }) {
-                Ok(value) => model.mdf_data.interfaces[index].address_width = value,
-                Err(_) => (),
-            };
+                Ok(value) => {
+                    model.mdf_data.interfaces[index].address_width = value;
+                    Some(Msg::Interface(InterfaceMsg::AddressWitdhChanged(index, old_add_width)))
+                }
+                Err(_) => None
+            }
         }
 
         InterfaceMsg::DataWidthChanged(index, new_width) => {
-
+            let old_dat_width = match model.mdf_data.interfaces[index].data_width {
+                    None => String::new(),
+                    Some(width) => width.to_string()
+            };
             match utils::validate_field(ID_DATA_WIDTH, &new_width, |field_value| {
                 utils::option_num_from_str(field_value)
             }) {
-                Ok(value) => model.mdf_data.interfaces[index].data_width = value,
-                Err(_) => (),
-            };
+                Ok(value) => {
+                    model.mdf_data.interfaces[index].data_width = value;
+                    Some(Msg::Interface(InterfaceMsg::DataWidthChanged(index, old_dat_width)))
+                }
+                Err(_) => None
+            }
         }
     }
 }

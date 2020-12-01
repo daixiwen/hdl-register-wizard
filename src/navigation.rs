@@ -364,10 +364,10 @@ fn top_toolbar(model: &super::Model) -> Node<super::Msg> {
                 super::Msg::Undo(super::undo::UndoMsg::Undo),
                 model.undo.has_undo()
             ),
-            html_elements::toolbar_button_url(
+            html_elements::toolbar_button_msg(
                 "redo",
-                &Urls::new(&model.base_url).home(),
-                false
+                super::Msg::Undo(super::undo::UndoMsg::Redo),
+                model.undo.has_redo()
             ),
         ]
     ]

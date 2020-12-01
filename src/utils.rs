@@ -15,14 +15,18 @@ where
     F: Fn(&str) -> Result<T, E>,
 {
     let result = decode_value(field_new_value);
-    let elem = seed::document()
-        .get_element_by_id(field_id)
-        .expect("should find element");
+    let elem_try = seed::document()
+        .get_element_by_id(field_id);
 
-    match result {
-        Ok(_) => elem.set_class_name("form-control"),
-        Err(_) => elem.set_class_name("form-control  is-invalid"),
-    };
+    match elem_try {
+        Some(elem) => {
+            match result {
+                Ok(_) => elem.set_class_name("form-control"),
+                Err(_) => elem.set_class_name("form-control  is-invalid"),
+            }
+        }            
+        _ => (),
+    }
 
     result
 }

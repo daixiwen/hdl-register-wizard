@@ -194,23 +194,30 @@ pub enum Msg {
 
 // `update` describes how to handle each `Msg`.
 fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
-    let reverse_msg = undo::reverse_msg(msg.clone(), model);
     let current_page = model.active_page;
-    model.undo.register_message(reverse_msg, current_page);
-    process_message(msg, model, orders);
+    match process_message(msg, model, orders)
+    {
+        Some(msg) => model.undo.register_message(Some(msg), current_page),
+        None => ()
+    }
 }
 
 /// execute the action described in a message, either received from the ui, or from
 /// an undo/redo operation
-pub fn process_message(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
+pub fn process_message(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) -> Option<Msg> {
+    let mut return_msg = None;
+
     match msg {
         Msg::UrlChanged(subs::UrlChanged(mut url)) => {
-            model.active_page = match url.next_path_part() {
-                None => PageType::Home,
-                Some(EDIT) => PageType::Edit,
-                Some(SETTINGS) => PageType::Settings,
-                Some(INTERFACE) => page::interface::change_url(url, model),
-                Some(_) => PageType::NotFound,
+            match url.next_path_part() {
+                None => model.active_page =PageType::Home,
+                Some(EDIT) => model.active_page = PageType::Edit,
+                Some(SETTINGS) => model.active_page = PageType::Settings,
+                Some(INTERFACE) => {
+                    let (page_type, msg) = page::interface::change_url(url, model);
+                    model.active_page = page_type;
+                    return_msg = msg; },
+                Some(_) => model.active_page = PageType::NotFound,
             }
         }
         Msg::Menu(action) => navigation::do_menu(action, model, orders),
@@ -219,7 +226,7 @@ pub fn process_message(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg
 
         Msg::Edit(edit_msg) => page::edit::update(edit_msg, model, orders),
 
-        Msg::Interface(interface_msg) => page::interface::update(interface_msg, model, orders),
+        Msg::Interface(interface_msg) => return_msg = page::interface::update(interface_msg, model, orders),
 
         Msg::Register(interface_num, register_msg) => {
             page::register::update(register_msg, interface_num, model, orders)
@@ -255,6 +262,8 @@ pub fn process_message(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg
             }
         }
     }
+
+    return_msg
 }
 
 // ------ ------
