@@ -13,6 +13,8 @@ use seed::{prelude::*, *};
 
 use super::super::utils;
 
+use std::mem;
+
 /// messages for the edit page
 #[derive(Clone)]
 pub enum EditMsg {
@@ -21,11 +23,11 @@ pub enum EditMsg {
 }
 
 /// message handling for the edit page
-pub fn update(msg: EditMsg, model: &mut Model, orders: &mut impl Orders<Msg>) {
+pub fn update(msg: EditMsg, model: &mut Model, _orders: &mut impl Orders<Msg>)  -> Option<Msg> {
     match msg {
         EditMsg::NameChanged(new_name) => {
-            model.mdf_data.name = new_name;
-            orders.skip();
+            let old_name = mem::replace(&mut model.mdf_data.name, new_name);
+            Some(Msg::Edit(EditMsg::NameChanged(old_name)))
         }
     }
 }
@@ -89,17 +91,17 @@ fn interface_table_row(
                 ),
                 html_elements::toolbar_button_msg(
                     "delete",
-                    Msg::Interface(InterfaceMsg::Delete(index)),
+                    Msg::Interface(index, InterfaceMsg::Delete),
                     true
                 ),
                 html_elements::toolbar_button_msg(
                     "up",
-                    Msg::Interface(InterfaceMsg::MoveUp(index)),
+                    Msg::Interface(index, InterfaceMsg::MoveUp),
                     index != 0
                 ),
                 html_elements::toolbar_button_msg(
                     "down",
-                    Msg::Interface(InterfaceMsg::MoveDown(index)),
+                    Msg::Interface(index, InterfaceMsg::MoveDown),
                     index != model.mdf_data.interfaces.len() - 1
                 ),
             ]

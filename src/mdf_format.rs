@@ -146,7 +146,7 @@ impl Register {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 /// diferent ways of defining a register address
 pub enum Address {
     /// automatic address, the first available spot is used
@@ -157,7 +157,7 @@ pub enum Address {
     Stride(AddressStride),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 /// structure to represent a stride address definition, where the register can be repeated several times
 pub struct AddressStride {
     /// starting value

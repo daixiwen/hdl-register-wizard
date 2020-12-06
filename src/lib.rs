@@ -185,8 +185,8 @@ pub enum Msg {
     Menu(navigation::MenuCommand),
     Undo(undo::UndoMsg),
     Edit(page::edit::EditMsg),
-    Interface(page::interface::InterfaceMsg),
-    Register(usize, page::register::RegisterMsg),
+    Interface(usize, page::interface::InterfaceMsg),
+    Register(usize, usize, page::register::RegisterMsg),
     Field(usize, usize, page::field::FieldMsg),
     UploadStart(web_sys::Event),
     UploadText(String),
@@ -205,41 +205,60 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
 /// execute the action described in a message, either received from the ui, or from
 /// an undo/redo operation
 pub fn process_message(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) -> Option<Msg> {
-    let mut return_msg = None;
-
     match msg {
         Msg::UrlChanged(subs::UrlChanged(mut url)) => {
             match url.next_path_part() {
-                None => model.active_page =PageType::Home,
-                Some(EDIT) => model.active_page = PageType::Edit,
-                Some(SETTINGS) => model.active_page = PageType::Settings,
+                None => {
+                    model.active_page =PageType::Home;
+                    None },
+
+                Some(EDIT) => {
+                    model.active_page = PageType::Edit;
+                    None },
+
+                Some(SETTINGS) => {
+                    model.active_page = PageType::Settings;
+                    None },
+
                 Some(INTERFACE) => {
                     let (page_type, msg) = page::interface::change_url(url, model);
                     model.active_page = page_type;
-                    return_msg = msg; },
-                Some(_) => model.active_page = PageType::NotFound,
+                    msg },
+
+                Some(_) => {
+                    model.active_page = PageType::NotFound;
+                    None },
             }
         }
-        Msg::Menu(action) => navigation::do_menu(action, model, orders),
+        Msg::Menu(action) => {
+            navigation::do_menu(action, model, orders);
+            None },
 
-        Msg::Undo(undo_msg) => undo::update(undo_msg,model, orders),
+        Msg::Undo(undo_msg) => {
+            undo::update(undo_msg,model, orders);
+            None },
 
         Msg::Edit(edit_msg) => page::edit::update(edit_msg, model, orders),
 
-        Msg::Interface(interface_msg) => return_msg = page::interface::update(interface_msg, model, orders),
+        Msg::Interface(interface_num, interface_msg) => page::interface::update(interface_num, interface_msg, model, orders),
 
-        Msg::Register(interface_num, register_msg) => {
-            page::register::update(register_msg, interface_num, model, orders)
-        }
+        Msg::Register(interface_num, register_num, register_msg) => {
+            if interface_num < model.mdf_data.interfaces.len() {
+                page::register::update(interface_num, register_num, register_msg, model, orders)
+            }
+            else {
+                None
+            } 
+        },
 
         Msg::Field(interface_num, register_num, field_msg) => {
-            page::field::update(field_msg, interface_num, register_num, model, orders)
-        }
+            page::field::update(field_msg, interface_num, register_num, model, orders);
+            None },
 
         Msg::UploadStart(event) => {
             file_io::upload_file(event, orders);
             orders.skip();
-        }
+            None },
 
         Msg::UploadText(text) => {
             let decode: Result<mdf_format::Mdf, serde_json::Error> = serde_json::from_str(&text);
@@ -259,11 +278,10 @@ pub fn process_message(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg
                     );
                     orders.skip();
                 }
-            }
+            };
+            None
         }
     }
-
-    return_msg
 }
 
 // ------ ------

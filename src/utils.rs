@@ -31,7 +31,17 @@ where
     result
 }
 
-/// generate a string from an Option<name>
+/// convert an option to a string
+pub fn option_type_to_str<T>(object: &Option<T>) -> String
+    where T: std::fmt::Display {
+
+    match object {
+        None => String::new(),
+        Some(t) => t.to_string()
+    }
+}
+
+/// convert a string to an Option<name>
 pub fn option_num_from_str(string_input: &str) -> Result<Option<u32>, std::num::ParseIntError> {
     if string_input.is_empty() {
         Ok(None)
@@ -43,7 +53,7 @@ pub fn option_num_from_str(string_input: &str) -> Result<Option<u32>, std::num::
     }
 }
 
-/// generate a string from an Option<VectorValue>
+/// convert a string to an Option<VectorValue>
 pub fn option_vectorval_from_str(
     string_input: &str,
 ) -> Result<Option<VectorValue>, std::num::ParseIntError> {

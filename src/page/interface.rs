@@ -16,6 +16,7 @@ use super::html_elements;
 use super::register;
 
 use std::str::FromStr;
+use std::mem;
 
 // URL constants
 const URL_NEW: &str = "new";
@@ -56,7 +57,7 @@ pub fn change_url(mut url: seed::browser::url::Url, model: &mut Model) -> (PageT
                         // check if we are just refering to the interface (URL stops here) ir a register (URL continues)
                         match url.next_path_part() {
                             None => (PageType::Interface(index), None),
-                            Some(URL_REGISTER) => (super::register::change_url(url, index, model), None),
+                            Some(URL_REGISTER) => super::register::change_url(url, index, model),
                             Some(_) => (PageType::NotFound, None),
                         }
                     } else {
@@ -75,7 +76,7 @@ fn new_interface(model: &mut Model) -> (PageType, Option<Msg>) {
     let new_page_type = PageType::Interface(interface_number);
 
     // generate the undo action
-    let undo = Msg::Interface(InterfaceMsg::Delete(interface_number));
+    let undo = Msg::Interface(interface_number, InterfaceMsg::Delete);
 
     super::super::Urls::new(&model.base_url)
         .from_page_type(new_page_type)
@@ -91,128 +92,132 @@ fn new_interface(model: &mut Model) -> (PageType, Option<Msg>) {
 #[derive(Clone)]
 pub enum InterfaceMsg {
     /// delete the given interface
-    Delete(usize),
+    Delete,
     /// restore a deleted interface (undo)
-    Restore(usize, std::rc::Rc<Interface>),
+    Restore(std::rc::Rc<Interface>),
     /// move the given interface up in the list
-    MoveUp(usize),
+    MoveUp,
     /// move the given interface down in the list
-    MoveDown(usize),
+    MoveDown,
     /// change an interface name
-    NameChanged(usize, String),
+    NameChanged(String),
     /// change an interface protocol type
-    TypeChanged(usize, String),
+    TypeChanged(String),
     /// change an interface description
-    DescriptionChanged(usize, String),
+    DescriptionChanged(String),
     /// change an interface address width
-    AddressWitdhChanged(usize, String),
+    AddressWitdhChanged(String),
     /// change an interface data width
-    DataWidthChanged(usize, String),
+    DataWidthChanged(String),
 }
 
 /// process the interface messages. Returns a message that can be used
 /// to undo the operation described in the message
-pub fn update(msg: InterfaceMsg, model: &mut Model, _orders: &mut impl Orders<Msg>) -> Option<Msg> {
-    match msg {
-        InterfaceMsg::Delete(index) => {
-            if index < model.mdf_data.interfaces.len() {
-                // move the deleted interface into the undo message
-                Some(Msg::Interface(InterfaceMsg::Restore(index,
+pub fn update(index: usize, msg: InterfaceMsg, model: &mut Model, _orders: &mut impl Orders<Msg>) -> Option<Msg> {
+    let num_interfaces = match msg {
+        InterfaceMsg::Restore(_) => model.mdf_data.interfaces.len() + 1,
+        _ => model.mdf_data.interfaces.len() 
+    };
+
+    if index >= num_interfaces {
+        // index is out of bounds
+        None
+    }
+    else {
+        match msg {
+            InterfaceMsg::Delete => {
+                Some(Msg::Interface(index, InterfaceMsg::Restore(
                     std::rc::Rc::new(model.mdf_data.interfaces.remove(index)))))
             }
-            else {
-                None
-            }
-        }
 
-        InterfaceMsg::Restore(index, interface) => {
-            match std::rc::Rc::<mdf_format::Interface>::try_unwrap(interface) {
-                Ok(interface_obj) => { 
-                    model.mdf_data.interfaces.insert(index,interface_obj);
-                    Some(Msg::Interface(InterfaceMsg::Delete(index)))
-                },
-                _ => {
-                    seed::log!("error recovering interface object");
-                    None
-                },
-            }
-        }
-        InterfaceMsg::MoveUp(index) => {
-            if (index < model.mdf_data.interfaces.len()) && (index > 0) {
-                model.mdf_data.interfaces.swap(index - 1, index);
-                Some(Msg::Interface(InterfaceMsg::MoveDown(index-1)))
-            }
-            else {
-                None
-            }
-        }
-        InterfaceMsg::MoveDown(index) => {
-            if index < model.mdf_data.interfaces.len() - 1 {
-                model.mdf_data.interfaces.swap(index, index + 1);
-                Some(Msg::Interface(InterfaceMsg::MoveUp(index+1)))
-            }
-            else {
-                None
-            }
-        }
-
-        InterfaceMsg::NameChanged(index, new_name) => {
-            let old_name = model.mdf_data.interfaces[index].name.clone();
-            model.mdf_data.interfaces[index].name = new_name;
-            Some(Msg::Interface(InterfaceMsg::NameChanged(index,old_name)))
-        }
-
-        InterfaceMsg::TypeChanged(index, new_type_name) => {
-            match InterfaceType::from_str(&new_type_name) {
-                Ok(new_type) => {
-                    let old_type = model.mdf_data.interfaces[index].interface_type.to_string();
-                    model.mdf_data.interfaces[index].interface_type = new_type;
-                    Some(Msg::Interface(InterfaceMsg::TypeChanged(index, old_type )))
+            InterfaceMsg::Restore(interface) => {
+                match std::rc::Rc::<mdf_format::Interface>::try_unwrap(interface) {
+                    Ok(interface_obj) => { 
+                        model.mdf_data.interfaces.insert(index,interface_obj);
+                        Some(Msg::Interface(index, InterfaceMsg::Delete))
+                    },
+                    _ => {
+                        seed::log!("error recovering interface object");
+                        None
+                    },
                 }
-
-                _ => {
-                    seed::log!("error while converting from string to interface type");
+            }
+            InterfaceMsg::MoveUp => {
+                if index > 0 {
+                    model.mdf_data.interfaces.swap(index - 1, index);
+                    Some(Msg::Interface(index-1, InterfaceMsg::MoveDown))
+                }
+                else {
                     None
                 }
             }
-        }
-        InterfaceMsg::DescriptionChanged(index, new_description) => {
-            let old_description = utils::opt_vec_str_to_textarea(&model.mdf_data.interfaces[index].description);
-            model.mdf_data.interfaces[index].description =
-                utils::textarea_to_opt_vec_str(&new_description);
-            Some(Msg::Interface(InterfaceMsg::DescriptionChanged(index, old_description)))
-        }
+            InterfaceMsg::MoveDown => {
+                if index < num_interfaces - 1 {
+                    model.mdf_data.interfaces.swap(index, index + 1);
+                    Some(Msg::Interface(index+1, InterfaceMsg::MoveUp))
+                }
+                else {
+                    None
+                }
+            }
 
-        InterfaceMsg::AddressWitdhChanged(index, new_width) => {
+            InterfaceMsg::NameChanged(new_name) => {
+                let old_name = mem::replace(&mut model.mdf_data.interfaces[index].name, new_name);
+                Some(Msg::Interface(index,InterfaceMsg::NameChanged(old_name)))                
+            }
 
-            let old_add_width = match model.mdf_data.interfaces[index].address_width {
+            InterfaceMsg::TypeChanged(new_type_name) => {
+                match InterfaceType::from_str(&new_type_name) {
+                    Ok(new_type) => {
+                        let old_type = model.mdf_data.interfaces[index].interface_type.to_string();
+                        model.mdf_data.interfaces[index].interface_type = new_type;
+                        Some(Msg::Interface(index, InterfaceMsg::TypeChanged(old_type )))
+                    }
+
+                    _ => {
+                        seed::log!("error while converting from string to interface type");
+                        None
+                    }
+                }
+            }
+            InterfaceMsg::DescriptionChanged(new_description) => {
+                let old_description = utils::opt_vec_str_to_textarea(&model.mdf_data.interfaces[index].description);
+                model.mdf_data.interfaces[index].description =
+                    utils::textarea_to_opt_vec_str(&new_description);
+                Some(Msg::Interface(index, InterfaceMsg::DescriptionChanged(old_description)))
+            }
+
+            InterfaceMsg::AddressWitdhChanged(new_width) => {
+
+                let old_add_width = match model.mdf_data.interfaces[index].address_width {
+                            None => String::new(),
+                            Some(width) => width.to_string()
+                };
+                match utils::validate_field(ID_ADDRESS_WIDTH, &new_width, |field_value| {
+                    utils::option_num_from_str(field_value)
+                }) {
+                    Ok(value) => {
+                        model.mdf_data.interfaces[index].address_width = value;
+                        Some(Msg::Interface(index, InterfaceMsg::AddressWitdhChanged(old_add_width)))
+                    }
+                    Err(_) => None
+                }
+            }
+
+            InterfaceMsg::DataWidthChanged(new_width) => {
+                let old_dat_width = match model.mdf_data.interfaces[index].data_width {
                         None => String::new(),
                         Some(width) => width.to_string()
-            };
-            match utils::validate_field(ID_ADDRESS_WIDTH, &new_width, |field_value| {
-                utils::option_num_from_str(field_value)
-            }) {
-                Ok(value) => {
-                    model.mdf_data.interfaces[index].address_width = value;
-                    Some(Msg::Interface(InterfaceMsg::AddressWitdhChanged(index, old_add_width)))
+                };
+                match utils::validate_field(ID_DATA_WIDTH, &new_width, |field_value| {
+                    utils::option_num_from_str(field_value)
+                }) {
+                    Ok(value) => {
+                        model.mdf_data.interfaces[index].data_width = value;
+                        Some(Msg::Interface(index, InterfaceMsg::DataWidthChanged(old_dat_width)))
+                    }
+                    Err(_) => None
                 }
-                Err(_) => None
-            }
-        }
-
-        InterfaceMsg::DataWidthChanged(index, new_width) => {
-            let old_dat_width = match model.mdf_data.interfaces[index].data_width {
-                    None => String::new(),
-                    Some(width) => width.to_string()
-            };
-            match utils::validate_field(ID_DATA_WIDTH, &new_width, |field_value| {
-                utils::option_num_from_str(field_value)
-            }) {
-                Ok(value) => {
-                    model.mdf_data.interfaces[index].data_width = value;
-                    Some(Msg::Interface(InterfaceMsg::DataWidthChanged(index, old_dat_width)))
-                }
-                Err(_) => None
             }
         }
     }
@@ -240,14 +245,14 @@ pub fn view(model: &Model, index: usize) -> Node<Msg> {
             "inputName",
             "Name",
             &interface.name,
-            move |input| Msg::Interface(InterfaceMsg::NameChanged(index, input)),
+            move |input| Msg::Interface(index, InterfaceMsg::NameChanged(input)),
             None
         ),
         html_elements::textarea_field(
             "inputDescription",
             "Description",
             &utils::opt_vec_str_to_textarea(&interface.description),
-            move |input| Msg::Interface(InterfaceMsg::DescriptionChanged(index, input))
+            move |input| Msg::Interface(index, InterfaceMsg::DescriptionChanged(input))
         ),
         div![
             C!["form-group row"],
@@ -263,14 +268,14 @@ pub fn view(model: &Model, index: usize) -> Node<Msg> {
                         "inputType",
                         "Protocol",
                         &interface.interface_type,
-                        move |input| Msg::Interface(InterfaceMsg::TypeChanged(index, input))
+                        move |input| Msg::Interface(index, InterfaceMsg::TypeChanged(input))
                     ),
                     html_elements::text_field_sub_line(
                         ID_ADDRESS_WIDTH,
                         "Address width",
                         &address_width_value,
                         false,
-                        move |input| Msg::Interface(InterfaceMsg::AddressWitdhChanged(index, input)),
+                        move |input| Msg::Interface(index, InterfaceMsg::AddressWitdhChanged(input)),
                         Some("please write a decimal value or leave empty for automatic")
                     ),
                     html_elements::text_field_sub_line(
@@ -278,7 +283,7 @@ pub fn view(model: &Model, index: usize) -> Node<Msg> {
                         "Data width",
                         &data_width_value,
                         false,
-                        move |input| Msg::Interface(InterfaceMsg::DataWidthChanged(index, input)),
+                        move |input| Msg::Interface(index, InterfaceMsg::DataWidthChanged(input)),
                         Some("please write a decimal value or leave empty for automatic")
                     )
                 ]
@@ -335,17 +340,17 @@ fn register_table_row(
                 ),
                 html_elements::toolbar_button_msg(
                     "delete",
-                    Msg::Register(index, register::RegisterMsg::Delete(reg_index)),
+                    Msg::Register(index, reg_index, register::RegisterMsg::Delete),
                     true
                 ),
                 html_elements::toolbar_button_msg(
                     "up",
-                    Msg::Register(index, register::RegisterMsg::MoveUp(reg_index)),
+                    Msg::Register(index, reg_index, register::RegisterMsg::MoveUp),
                     reg_index != 0
                 ),
                 html_elements::toolbar_button_msg(
                     "down",
-                    Msg::Register(index, register::RegisterMsg::MoveDown(reg_index)),
+                    Msg::Register(index, reg_index, register::RegisterMsg::MoveDown),
                     reg_index != model.mdf_data.interfaces[index].registers.len() - 1
                 ),
             ],
