@@ -37,6 +37,9 @@ const FIELD: &str = "field";
 /// HTML ID of a hidden file input element used to open files
 pub const FILE_INPUT_ID: &str = "hidden_file_input";
 
+/// storage ID for the MDF data
+pub const STORAGE_KEY_MDF: &str = "mdf_data";
+
 // Test
 const HOME_MD_DATA: &'static str = include_str!("intro-page.md");
 
@@ -53,7 +56,7 @@ fn init(url: Url, orders: &mut impl Orders<Msg>) -> Model {
     Model {
         base_url,
         active_page: PageType::Edit,
-        mdf_data: mdf_format::Mdf::new(),
+        mdf_data: LocalStorage::get(STORAGE_KEY_MDF).unwrap_or_default(),
         undo: undo::Undo::new()
     }
 }
@@ -197,7 +200,10 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
     let current_page = model.active_page;
     match process_message(msg, model, orders)
     {
-        Some(msg) => model.undo.register_message(Some(msg), current_page),
+        Some(msg) => {
+            model.undo.register_message(Some(msg), current_page);
+            LocalStorage::insert(STORAGE_KEY_MDF, &model.mdf_data).expect("save model to LocalStorage")
+        }
         None => ()
     }
 }

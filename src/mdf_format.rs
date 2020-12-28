@@ -7,7 +7,7 @@ use std::str::FromStr;
 use strum_macros;
 use std::convert::TryInto;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 /// model description file. This structure hold all the model, and can be
 /// imported or exported as JSON
 pub struct Mdf {
@@ -19,7 +19,7 @@ pub struct Mdf {
 
 impl Mdf {
     /// create an empty model
-    pub fn new() -> Mdf {
+    pub fn default() -> Mdf {
         Mdf {
             name: String::new(),
             interfaces: Vec::new(),

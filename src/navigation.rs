@@ -76,6 +76,7 @@ pub fn navbar(model: &super::Model) -> Node<super::Msg> {
             div![C!["navbar-brand"],
                 a![ 
                     "RegWizard",
+                    C!["text-white"],
                     attrs!{
                         At::Href => super::Urls::new(&model.base_url).home()
                     }
