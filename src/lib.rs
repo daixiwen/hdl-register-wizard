@@ -187,7 +187,7 @@ pub enum Msg {
     Edit(page::edit::EditMsg),
     Interface(usize, page::interface::InterfaceMsg),
     Register(usize, usize, page::register::RegisterMsg),
-    Field(usize, usize, page::field::FieldMsg),
+    Field(usize, usize, usize, page::field::FieldMsg),
     UploadStart(web_sys::Event),
     UploadText(String),
 }
@@ -251,9 +251,16 @@ pub fn process_message(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg
             } 
         },
 
-        Msg::Field(interface_num, register_num, field_msg) => {
-            page::field::update(field_msg, interface_num, register_num, model, orders);
-            None },
+        Msg::Field(interface_num, register_num, field_num, field_msg) => {
+            if (interface_num < model.mdf_data.interfaces.len()) &&
+               (register_num < model.mdf_data.interfaces[interface_num].registers.len()) {
+
+                page::field::update(field_msg, interface_num, register_num, field_num, model, orders)
+            }
+            else {
+            None
+            } 
+        },
 
         Msg::UploadStart(event) => {
             file_io::upload_file(event, orders);

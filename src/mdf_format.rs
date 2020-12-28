@@ -293,13 +293,12 @@ pub struct Field {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<Vec<String>>,
     /// read/write access type for register. Can be None if fields are used and every field has an access type
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub access: Option<AccessType>,
+    pub access: AccessType,
     /// signal type
     pub signal: SignalType,
     /// reset value
     pub reset: VectorValue,
-    /// register location.  Can be None if fields are used and every field has a location
+    /// register location.  Can be None if field has a location
     #[serde(skip_serializing_if = "Option::is_none")]
     pub location: Option<LocationType>,
     /// signal properties
@@ -314,7 +313,7 @@ impl Field {
             name: String::new(),
             position: FieldPosition::Single(0),
             description: None,
-            access: Some(AccessType::RW),
+            access: AccessType::RW,
             signal: SignalType::StdLogic,
             reset: VectorValue::new(),
             location: Some(LocationType::Pif),

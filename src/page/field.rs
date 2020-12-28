@@ -18,6 +18,7 @@ use super::super::utils;
 use super::html_elements;
 
 use std::str::FromStr;
+use std::mem;
 
 // URL constants
 const URL_NEW: &str = "new";
@@ -55,42 +56,42 @@ pub fn change_url(
     interface_num: usize,
     register_num: usize,
     model: &mut Model,
-) -> PageType {
+) -> (PageType, Option<Msg>) {
     match url.next_path_part() {
-        None => PageType::NotFound,
+        None => (PageType::NotFound, None),
         Some(URL_NEW) => new_field(interface_num, register_num, model),
         Some(number_string) => match number_string.parse::<usize>() {
             Ok(index) => {
                 if index < model.mdf_data.interfaces[interface_num].registers[register_num].fields.len() {
-                    PageType::Field(interface_num, register_num, index)
+                    (PageType::Field(interface_num, register_num, index), None)
                 } else {
-                    PageType::NotFound
+                    (PageType::NotFound, None)
                 }
             }
-            Err(_) => PageType::NotFound,
+            Err(_) => (PageType::NotFound, None),
         },
     }
 }
 
-fn new_field(interface: usize, register: usize, model: &mut Model) -> PageType {
-    model.mdf_data.interfaces[interface]
-        .registers[register]
+fn new_field(interface_num: usize, register_num: usize, model: &mut Model) -> (PageType, Option<Msg>) {
+    model.mdf_data.interfaces[interface_num]
+        .registers[register_num]
         .fields
         .push(Field::new());
-    let new_page_type = PageType::Field(
-        interface,
-        register,
-        model.mdf_data.interfaces[interface].registers[register].fields.len() - 1,
-    );
+    let field_num = model.mdf_data.interfaces[interface_num].registers[register_num].fields.len() - 1;
+    let new_page_type = PageType::Field(interface_num, register_num, field_num);
+
+    // generate the undo action
+    let undo = Msg::Field(interface_num, register_num, field_num, FieldMsg::Delete);
 
     // remove some of the register options that become illegal
     // if fields are present
-    model.mdf_data.interfaces[interface].registers[register].clean();
+    model.mdf_data.interfaces[interface_num].registers[register_num].clean();
 
     super::super::Urls::new(model.base_url.clone())
         .from_page_type(new_page_type)
         .go_and_replace();
-    new_page_type
+    (new_page_type, Some(undo))
 }
 
 // ------ ------
@@ -101,29 +102,35 @@ fn new_field(interface: usize, register: usize, model: &mut Model) -> PageType {
 #[derive(Clone)]
 pub enum FieldMsg {
     /// delete the field
-    Delete(usize),
+    Delete,
+    /// restore a deleted field (undo)
+    Restore(std::rc::Rc<Field>),
     /// move the field up in the list
-    MoveUp(usize),
+    MoveUp,
     /// move the field down in the list
-    MoveDown(usize),
+    MoveDown,
     /// field name changed
-    NameChanged(usize, String),
+    NameChanged(String),
     /// sent when the field position is changed
-    PositionChanged(usize, String),
+    PositionChanged(String),
     /// sent when the field description is changed
-    DescriptionChanged(usize, String),
+    DescriptionChanged(String),
     /// sent when the access type of the field is changed
-    AccessTypeChanged(usize, String),
+    AccessTypeChanged(String),
     /// sent when the signal type for the field is changed
-    SignalTypeChanged(usize, String),
+    SignalTypeChanged(String),
     /// sent when the field's reset value is changed
-    ResetValueChanged(usize, String),
+    ResetValueChanged(String),
     /// sent when the field's location is changed
-    LocationChanged(usize, String),
+    LocationChanged(String),
     /// sent when the read enable core property is changed
-    CorePropReadEnable(usize, web_sys::Event),
+    CorePropReadEnable(web_sys::Event),
     /// sent when the write enable core property is changed
-    CorePropWriteEnable(usize, web_sys::Event),
+    CorePropWriteEnable(web_sys::Event),
+    /// restore the read enable core property (undo)
+    RestoreCorePropReadEnable(Option<bool>),
+    /// restore the write enable core property (undo)
+    RestoreCorePropWriteEnable(Option<bool>),
 }
 
 /// process a field message
@@ -131,17 +138,25 @@ pub fn update(
     msg: FieldMsg,
     interface_num: usize,
     register_num: usize,
+    field_num: usize,
     model: &mut Model,
-    orders: &mut impl Orders<Msg>,
-) {
-    let num_fields = model.mdf_data.interfaces[interface_num].registers[register_num].fields.len();
+    orders: &mut impl Orders<Msg>) -> Option<Msg> {
+    let num_fields = match msg {
+        FieldMsg::Restore(_) =>         model.mdf_data.interfaces[interface_num].registers  [register_num].fields.len() + 1,
+        _ => model.mdf_data.interfaces[interface_num].registers[register_num].fields.len()
+    };
 
-    match msg {
-        FieldMsg::Delete(index) => {
-            if index < num_fields {
-                model.mdf_data.interfaces[interface_num].registers[register_num]
-                    .fields
-                    .remove(index);
+    let reg_location = model.mdf_data.interfaces[interface_num].registers[register_num].location;
+    let fields = &mut model.mdf_data.interfaces[interface_num].registers[register_num].fields;
+
+    if field_num >= num_fields {
+        None
+    }
+    else {
+        match msg {
+            FieldMsg::Delete => {
+                let undo_msg = Msg::Field(interface_num, register_num, field_num, FieldMsg::Restore(
+                        std::rc::Rc::new(fields.remove(field_num))));
 
                 if model.mdf_data.interfaces[interface_num].registers[register_num].fields.is_empty() {
                     // if fields become empty again, put back some default values
@@ -152,143 +167,181 @@ pub fn update(
                     reg.signal = Some(SignalType::StdLogicVector);
                     reg.reset = Some(VectorValue::new());
                 }
-            }
-        }
-        FieldMsg::MoveUp(index) => {
-            if (index < num_fields) && (index > 0) {
-                model.mdf_data.interfaces[interface_num].registers[register_num]
-                    .fields
-                    .swap(index - 1, index);
-            }
-        }
-        FieldMsg::MoveDown(index) => {
-            if index < num_fields - 1 {
-                model.mdf_data.interfaces[interface_num].registers[register_num]
-                    .fields
-                    .swap(index, index + 1);
-            }
-        }
-
-        FieldMsg::NameChanged(index, new_name) => {
-            model.mdf_data.interfaces[interface_num].registers[register_num].fields[index].name = new_name;
-            orders.skip();
-        }
-
-        FieldMsg::PositionChanged(index, new_position) => {
-            match utils::validate_field(ID_POSITION, &new_position, |field_value| {
-                FieldPosition::from_str(field_value)}) {
-
-                Ok(pos) => model.mdf_data.interfaces[interface_num].registers[register_num].fields[index].position = pos,
-                _ => ()
+                Some(undo_msg)
             }
 
-            orders.skip();
-        }
-        FieldMsg::DescriptionChanged(index, new_description) => {
-            model.mdf_data.interfaces[interface_num].registers[register_num].fields[index].description =
-                utils::textarea_to_opt_vec_str(&new_description);
+            FieldMsg::Restore(field) => {
+                match std::rc::Rc::<Field>::try_unwrap(field) {
+                    Ok(field_obj) => {
+                        fields.insert(field_num, field_obj);
+                        Some(Msg::Field(interface_num, register_num, field_num, FieldMsg::Delete))
+                    },
+                    _ => {
+                        seed::log!("error recovering field object");
+                        None
+                    },
+                }
+            }
 
-            orders.skip();
-        }
+            FieldMsg::MoveUp => {
+                if field_num > 0 {
+                    fields.swap(field_num - 1, field_num);
+                    Some(Msg::Field(interface_num, register_num, field_num - 1, FieldMsg::MoveDown))
+                }
+                else {
+                    None
+                }
+            }
 
-        FieldMsg::AccessTypeChanged(index, new_type_name) => {
-            match AccessType::from_str(&new_type_name) {
-                Ok(new_type) => {
-                    model.mdf_data.interfaces[interface_num].registers[register_num].fields[index].access =
-                        Some(new_type);
+            FieldMsg::MoveDown => {
+                if field_num < num_fields - 1 {
+                    fields.swap(field_num, field_num + 1);
+                    Some(Msg::Field(interface_num, register_num, field_num + 1, FieldMsg::MoveUp))
+                }
+                else {
+                    None
+                }
+            }
 
-                    // put a default value for use_write_enabled if it is not set yet
-                    if (new_type != AccessType::RO)
-                        && (model.mdf_data.interfaces[interface_num].registers[register_num].fields[index].location
-                            == Some(LocationType::Core))
-                        && (model.mdf_data.interfaces[interface_num].registers[register_num].fields[index]
-                            .core_signal_properties
-                            .use_write_enable
-                            .is_none())
-                    {
-                        model.mdf_data.interfaces[interface_num].registers[register_num].fields[index]
-                            .core_signal_properties
-                            .use_write_enable = Some(true);
+            FieldMsg::NameChanged(new_name) => {
+                let old_name = mem::replace(&mut fields[field_num].name, new_name);
+                Some(Msg::Field(interface_num, register_num, field_num, FieldMsg::NameChanged(old_name)))
+            }
+
+            FieldMsg::PositionChanged(new_position) => {
+                let old_position = fields[field_num].position.to_string();
+                match utils::validate_field(ID_POSITION, &new_position, |field_value| {
+                    FieldPosition::from_str(field_value)}) {
+
+                    Ok(pos) => {
+                        fields[field_num].position = pos;
+                        Some(Msg::Field(interface_num, register_num, field_num, FieldMsg::PositionChanged(old_position)))
+                    },
+                    _ => {
+                        orders.skip();
+                        None
+                    },
+                }
+            }
+
+            FieldMsg::DescriptionChanged(new_description) => {
+                let old_description = utils::opt_vec_str_to_textarea(&fields[field_num].description);
+                fields[field_num].description = utils::textarea_to_opt_vec_str(&new_description);
+                Some(Msg::Field(interface_num, register_num, field_num, FieldMsg::DescriptionChanged(old_description)))
+            }
+
+            FieldMsg::AccessTypeChanged(new_type_name) => {
+                let old_type = fields[field_num].access.to_string();
+
+                match AccessType::from_str(&new_type_name) {
+                    Ok(new_type) => {
+                        fields[field_num].access = new_type;
+
+                        // put a default value for use_write_enabled if it is not set yet
+                        if (new_type != AccessType::RO)
+                            && (fields[field_num].location == Some(LocationType::Core))
+                            && (fields[field_num].core_signal_properties.use_write_enable.is_none())
+                        {
+                            fields[field_num].core_signal_properties.use_write_enable = Some(true);
+                        }
+
+                        Some(Msg::Field(interface_num, register_num, field_num, FieldMsg::AccessTypeChanged(old_type)))
+                    }
+
+                    _ => {
+                        seed::log!("error while converting from string to access type");
+                        None
                     }
                 }
-
-                _ => seed::log!("error while converting from string to interface type")
             }
-        }
 
-        FieldMsg::SignalTypeChanged(index, new_type_name) => {
-            orders.skip();
+            FieldMsg::SignalTypeChanged(new_type_name) => {
+                let old_type = fields[field_num].signal.to_string();
 
-            match SignalType::from_str(&new_type_name) {
-                Ok(new_type) => {
-                    model.mdf_data.interfaces[interface_num].registers[register_num].fields[index].signal =
-                        new_type;
-                }
-
-                _ => seed::log!("error while converting from string to signal type")
-            }
-        }
-
-        FieldMsg::ResetValueChanged(index, new_value) => {
-            orders.skip();
-
-            match utils::validate_field(ID_RESET_VALUE, &new_value, |field_value| {
-                VectorValue::from_str(field_value)
-            }) {
-                Ok(reset_value) => {
-                    model.mdf_data.interfaces[interface_num].registers[register_num].fields[index].reset = reset_value
-                }
-                Err(_) => (),
-            }
-        }
-
-        FieldMsg::LocationChanged(index, new_location_name) => {
-            match LocationType::from_str(&new_location_name) {
-                Ok(location) => {
-                    model.mdf_data.interfaces[interface_num].registers[register_num].fields[index].location =
-                        Some(location);
-                    // put a default value for use_write_enabled if it is not set yet
-                    if (location == LocationType::Core)
-                        && (model.mdf_data.interfaces[interface_num].registers[register_num].fields[index].access
-                            != Some(AccessType::RO))
-                        && (model.mdf_data.interfaces[interface_num].registers[register_num].fields[index]
-                            .core_signal_properties
-                            .use_write_enable
-                            .is_none())
-                    {
-                        model.mdf_data.interfaces[interface_num].registers[register_num].fields[index]
-                            .core_signal_properties
-                            .use_write_enable = Some(true);
+                match SignalType::from_str(&new_type_name) {
+                    Ok(new_type) => {
+                        fields[field_num].signal = new_type;
+                        Some(Msg::Field(interface_num, register_num, field_num, FieldMsg::SignalTypeChanged(old_type)))
                     }
-                    else {
-                        // in some cases the core signal properties need to be cleaned
-                        let reg_location = model.mdf_data.interfaces[interface_num].registers[register_num].location;
-                        model.mdf_data.interfaces[interface_num].registers[register_num].fields[index].clean(reg_location);
+
+                    _ => {
+                        seed::log!("error while converting from string to signal type");
+                        None
                     }
                 }
+            }
 
-                _ => {
-                    if new_location_name == TXT_SPEC_IN_REGISTER {
-                        model.mdf_data.interfaces[interface_num].registers[register_num].fields[index].location = None;
-                        let reg_location = model.mdf_data.interfaces[interface_num].registers[register_num].location;
-                        model.mdf_data.interfaces[interface_num].registers[register_num].fields[index].clean(reg_location);
-                    } else {
-                        seed::log!("error while converting from string to location")
+            FieldMsg::ResetValueChanged(new_value) => {
+                let old_reset_value = fields[field_num].reset.to_string();
+
+                match utils::validate_field(ID_RESET_VALUE, &new_value, |field_value| {
+                    VectorValue::from_str(field_value)
+                }) {
+                    Ok(reset_value) => {
+                        fields[field_num].reset = reset_value
                     }
-                }
-           }
-        }
+                    Err(_) => ()
+                };
 
-        FieldMsg::CorePropReadEnable(index, event) => {
-            model.mdf_data.interfaces[interface_num].registers[register_num].fields[index]
-                .core_signal_properties
-                .use_read_enable = Some(utils::target_checked(&event));
-        }
+                Some(Msg::Field(interface_num, register_num, field_num, FieldMsg::ResetValueChanged(old_reset_value)))
+            }
 
-        FieldMsg::CorePropWriteEnable(index, event) => {
-            model.mdf_data.interfaces[interface_num].registers[register_num].fields[index]
-                .core_signal_properties
-                .use_write_enable = Some(utils::target_checked(&event));
+            FieldMsg::LocationChanged(new_location_name) => {
+                let old_location = match fields[field_num].location {
+                    Some(location) => location.to_string(),
+                    _ => TXT_SPEC_IN_REGISTER.to_string()
+                };
+
+                match LocationType::from_str(&new_location_name) {
+                    Ok(location) => {
+                        fields[field_num].location = Some(location);
+                        // put a default value for use_write_enabled if it is not set yet
+                        if (location == LocationType::Core)
+                            && (fields[field_num].access != AccessType::RO)
+                            && (fields[field_num].core_signal_properties.use_write_enable.is_none())
+                        {
+                            fields[field_num].core_signal_properties.use_write_enable = Some(true);
+                        }
+                        else {
+                            // in some cases the core signal properties need to be cleaned
+                            fields[field_num].clean(reg_location);
+                        }
+                    }
+
+                    _ => {
+                        if new_location_name == TXT_SPEC_IN_REGISTER {
+                            fields[field_num].location = None;
+                            fields[field_num].clean(reg_location);
+                        } else {
+                            seed::log!("error while converting from string to location")
+                        }
+                    }
+                };
+                Some(Msg::Field(interface_num, register_num, field_num, FieldMsg::LocationChanged(old_location)))
+            }
+
+            FieldMsg::CorePropReadEnable(event) => {
+                let old_prop = mem::replace(&mut fields[field_num].core_signal_properties.use_read_enable, 
+                    Some(utils::target_checked(&event)));
+                Some(Msg::Field(interface_num, register_num, field_num, FieldMsg::RestoreCorePropReadEnable(old_prop)))
+            }
+
+            FieldMsg::RestoreCorePropReadEnable(prop) => {
+                let old_prop = mem::replace(&mut fields[field_num].core_signal_properties.use_read_enable, prop);
+                Some(Msg::Field(interface_num, register_num, field_num, FieldMsg::RestoreCorePropReadEnable(old_prop)))
+            }
+
+            FieldMsg::CorePropWriteEnable(event) => {
+                let old_prop = mem::replace(&mut fields[field_num].core_signal_properties.use_write_enable,
+                    Some(utils::target_checked(&event)));
+
+                Some(Msg::Field(interface_num, register_num, field_num, FieldMsg::RestoreCorePropWriteEnable(old_prop)))
+            }
+
+            FieldMsg::RestoreCorePropWriteEnable(prop) => {
+                let old_prop = mem::replace(&mut fields[field_num].core_signal_properties.use_write_enable, prop);
+                Some(Msg::Field(interface_num, register_num, field_num, FieldMsg::RestoreCorePropWriteEnable(old_prop)))
+            }
         }
     }
 }
@@ -309,14 +362,14 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize, field_
             "inputName",
             "Name",
             &field.name,
-            move | input | Msg::Field(interface_index, register_index, FieldMsg::NameChanged(field_index, input)),
+            move | input | Msg::Field(interface_index, register_index, field_index, FieldMsg::NameChanged(input)),
             None
         ),
       html_elements::textarea_field(
           "inputDescription",
           "Description",
           &utils::opt_vec_str_to_textarea(&field.description),
-          move | input | Msg::Field(interface_index, register_index, FieldMsg::DescriptionChanged(field_index, input))
+          move | input | Msg::Field(interface_index, register_index, field_index, FieldMsg::DescriptionChanged(input))
       ),
     ],
     div![
@@ -333,14 +386,14 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize, field_
                     "inputSignal",
                     "Type:",
                     &field.signal,
-                    move | input | Msg::Field(interface_index, register_index, FieldMsg::SignalTypeChanged(field_index, input))
+                    move | input | Msg::Field(interface_index, register_index, field_index, FieldMsg::SignalTypeChanged(input))
                 ),
                 html_elements::text_field_sub_line(
                     ID_POSITION,
                     "position",
                     &field.position.to_string(),
                     false,
-                    move | input | Msg::Field(interface_index, register_index, FieldMsg::PositionChanged(field_index, input)),
+                    move | input | Msg::Field(interface_index, register_index, field_index, FieldMsg::PositionChanged(input)),
                     Some("please provide either a single bit number, or the combination msb:lsb"),
                 ),
                 html_elements::text_field_sub_line(
@@ -348,7 +401,7 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize, field_
                     "Reset:",
                     &field.reset.to_string(),
                     false,
-                    move | input | Msg::Field(interface_index, register_index, FieldMsg::ResetValueChanged(field_index, input)),
+                    move | input | Msg::Field(interface_index, register_index, field_index, FieldMsg::ResetValueChanged(input)),
                     Some("please use a decimal, hexadecimal (0x*) or binary (0b*) value")
                 ),
             ]
@@ -365,19 +418,18 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize, field_
             div![
                 C!["form-row align-items-center form-inline"],
 
-                html_elements::select_option_field_sub_line(
+                html_elements::select_field_sub_line(
                     "inputAccess",
                     "Access:",
                     &field.access,
-                    TXT_SPEC_IN_REGISTER,
-                    move | input | Msg::Field(interface_index, register_index, FieldMsg::AccessTypeChanged(field_index, input))
+                    move | input | Msg::Field(interface_index, register_index, field_index, FieldMsg::AccessTypeChanged(input))
                 ),
                 html_elements::select_option_field_sub_line(
                     "inputLocation",
                     "Location:",
                     &field.location,
                     TXT_SPEC_IN_REGISTER,
-                    move | input | Msg::Field(interface_index, register_index, FieldMsg::LocationChanged(field_index, input))
+                    move | input | Msg::Field(interface_index, register_index, field_index, FieldMsg::LocationChanged(input))
                 ),
             ]
         ]
@@ -402,9 +454,9 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize, field_
             IF!(field.core_signal_properties.use_read_enable == Some(true) =>
               attrs!{ At::Checked => "checked"}),
             IF!((field.location == Some(LocationType::Pif)) ||
-                (field.access == Some(AccessType::WO)) =>
+                (field.access == AccessType::WO) =>
               attrs!{ At::Disabled => "disabled"}),
-            ev(Ev::Change, move | event | Msg::Field(interface_index, register_index, FieldMsg::CorePropReadEnable(field_index, event))),
+            ev(Ev::Change, move | event | Msg::Field(interface_index, register_index, field_index, FieldMsg::CorePropReadEnable(event))),
           ],
           label![
             C!["form-check-label"],
@@ -426,9 +478,9 @@ pub fn view(model: &Model, interface_index: usize, register_index: usize, field_
             IF!(field.core_signal_properties.use_write_enable == Some(true) =>
               attrs!{ At::Checked => "checked"}),
             IF!((field.location == Some(LocationType::Pif)) ||
-                (field.access == Some(AccessType::RO)) =>
+                (field.access == AccessType::RO) =>
               attrs!{ At::Disabled => "disabled"}),
-            ev(Ev::Change, move | event | Msg::Field(interface_index, register_index, FieldMsg::CorePropWriteEnable(field_index, event))),
+            ev(Ev::Change, move | event | Msg::Field(interface_index, register_index, field_index, FieldMsg::CorePropWriteEnable(event))),
           ],
           label![
             C!["form-check-label"],

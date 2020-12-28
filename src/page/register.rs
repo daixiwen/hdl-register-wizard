@@ -75,7 +75,7 @@ pub fn change_url(
                     // check if we are just refering to the interface (URL stops here) ir a register (URL continues)
                     match url.next_path_part() {
                         None => (PageType::Register(interface_num, index), None),
-                        Some(URL_FIELD) => (super::field::change_url(url, interface_num, index, model), None),
+                        Some(URL_FIELD) => super::field::change_url(url, interface_num, index, model),
                         Some(_) => (PageType::NotFound, None),
                     }
                 } else {
@@ -164,7 +164,7 @@ pub fn update(
     register_num: usize,
     msg: RegisterMsg,
     model: &mut Model,
-    _orders: &mut impl Orders<Msg>,
+    orders: &mut impl Orders<Msg>,
     )
             -> Option<Msg> {
 
@@ -288,7 +288,8 @@ pub fn update(
                         Some(Msg::Register(interface_num, register_num, RegisterMsg::RestoreAddress(old_address)))
                     }
                     Err(_) => {
-                        Some(Msg::Register(interface_num, register_num, RegisterMsg::RestoreAddress(registers[register_num].address.clone())))
+                        orders.skip();
+                        None
                     }
                 }
             }
@@ -309,7 +310,8 @@ pub fn update(
                                 Some(Msg::Register(interface_num, register_num, RegisterMsg::RestoreAddress(old_address)))
                             }
                             Err(_) => {
-                                Some(Msg::Register(interface_num, register_num, RegisterMsg::RestoreAddress(registers[register_num].address.clone())))
+                                orders.skip();
+                                None
                             }
                         }
                     }
@@ -333,7 +335,8 @@ pub fn update(
                                 Some(Msg::Register(interface_num, register_num, RegisterMsg::RestoreAddress(old_address)))
                             }
                             Err(_) => {
-                                Some(Msg::Register(interface_num, register_num, RegisterMsg::RestoreAddress(registers[register_num].address.clone())))
+                                orders.skip();
+                                None
                             }
                         }
                     }
@@ -357,7 +360,8 @@ pub fn update(
                                 Some(Msg::Register(interface_num, register_num, RegisterMsg::RestoreAddress(old_address)))
                             }
                             Err(_) => {
-                                Some(Msg::Register(interface_num, register_num, RegisterMsg::RestoreAddress(registers[register_num].address.clone())))
+                                orders.skip();
+                                None
                             }
                         }
                     }
@@ -374,7 +378,8 @@ pub fn update(
                         Some(Msg::Register(interface_num, register_num, RegisterMsg::WidthChanged(utils::option_type_to_str(&old_width))))
                     }
                     Err(_) => {
-                        Some(Msg::Register(interface_num, register_num, RegisterMsg::WidthChanged(utils::option_type_to_str(&registers[register_num].width))))
+                        orders.skip();
+                        None
                     }
                 }
             }
@@ -433,15 +438,18 @@ pub fn update(
 
             RegisterMsg::ResetValueChanged(new_value) => {
 
-                let old_value = match utils::validate_field(ID_RESET_VALUE, &new_value, |field_value| {
+                match utils::validate_field(ID_RESET_VALUE, &new_value, |field_value| {
                     utils::option_vectorval_from_str(field_value)
                 }) {
                     Ok(reset_value) => {
-                        mem::replace(&mut registers[register_num].reset, reset_value)
+                        let old_value = mem::replace(&mut registers[register_num].reset, reset_value);
+                        Some(Msg::Register(interface_num, register_num, RegisterMsg::ResetValueChanged(utils::option_type_to_str(&old_value))))
                     }
-                    Err(_) => registers[register_num].reset,
-                };
-                Some(Msg::Register(interface_num, register_num, RegisterMsg::ResetValueChanged(utils::option_type_to_str(&old_value))))
+                    Err(_) => {
+                        orders.skip();
+                        None
+                    }
+                }
             }
 
             RegisterMsg::LocationChanged(new_location_name) => {
@@ -868,17 +876,17 @@ fn field_table_row(
                 ),
                 html_elements::toolbar_button_msg(
                     "delete",
-                    Msg::Field(interface_index, register_index, field::FieldMsg::Delete(field_index)),
+                    Msg::Field(interface_index, register_index, field_index, field::FieldMsg::Delete),
                     true
                 ),
                 html_elements::toolbar_button_msg(
                     "up",
-                    Msg::Field(interface_index, register_index, field::FieldMsg::MoveUp(field_index)),
+                    Msg::Field(interface_index, register_index, field_index, field::FieldMsg::MoveUp),
                     field_index != 0
                 ),
                 html_elements::toolbar_button_msg(
                     "down",
-                    Msg::Field(interface_index, register_index, field::FieldMsg::MoveDown(field_index)),
+                    Msg::Field(interface_index, register_index, field_index, field::FieldMsg::MoveDown),
                     field_index != model.mdf_data.interfaces[interface_index].registers[register_index].fields.len() - 1
                 ),
             ],
