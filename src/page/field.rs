@@ -2,19 +2,19 @@
 
 use seed::{prelude::*, *};
 
-use super::super::Model;
-use super::super::PageType;
+use crate::Model;
+use crate::PageType;
 
-use super::super::mdf_format::AccessType;
-use super::super::mdf_format::LocationType;
+use crate::mdf_format::AccessType;
+use crate::mdf_format::LocationType;
 
-use super::super::mdf_format::Field;
-use super::super::mdf_format::SignalType;
-use super::super::mdf_format::VectorValue;
-use super::super::mdf_format::FieldPosition;
-use super::super::Msg;
+use crate::mdf_format::Field;
+use crate::mdf_format::SignalType;
+use crate::mdf_format::VectorValue;
+use crate::mdf_format::FieldPosition;
+use crate::Msg;
 
-use super::super::utils;
+use crate::utils;
 use super::html_elements;
 
 use std::str::FromStr;
@@ -88,7 +88,7 @@ fn new_field(interface_num: usize, register_num: usize, model: &mut Model) -> (P
     // if fields are present
     model.mdf_data.interfaces[interface_num].registers[register_num].clean();
 
-    super::super::Urls::new(model.base_url.clone())
+    crate::Urls::new(model.base_url.clone())
         .from_page_type(new_page_type)
         .go_and_replace();
     (new_page_type, Some(undo))

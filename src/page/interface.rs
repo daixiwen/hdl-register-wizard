@@ -2,15 +2,15 @@
 
 use seed::{prelude::*, *};
 
-use super::super::mdf_format;
-use super::super::mdf_format::Interface;
-use super::super::mdf_format::InterfaceType;
-use super::super::Model;
-use super::super::Msg;
-use super::super::PageType;
-use super::super::Urls;
+use crate::mdf_format;
+use crate::mdf_format::Interface;
+use crate::mdf_format::InterfaceType;
+use crate::Model;
+use crate::Msg;
+use crate::PageType;
+use crate::Urls;
 
-use super::super::utils;
+use crate::utils;
 use super::html_elements;
 
 use super::register;
@@ -78,7 +78,7 @@ fn new_interface(model: &mut Model) -> (PageType, Option<Msg>) {
     // generate the undo action
     let undo = Msg::Interface(interface_number, InterfaceMsg::Delete);
 
-    super::super::Urls::new(&model.base_url)
+    crate::Urls::new(&model.base_url)
         .from_page_type(new_page_type)
         .go_and_replace();
     (new_page_type, Some(undo))

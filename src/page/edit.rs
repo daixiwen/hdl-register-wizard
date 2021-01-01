@@ -2,10 +2,10 @@
 
 //! Main edit page, with the model name and the list of interfaces
 
-use super::super::mdf_format;
-use super::super::Model;
-use super::super::Msg;
-use super::super::Urls;
+use crate::mdf_format;
+use crate::Model;
+use crate::Msg;
+use crate::Urls;
 use super::html_elements;
 use super::interface::InterfaceMsg;
 use super::interface::InterfacePage;

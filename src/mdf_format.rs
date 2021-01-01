@@ -6,8 +6,9 @@ use std::fmt;
 use std::str::FromStr;
 use strum_macros;
 use std::convert::TryInto;
+use std::default::Default;
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Clone)]
 /// model description file. This structure hold all the model, and can be
 /// imported or exported as JSON
 pub struct Mdf {
@@ -17,9 +18,9 @@ pub struct Mdf {
     pub interfaces: Vec<Interface>,
 }
 
-impl Mdf {
+impl Default for Mdf {
     /// create an empty model
-    pub fn default() -> Mdf {
+    fn default() -> Mdf {
         Mdf {
             name: String::new(),
             interfaces: Vec::new(),
@@ -27,7 +28,7 @@ impl Mdf {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 /// structure representing an interface in the model
 pub struct Interface {
@@ -85,7 +86,7 @@ pub enum InterfaceType {
     AvalonMm,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 /// structure describing a register within an interface
 pub struct Register {
@@ -263,7 +264,7 @@ pub enum LocationType {
     Core,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 /// extra properties for signals located in core
 pub struct CoreSignalProperties {
@@ -281,7 +282,7 @@ impl CoreSignalProperties {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 /// structure representing a field element in a register
 pub struct Field {
@@ -325,7 +326,7 @@ impl Field {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 /// diferent ways of defining a field position
 pub enum FieldPosition {
     /// single bit

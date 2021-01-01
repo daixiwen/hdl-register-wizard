@@ -1,6 +1,6 @@
 //! common HTML blocks genetators for different parts of the app
 
-use super::super::Msg;
+use crate::Msg;
 use seed::{prelude::*, *};
 
 /// a single line text edit on full width

@@ -2,23 +2,23 @@
 
 use seed::{prelude::*, *};
 
-use super::super::Model;
-use super::super::PageType;
-use super::super::Urls;
+use crate::Model;
+use crate::PageType;
+use crate::Urls;
 
-use super::super::mdf_format;
-use super::super::mdf_format::AccessType;
-use super::super::mdf_format::Address;
-use super::super::mdf_format::AddressStride;
-use super::super::mdf_format::LocationType;
-use super::super::mdf_format::RadixType;
-use super::super::mdf_format::Register;
-use super::super::mdf_format::SignalType;
-use super::super::mdf_format::VectorValue;
+use crate::mdf_format;
+use crate::mdf_format::AccessType;
+use crate::mdf_format::Address;
+use crate::mdf_format::AddressStride;
+use crate::mdf_format::LocationType;
+use crate::mdf_format::RadixType;
+use crate::mdf_format::Register;
+use crate::mdf_format::SignalType;
+use crate::mdf_format::VectorValue;
 
-use super::super::Msg;
+use crate::Msg;
 
-use super::super::utils;
+use crate::utils;
 use super::html_elements;
 use super::field;
 
@@ -95,7 +95,7 @@ fn new_register(interface_num: usize, model: &mut Model) -> (PageType, Option<Ms
     // generate the undo action
     let undo = Msg::Register(interface_num, register_num, RegisterMsg::Delete);
 
-    super::super::Urls::new(model.base_url.clone())
+    crate::Urls::new(model.base_url.clone())
         .from_page_type(new_page_type)
         .go_and_replace();
     (new_page_type, Some(undo))

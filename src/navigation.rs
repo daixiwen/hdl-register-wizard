@@ -6,6 +6,7 @@ use super::PageType;
 use super::Urls;
 use super::page::html_elements;
 use super::page;
+use super::Msg;
 
 /// structure used to describe a menu entry when building the menu in HTML
 pub struct MenuEntry<'a> {
@@ -29,7 +30,7 @@ pub fn do_menu(
     action: MenuCommand,
     model: &mut super::Model,
     orders: &mut impl Orders<super::Msg>,
-) {
+) -> Option<Msg> {
     match action {
         MenuCommand::SaveFile => {
             model.mdf_data.clean();
@@ -38,13 +39,15 @@ pub fn do_menu(
                 serde_json::to_string_pretty(&model.mdf_data).expect("serialize data to json");
             super::file_io::download_text(&filename, &jsondata);
             orders.skip();
+            None
         }
         MenuCommand::LoadFile => {
             super::file_io::choose_upload(super::FILE_INPUT_ID);
             orders.skip();
+            None
         }
         MenuCommand::NewFile => {
-            orders.skip();
+            Some(Msg::RestoreFull(std::mem::take(&mut model.mdf_data)))
         }
     }
 }
