@@ -1,11 +1,8 @@
 use super::super::utils;
-use seed::{prelude::*, *};
-use wasm_bindgen_test::*;
 
-wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
 // test creating VectorValue with string
-#[wasm_bindgen_test]
+#[test]
 fn from_str() {
     let expected = vec!["first line", "second line", "third line"]
         .iter()
@@ -22,7 +19,7 @@ fn from_str() {
 }
 
 // test converting VectorValue to string
-#[wasm_bindgen_test]
+#[test]
 fn to_str() {
     let value: Vec<String> = vec!["line one", "line two", "line three"]
         .iter()

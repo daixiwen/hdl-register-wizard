@@ -67,6 +67,12 @@ impl Interface {
     }
 }
 
+impl Default for Interface {
+    fn default() -> Self {
+        Interface::new()
+    }
+}
+
 #[derive(
     Serialize,
     Deserialize,
@@ -144,6 +150,12 @@ impl Register {
             },
             fields: Vec::new(),
         }
+    }
+}
+
+impl Default for Register {
+    fn default() -> Self {
+        Register::new()
     }
 }
 
@@ -245,6 +257,12 @@ impl VectorValue {
     }
 }
 
+impl Default for VectorValue {
+    fn default() -> Self {
+        VectorValue::new()
+    }
+}
+
 #[derive(
     Serialize,
     Deserialize,
@@ -278,7 +296,7 @@ pub struct CoreSignalProperties {
 
 impl CoreSignalProperties {
     pub fn must_skip ( &self) -> bool {
-        return self.use_read_enable.is_none() && self.use_write_enable.is_none();
+        self.use_read_enable.is_none() && self.use_write_enable.is_none()
     }
 }
 
@@ -323,6 +341,12 @@ impl Field {
                 use_write_enable: None,
             },
         }
+    }
+}
+
+impl Default for Field {
+    fn default() -> Self {
+        Field::new()
     }
 }
 
@@ -412,7 +436,7 @@ impl std::str::FromStr for Address {
         if s == "auto" {
             Ok(Address::Auto)
         } else {
-            let elements: Vec<&str> = s.split(":").collect();
+            let elements: Vec<&str> = s.split(':').collect();
             match elements.len() {
                 1 => Ok(Address::Single(VectorValue::from_str(s)?)),
                 3 => {
@@ -515,7 +539,7 @@ impl std::str::FromStr for VectorValue {
     /// create a vector value from a string value, determing the radix from the prefix
     fn from_str(s: &str) -> Result<Self, std::num::ParseIntError> {
         if s.len() < 3 {
-            let value = u128::from_str_radix(&s, 10)?;
+            let value = s.parse()?;
             Ok(VectorValue {
                 value,
                 radix: RadixType::Decimal,
@@ -531,7 +555,7 @@ impl std::str::FromStr for VectorValue {
                 }
 
                 "0d" | "0D" => {
-                    let value = u128::from_str_radix(&s[2..], 10)?;
+                    let value = s[2..].parse()?;
                     Ok(VectorValue {
                         value,
                         radix: RadixType::Decimal,
@@ -547,7 +571,7 @@ impl std::str::FromStr for VectorValue {
                 }
 
                 _ => {
-                    let value = u128::from_str_radix(&s, 10)?;
+                    let value = s.parse()?;
                     Ok(VectorValue {
                         value,
                         radix: RadixType::Decimal,
@@ -612,7 +636,7 @@ impl std::str::FromStr for FieldPosition {
 
     /// conversion from string to field position, using the format described in the mdf specification: single value, or msb:lsb
     fn from_str(s: &str) -> Result<Self, std::num::ParseIntError> {
-        let elements: Vec<&str> = s.split(":").collect();
+        let elements: Vec<&str> = s.split(':').collect();
         match elements.len() {
             1 => Ok(FieldPosition::Single(u32::from_str(s)?)),
             2 => Ok(FieldPosition::Field(

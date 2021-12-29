@@ -1,11 +1,8 @@
 use super::super::mdf_format;
 use std::str::FromStr;
-use wasm_bindgen_test::*;
-
-wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
 // test creating VectorValue with string
-#[wasm_bindgen_test]
+#[test]
 fn from_str() {
     assert_eq!(
         mdf_format::VectorValue {
@@ -58,14 +55,13 @@ fn from_str() {
     );
 
     // test parse error
-    match mdf_format::VectorValue::from_str("abcd") {
-        Ok(_) => panic!("should panic"),
-        Err(_) => assert!(true),
+    if mdf_format::VectorValue::from_str("abcd").is_ok() {
+        panic!("should generate an error")
     }
 }
 
 // test converting VectorValue to string
-#[wasm_bindgen_test]
+#[test]
 fn to_str() {
     assert_eq!(
         mdf_format::VectorValue {
