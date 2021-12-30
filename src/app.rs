@@ -1,23 +1,24 @@
 use eframe::{egui, epi};
+use crate::mdf_format;
+use crate::page;
+use crate::navigation;
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "persistence", serde(default))] // if we add new fields, give them default values when deserializing old state
 pub struct HdlWizardApp {
     // Example stuff:
-    label: String,
+    pub model: mdf_format::Mdf,
 
-    // this how you opt-out of serialization of a member
     #[cfg_attr(feature = "persistence", serde(skip))]
-    value: f32,
+    pub page_type: page::PageType,
 }
 
 impl Default for HdlWizardApp {
     fn default() -> Self {
         Self {
-            // Example stuff:
-            label: "Hello World!".to_owned(),
-            value: 2.7,
+            model: Default::default(),
+            page_type : page::PageType::Project
         }
     }
 }
@@ -53,11 +54,6 @@ impl epi::App for HdlWizardApp {
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
     fn update(&mut self, ctx: &egui::CtxRef, frame: &mut epi::Frame<'_>) {
 
-        // Examples of how to create different panels and windows.
-        // Pick whichever suits you.
-        // Tip: a good default choice is to just keep the `CentralPanel`.
-        // For inspiration and more examples, go to https://emilk.github.io/egui
-
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             // The top panel is often a good place for a menu bar:
             egui::menu::bar(ui, |ui| {
@@ -69,15 +65,26 @@ impl epi::App for HdlWizardApp {
             });
         });
 
-        egui::SidePanel::left("side_panel").show(ctx, |ui| {
-            ui.heading("Registers");
+        navigation::navigate(self, ctx, frame);
 
-        });
+        match &self.page_type {
+            page::PageType::Project => {
+                page::project::panel(self, ctx, frame)
+            },
 
-        egui::CentralPanel::default().show(ctx, |ui| {
-            // The central panel the region left after adding TopPanel's and SidePanel's
+            page::PageType::Interface(num_interface) => {
+                match self.model.interfaces.get_mut(*num_interface) {
+                    Some(interface) => {
+                        page::interface::panel(interface, ctx, frame)
+                    },
 
-            ui.heading("center panel");
-        });
+                    None => {
+                        self.page_type = page::PageType::Project;
+                        ctx.request_repaint();
+                    }
+                }
+            }
+        }
     }
 }
+

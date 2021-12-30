@@ -1,8 +1,9 @@
-//! web app pages
+//! app pages
+#[derive(PartialEq)]
+pub enum PageType {
+    Project,
+    Interface(usize)
+}
 
-pub mod edit;
-pub mod html_elements;
+pub mod project;
 pub mod interface;
-pub mod register;
-pub mod settings;
-pub mod field;

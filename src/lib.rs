@@ -20,6 +20,8 @@ mod app;
 pub use app::HdlWizardApp;
 pub mod mdf_format;
 pub mod utils;
+pub mod page;
+pub mod navigation;
 
 #[cfg(test)]
 mod tests;
