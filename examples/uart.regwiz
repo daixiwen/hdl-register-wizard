@@ -1,0 +1,51 @@
+{
+  "name": "uart",
+  "interfaces": [
+    {
+      "name": "sbi",
+      "description": [
+        "registers"
+      ],
+      "type": "SBI",
+      "registers": [
+        {
+          "name": "rx",
+          "address": "0:stride:4",
+          "summary": [
+            "receive"
+          ],
+          "description": [
+            "Uart RX receive"
+          ],
+          "location": "pif",
+          "fields": [
+            {
+              "name": "data",
+              "position": "7:0",
+              "description": [
+                "received byte"
+              ],
+              "access": "RO",
+              "signal": "std_logic_vector",
+              "reset": 0,
+              "location": "core",
+              "coreSignalProperties": {}
+            },
+            {
+              "name": "new_byte",
+              "position": "8",
+              "description": [
+                "flag asserted when a new byte is received"
+              ],
+              "access": "RO",
+              "signal": "std_logic",
+              "reset": 0,
+              "location": "core",
+              "coreSignalProperties": {}
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

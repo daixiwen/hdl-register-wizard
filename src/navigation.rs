@@ -3,7 +3,7 @@ use eframe::{egui, epi};
 use crate::app::HdlWizardApp;
 use crate::page;
 
-pub fn navigate(app : &mut HdlWizardApp, ctx: &egui::CtxRef, _frame: &mut epi::Frame<'_>) {
+pub fn navigate(app : &mut HdlWizardApp, ctx: &egui::CtxRef, _frame: &epi::Frame) {
     egui::SidePanel::left("side_panel").show(ctx, |ui| {
         ui.add_space(5.0);
         ui.heading("Navigation");

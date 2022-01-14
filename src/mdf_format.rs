@@ -7,6 +7,7 @@ use std::str::FromStr;
 use strum_macros;
 use std::convert::TryInto;
 use std::default::Default;
+use crate::model_gui;
 
 #[derive(Serialize, Deserialize, Clone)]
 /// model description file. This structure hold all the model, and can be
@@ -39,7 +40,7 @@ pub struct Interface {
     pub description: Option<Vec<String>>,
     /// interface type (protocol used)
     #[serde(rename = "type")]
-    pub interface_type: InterfaceType,
+    pub interface_type: model_gui::InterfaceType,
     /// width of the address bus.
     /// if empty, automatically caculated from the highest register address
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -59,7 +60,7 @@ impl Interface {
         Interface {
             name: String::new(),
             description: None,
-            interface_type: InterfaceType::SBI,
+            interface_type: model_gui::InterfaceType::SBI,
             registers: Vec::<Register>::new(),
             address_width: None,
             data_width: None,
@@ -71,25 +72,6 @@ impl Default for Interface {
     fn default() -> Self {
         Interface::new()
     }
-}
-
-#[derive(
-    Serialize,
-    Deserialize,
-    strum_macros::ToString,
-    strum_macros::EnumIter,
-    strum_macros::EnumString,
-    PartialEq,
-    Clone,
-)]
-/// type of interface. Only SBI is officially spported by the Bitvis tool RegisterWizard
-pub enum InterfaceType {
-    /// SBI protocol, defined by Bitvis
-    SBI,
-    /// APB3 protocol, used in ARM systems among others
-    APB3,
-    /// Avalon Memory mapped interface, used in Altera/Intel FPGA designs
-    AvalonMm,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

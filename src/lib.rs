@@ -19,9 +19,12 @@
 mod app;
 pub use app::HdlWizardApp;
 pub mod mdf_format;
+pub mod model_gui;
 pub mod utils;
 pub mod page;
 pub mod navigation;
+pub mod undo;
+
 
 #[cfg(test)]
 mod tests;

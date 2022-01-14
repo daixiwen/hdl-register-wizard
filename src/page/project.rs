@@ -3,7 +3,7 @@ use eframe::{egui, epi};
 use crate::app::HdlWizardApp;
 use crate::page;
 
-pub fn panel(app : &mut HdlWizardApp, ctx: &egui::CtxRef, _frame: &mut epi::Frame<'_>) {
+pub fn panel(app : &mut HdlWizardApp, ctx: &egui::CtxRef, _frame: &epi::Frame) {
     egui::CentralPanel::default().show(ctx, |ui| {
 //        ui.spacing_mut().item_spacing.y = 10.0;
 
@@ -26,7 +26,7 @@ pub fn panel(app : &mut HdlWizardApp, ctx: &egui::CtxRef, _frame: &mut epi::Fram
             }
         });
 
-        let last_interface = app.model.interfaces.len()-1;
+        let num_interfaces = app.model.interfaces.len();
         let interface_names : Vec<String> = app.model.interfaces.iter().map(|int| int.name.clone()).collect();
 
         ui.add_space(5.0);
@@ -37,7 +37,7 @@ pub fn panel(app : &mut HdlWizardApp, ctx: &egui::CtxRef, _frame: &mut epi::Fram
                 .show(ui, |ui| {
                     for (n, interface_name) in interface_names.iter().enumerate() {
                         let interface_page_type = page::PageType::Interface(n);
-                        if ui.selectable_label(false, &interface_name).clicked() {
+                        if ui.selectable_label(false, interface_name).clicked() {
                             app.page_type = interface_page_type;
                         }
                         ui.horizontal(|ui| {
@@ -49,7 +49,7 @@ pub fn panel(app : &mut HdlWizardApp, ctx: &egui::CtxRef, _frame: &mut epi::Fram
                                     app.model.interfaces.swap(n-1,n);
                                 }
                             });
-                            ui.add_enabled_ui(n < last_interface, |ui| {
+                            ui.add_enabled_ui(n < (num_interfaces - 1), |ui| {
                                 if ui.button("⬇").clicked() {
                                     app.model.interfaces.swap(n,n+1);
                                 }
