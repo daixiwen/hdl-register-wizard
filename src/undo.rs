@@ -2,20 +2,51 @@
 
 use eframe::egui;
 use std::default;
+use crate::page;
+use crate::model_gui;
 
 pub struct Undo {
     current_focus : Option<egui::Id>,
-    previous_focus : Option<egui::Id>
+    previous_focus : Option<egui::Id>,
+    undo_list : Vec<UndoState>,
+    redo_list : Vec<UndoState>,
+    current_modification : Option<String>,
+    modification_status : ModificationType
+}
+
+#[derive(Clone)]
+pub struct UndoState {
+    pub change_description : String,
+    pub model : model_gui::MdfGui,
+    pub page_type : page::PageType
 }
 
 impl default::Default for Undo {
-    /// create an empty model
+    /// create an empty object
     fn default() -> Undo {
         Undo {
             current_focus: None,
             previous_focus: None,
+            undo_list : Default::default(),
+            redo_list : Default::default(),
+            current_modification : None,
+            modification_status : ModificationType::Finished
         }
     }
+}
+
+impl default::Default for UndoState {
+    fn default() -> UndoState {
+        UndoState {
+            change_description : Default::default(),
+            model : Default::default(),
+            page_type : page::PageType::Project
+        }
+    }
+}
+
+pub enum ModificationType {
+    OnGoing(egui::Id), Finished
 }
 
 impl Undo {
@@ -26,5 +57,83 @@ impl Undo {
 
     pub fn lost_focus(&self, object : egui::Id) -> bool {
         (Some(object) == self.previous_focus) && (Some(object) != self.current_focus)
+    }
+
+    pub fn register_modification(&mut self, description : &str, modification_type : ModificationType) {
+
+        self.current_modification = Some(description.to_string());
+        self.modification_status = modification_type;
+    }
+
+    pub fn store_undo(&mut self, model : &model_gui::MdfGui, page_type : &page::PageType) {
+        if self.current_modification.is_some() && match self.modification_status {
+                ModificationType::OnGoing(id) => self.current_focus != Some(id),
+                ModificationType::Finished => true
+        } {
+
+            self.undo_list.push( UndoState {
+                change_description : self.current_modification.take().unwrap(),
+                model : model.clone(),
+                page_type : page_type.clone()
+            });
+
+            self.redo_list.clear();
+        }
+    }
+
+    pub fn get_undo_description(&self) -> Option<&str> {
+        let num_elements = self.undo_list.len();
+        if num_elements > 1 {
+            Some(&self.undo_list.get(num_elements-1).unwrap().change_description)
+        }
+        else {
+            None
+        }
+    }
+
+    pub fn get_redo_description(&self) -> Option<&str> {
+        let num_elements = self.redo_list.len();
+        if num_elements > 0 {
+            Some(&self.redo_list.get(num_elements-1).unwrap().change_description)
+        }
+        else {
+            None
+        }
+    }
+
+    pub fn apply_undo(&mut self) -> Option<UndoState> {
+        let num_elements = self.undo_list.len();
+
+        if num_elements > 1 {
+            let latest = self.undo_list.pop().unwrap();
+            let latest_page = latest.page_type.clone();
+            self.redo_list.push(latest);
+
+            let previous_model = self.undo_list.get(num_elements-2).unwrap().model.clone();
+
+            Some(UndoState {
+                change_description : Default::default(),
+                model : previous_model,
+                page_type : latest_page
+            })
+        }
+        else {
+            None
+        }
+    }
+
+    pub fn apply_redo(&mut self) -> Option<UndoState> {
+        let num_elements = self.undo_list.len();
+
+        if num_elements > 0 {
+            let state = self.redo_list.pop().unwrap();
+
+            self.undo_list.push(state.clone());
+
+            Some(state)
+        }
+        else {
+            None
+        }
     }
 }

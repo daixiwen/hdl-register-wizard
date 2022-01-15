@@ -2,19 +2,18 @@
 use eframe::{egui, epi};
 use crate::app::HdlWizardApp;
 use crate::page;
+use crate::gui_blocks;
+use crate::undo;
 
 pub fn panel(app : &mut HdlWizardApp, ctx: &egui::CtxRef, _frame: &epi::Frame) {
-    egui::CentralPanel::default().show(ctx, |ui| {
+    egui::CentralPanel::default().show(ctx, |mut ui| {
 //        ui.spacing_mut().item_spacing.y = 10.0;
 
         ui.heading("Hdl Register Wizard Project");
 
         ui.add_space(10.0);
         
-        ui.horizontal(|ui| {
-            ui.label("Project name:");
-            ui.text_edit_singleline(&mut app.model.name);
-        });
+        gui_blocks::widget_text(&mut app.model.name, &mut ui, "Project Name", gui_blocks::TextWidgetType::SingleLine, &mut app.undo);
 
         ui.separator();
 
@@ -23,6 +22,7 @@ pub fn panel(app : &mut HdlWizardApp, ctx: &egui::CtxRef, _frame: &epi::Frame) {
             if ui.button("New").clicked() {
                 app.model.interfaces.push(Default::default());
                 app.page_type = page::PageType::Interface(app.model.interfaces.len()-1);
+                app.undo.register_modification("create new interface", undo::ModificationType::Finished);
             }
         });
 
@@ -43,15 +43,18 @@ pub fn panel(app : &mut HdlWizardApp, ctx: &egui::CtxRef, _frame: &epi::Frame) {
                         ui.horizontal(|ui| {
                             if ui.button("🗑").clicked() {
                                 app.model.interfaces.remove(n);
+                                app.undo.register_modification("delete interface", undo::ModificationType::Finished);
                             }
                             ui.add_enabled_ui(n > 0, |ui| {
                                 if ui.button("⬆").clicked() {
                                     app.model.interfaces.swap(n-1,n);
+                                    app.undo.register_modification("move interface", undo::ModificationType::Finished);
                                 }
                             });
                             ui.add_enabled_ui(n < (num_interfaces - 1), |ui| {
                                 if ui.button("⬇").clicked() {
                                     app.model.interfaces.swap(n,n+1);
+                                    app.undo.register_modification("move interface", undo::ModificationType::Finished);
                                 }
                             });
                         });

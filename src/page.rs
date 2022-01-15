@@ -1,5 +1,5 @@
 //! app pages
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum PageType {
     Project,
     Interface(usize)

@@ -15,7 +15,7 @@ pub struct HdlWizardApp {
     pub page_type: page::PageType,
 
     #[cfg_attr(feature = "persistence", serde(skip))]
-    undo: undo::Undo,
+    pub undo: undo::Undo,
 
 }
 
@@ -47,6 +47,9 @@ impl epi::App for HdlWizardApp {
         if let Some(storage) = _storage {
             *self = epi::get_value(storage, epi::APP_KEY).unwrap_or_default()
         }
+
+        self.undo.register_modification("initial", undo::ModificationType::Finished);
+        self.undo.store_undo(&self.model, &self.page_type);
     }
 
     /// Called by the frame work to save state before shutdown.
@@ -68,6 +71,45 @@ impl epi::App for HdlWizardApp {
                 ui.menu_button("File", |ui| {
                     if ui.button("Quit").clicked() {
                         frame.quit();
+                    }
+                });
+                ui.menu_button("Edit", |ui| {
+                    match self.undo.get_undo_description() {
+                        None => {
+                            ui.add_enabled_ui(false, | ui | {
+                                if ui.button("Undo").clicked() {
+                                    unreachable!();
+                                }
+                            }); 
+                        },
+
+                        Some(change) => {
+                            if ui.button(format!("Undo {}", change)).clicked() {
+                                if let Some(undo_state) = self.undo.apply_undo() {
+                                    self.model = undo_state.model;
+                                    self.page_type = undo_state.page_type;
+                                }
+                            }    
+                        }
+                    }
+
+                    match self.undo.get_redo_description() {
+                        None => {
+                            ui.add_enabled_ui(false, | ui | {
+                                if ui.button("Redo").clicked() {
+                                    unreachable!();
+                                }
+                            }); 
+                        },
+
+                        Some(change) => {
+                            if ui.button(format!("Redo {}", change)).clicked() {
+                                if let Some(redo_state) = self.undo.apply_redo() {
+                                    self.model = redo_state.model;
+                                    self.page_type = redo_state.page_type;
+                                }
+                            }    
+                        }
                     }
                 });
             });
@@ -93,6 +135,8 @@ impl epi::App for HdlWizardApp {
                 }
             }
         }
+
+        self.undo.store_undo(&self.model, &self.page_type);
     }
 }
 
