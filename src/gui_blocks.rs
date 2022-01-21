@@ -2,11 +2,11 @@
 //! 
 
 use eframe::egui;
-use crate::model_gui;
 use crate::undo;
+use crate::gui_types;
 use strum;
 
-pub fn widget_auto_manual_u32(value : &mut model_gui::AutoManualU32, ui: &mut  egui::Ui, label: &str, undo : &mut undo::Undo) {
+pub fn widget_auto_manual_u32(value : &mut gui_types::AutoManualU32, ui: &mut  egui::Ui, label: &str, undo : &mut undo::Undo) {
 
     ui.horizontal(|ui| {
         ui.label(format!("{}:",label));

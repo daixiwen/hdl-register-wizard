@@ -5,9 +5,10 @@ use serde::{de::Error, Deserialize, Serialize};
 use std::fmt;
 use std::str::FromStr;
 use strum_macros;
-use std::convert::TryInto;
 use std::default::Default;
 use crate::model_gui;
+use crate::utils;
+use std::convert::TryInto;
 
 #[derive(Serialize, Deserialize, Clone)]
 /// model description file. This structure hold all the model, and can be
@@ -96,10 +97,10 @@ pub struct Register {
     pub access: Option<AccessType>,
     /// signal type. Must be None if and only if fields are used
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub signal: Option<SignalType>,
+    pub signal: Option<utils::SignalType>,
     /// reset value. Must be None if and only if fields are used
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub reset: Option<VectorValue>,
+    pub reset: Option<utils::VectorValue>,
     /// register location.  Can be None if fields are used and every field has a location
     #[serde(skip_serializing_if = "Option::is_none")]
     pub location: Option<LocationType>,
@@ -123,8 +124,8 @@ impl Register {
             description: None,
             width: Some(32),
             access: Some(AccessType::RW),
-            signal: Some(SignalType::StdLogicVector),
-            reset: Some(VectorValue::new()),
+            signal: Some(utils::SignalType::StdLogicVector),
+            reset: Some(utils::VectorValue::new()),
             location: Some(LocationType::Pif),
             core_signal_properties: CoreSignalProperties {
                 use_read_enable: None,
@@ -147,7 +148,7 @@ pub enum Address {
     /// automatic address, the first available spot is used
     Auto,
     /// fixed unique address
-    Single(VectorValue),
+    Single(utils::VectorValue),
     /// fixed group of addresses
     Stride(AddressStride),
 }
@@ -156,11 +157,11 @@ pub enum Address {
 /// structure to represent a stride address definition, where the register can be repeated several times
 pub struct AddressStride {
     /// starting value
-    pub value: VectorValue,
+    pub value: utils::VectorValue,
     /// number of addresses
-    pub count: VectorValue,
+    pub count: utils::VectorValue,
     /// increment between two addresses. If None, use the register size as increment
-    pub increment: Option<VectorValue>,
+    pub increment: Option<utils::VectorValue>,
 }
 
 #[derive(
@@ -181,68 +182,6 @@ pub enum AccessType {
     RO,
     /// Write only
     WO,
-}
-
-#[derive(
-    Serialize,
-    Deserialize,
-    strum_macros::ToString,
-    strum_macros::EnumIter,
-    strum_macros::EnumString,
-    PartialEq,
-    Clone,
-    Copy,
-)]
-#[serde(rename_all = "snake_case")]
-#[strum(serialize_all = "snake_case")]
-/// signal type used for the register
-pub enum SignalType {
-    /// VHDL IEEE 1164 std_logic
-    StdLogic,
-    /// VHDL IEEE 1164 dst_logic_vector
-    StdLogicVector,
-    /// VHDL IEEE numeric unsigned
-    Unsigned,
-    /// VHDL IEEE numeric signed
-    Signed,
-    /// VHDL boolean
-    Boolean,
-}
-
-#[derive(Debug, PartialEq, Copy, Clone)]
-/// structure used to represent a vector or integer value, with both the value itself and the radix type
-pub struct VectorValue {
-    /// integer value itself
-    pub value: u128,
-    /// radix used to import, export display or edit the value
-    pub radix: RadixType,
-}
-
-#[derive(PartialEq, strum_macros::ToString, Clone, Copy, Debug)]
-/// radix type for a VectorValue
-pub enum RadixType {
-    /// binary representation (0b*)
-    Binary,
-    /// decimal representation (0d* or direct integer value)
-    Decimal,
-    /// hexadecimal reprentation
-    Hexadecimal,
-}
-
-impl VectorValue {
-    /// create a new vector value, with a decimal radix and value 0
-    pub fn new() -> VectorValue {
-        VectorValue {
-            value: 0,
-            radix: RadixType::Decimal,
-        }
-    }
-}
-
-impl Default for VectorValue {
-    fn default() -> Self {
-        VectorValue::new()
-    }
 }
 
 #[derive(
@@ -296,9 +235,9 @@ pub struct Field {
     /// read/write access type for register. Can be None if fields are used and every field has an access type
     pub access: AccessType,
     /// signal type
-    pub signal: SignalType,
+    pub signal: utils::SignalType,
     /// reset value
-    pub reset: VectorValue,
+    pub reset: utils::VectorValue,
     /// register location.  Can be None if field has a location
     #[serde(skip_serializing_if = "Option::is_none")]
     pub location: Option<LocationType>,
@@ -315,8 +254,8 @@ impl Field {
             position: FieldPosition::Single(0),
             description: None,
             access: AccessType::RW,
-            signal: SignalType::StdLogic,
-            reset: VectorValue::new(),
+            signal: utils::SignalType::StdLogic,
+            reset: utils::VectorValue::new(),
             location: Some(LocationType::Pif),
             core_signal_properties: CoreSignalProperties {
                 use_read_enable: None,
@@ -377,7 +316,7 @@ impl Address {
             Address::Single(value) => value.to_string(),
 
             Address::Stride(stride) => {
-                let count_minus_one = VectorValue {
+                let count_minus_one = utils::VectorValue {
                     value: stride.count.value - 1,
                     radix: stride.count.radix,
                 };
@@ -420,12 +359,12 @@ impl std::str::FromStr for Address {
         } else {
             let elements: Vec<&str> = s.split(':').collect();
             match elements.len() {
-                1 => Ok(Address::Single(VectorValue::from_str(s)?)),
+                1 => Ok(Address::Single(utils::VectorValue::from_str(s)?)),
                 3 => {
                     if elements[1] == "stride" {
                         Ok(Address::Stride(AddressStride {
-                            value: VectorValue::from_str(elements[0])?,
-                            count: VectorValue::from_str(elements[2])?,
+                            value: utils::VectorValue::from_str(elements[0])?,
+                            count: utils::VectorValue::from_str(elements[2])?,
                             increment: None,
                         }))
                     } else {
@@ -435,9 +374,9 @@ impl std::str::FromStr for Address {
                 4 => {
                     if elements[1] == "stride" {
                         Ok(Address::Stride(AddressStride {
-                            value: VectorValue::from_str(elements[0])?,
-                            count: VectorValue::from_str(elements[2])?,
-                            increment: Some(VectorValue::from_str(elements[3])?),
+                            value: utils::VectorValue::from_str(elements[0])?,
+                            count: utils::VectorValue::from_str(elements[2])?,
+                            increment: Some(utils::VectorValue::from_str(elements[3])?),
                         }))
                     } else {
                         Err(u32::from_str("abc").err().unwrap())
@@ -450,25 +389,16 @@ impl std::str::FromStr for Address {
     }
 }
 
-/// use a raw internal type to make the deserializer automatically fill the correct enum, depending on
-/// the field type as a number or a string
-#[derive(Deserialize)]
-#[serde(untagged)]
-enum StrOrNum<'a> {
-    Str(&'a str),
-    Num(u64),
-}
-
 impl<'de> Deserialize<'de> for Address {
     /// deserialize into an address
     fn deserialize<D>(deserializer: D) -> Result<Address, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
-        let raw = StrOrNum::deserialize(deserializer)?;
+        let raw = utils::StrOrNum::deserialize(deserializer)?;
 
         match raw {
-            StrOrNum::Str(s) => match Address::from_str(s) {
+            utils::StrOrNum::Str(s) => match Address::from_str(s) {
                 Ok(a) => Ok(a),
                 Err(_) => Err(D::Error::custom(&format!(
                     "couldn't parse string '{}' as a vector value",
@@ -476,115 +406,10 @@ impl<'de> Deserialize<'de> for Address {
                 ))),
             },
 
-            StrOrNum::Num(n) => Ok(Address::Single(VectorValue {
+            utils::StrOrNum::Num(n) => Ok(Address::Single(utils::VectorValue {
                 value: n.into(),
-                radix: RadixType::Decimal,
+                radix: utils::RadixType::Decimal,
             })),
-        }
-    }
-}
-
-// methods for serializing and deserilizing a VectorValue
-impl fmt::Display for VectorValue {
-    /// convert a VectorValue to a string, using the specified radix
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &self.radix {
-            RadixType::Decimal => write!(f, "{}", self.value),
-
-            RadixType::Binary => write!(f, "{:#0b}", self.value),
-
-            RadixType::Hexadecimal => write!(f, "{:#0x}", self.value),
-        }
-    }
-}
-
-impl Serialize for VectorValue {
-    /// serialize the VectorValue to a string
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        if (self.radix == RadixType::Decimal) && (self.value <= u32::MAX.into()) {
-            // JSON supports bigger integers than u32, and is in theory unlimited, but in practise
-            // when using doubles the maximum is somewhere between u32::MAX and u64::MAX. Not taking
-            // any chances
-            serializer.serialize_u32(self.value as u32)
-        } else {
-            serializer.serialize_str(&self.to_string())
-        }
-    }
-}
-
-impl std::str::FromStr for VectorValue {
-    type Err = std::num::ParseIntError;
-
-    /// create a vector value from a string value, determing the radix from the prefix
-    fn from_str(s: &str) -> Result<Self, std::num::ParseIntError> {
-        if s.len() < 3 {
-            let value = s.parse()?;
-            Ok(VectorValue {
-                value,
-                radix: RadixType::Decimal,
-            })
-        } else {
-            match &s[0..2] {
-                "0x" | "0X" => {
-                    let value = u128::from_str_radix(&s[2..], 16)?;
-                    Ok(VectorValue {
-                        value,
-                        radix: RadixType::Hexadecimal,
-                    })
-                }
-
-                "0d" | "0D" => {
-                    let value = s[2..].parse()?;
-                    Ok(VectorValue {
-                        value,
-                        radix: RadixType::Decimal,
-                    })
-                }
-
-                "0b" | "0B" => {
-                    let value = u128::from_str_radix(&s[2..], 2)?;
-                    Ok(VectorValue {
-                        value,
-                        radix: RadixType::Binary,
-                    })
-                }
-
-                _ => {
-                    let value = s.parse()?;
-                    Ok(VectorValue {
-                        value,
-                        radix: RadixType::Decimal,
-                    })
-                }
-            }
-        }
-    }
-}
-
-impl<'de> Deserialize<'de> for VectorValue {
-    /// deserialize a VectorValue
-    fn deserialize<D>(deserializer: D) -> Result<VectorValue, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let raw = StrOrNum::deserialize(deserializer)?;
-
-        match raw {
-            StrOrNum::Str(s) => match VectorValue::from_str(s) {
-                Ok(v) => Ok(v),
-                Err(_) => Err(D::Error::custom(&format!(
-                    "couldn't parse string '{}' as a vector value",
-                    s
-                ))),
-            },
-
-            StrOrNum::Num(n) => Ok(VectorValue {
-                value: n.into(),
-                radix: RadixType::Decimal,
-            }),
         }
     }
 }
@@ -636,10 +461,10 @@ impl<'de> Deserialize<'de> for FieldPosition {
     where
         D: serde::Deserializer<'de>,
     {
-        let raw = StrOrNum::deserialize(deserializer)?;
+        let raw = utils::StrOrNum::deserialize(deserializer)?;
 
         match raw {
-            StrOrNum::Str(s) => match FieldPosition::from_str(s) {
+            utils::StrOrNum::Str(s) => match FieldPosition::from_str(s) {
                 Ok(a) => Ok(a),
                 Err(_) => Err(D::Error::custom(&format!(
                     "couldn't parse string '{}' as a field position",
@@ -647,7 +472,7 @@ impl<'de> Deserialize<'de> for FieldPosition {
                 ))),
             },
 
-            StrOrNum::Num(n) => Ok(FieldPosition::Single(n.try_into().unwrap())),
+            utils::StrOrNum::Num(n) => Ok(FieldPosition::Single(n.try_into().unwrap())),
         }
     }
 }

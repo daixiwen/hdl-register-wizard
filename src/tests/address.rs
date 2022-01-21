@@ -1,4 +1,5 @@
-use super::super::mdf_format;
+use crate::utils;
+use crate::mdf_format;
 use std::str::FromStr;
 
 // test creating VectorValue with string
@@ -9,22 +10,22 @@ fn from_str() {
         mdf_format::Address::from_str("auto").unwrap()
     );
     assert_eq!(
-        mdf_format::Address::Single(mdf_format::VectorValue {
+        mdf_format::Address::Single(utils::VectorValue {
             value: 38,
-            radix: mdf_format::RadixType::Decimal,
+            radix: utils::RadixType::Decimal,
         }),
         mdf_format::Address::from_str("38").unwrap()
     );
 
     assert_eq!(
         mdf_format::Address::Stride(mdf_format::AddressStride {
-            value: mdf_format::VectorValue {
+            value: utils::VectorValue {
                 value: 64,
-                radix: mdf_format::RadixType::Hexadecimal,
+                radix: utils::RadixType::Hexadecimal,
             },
-            count: mdf_format::VectorValue {
+            count: utils::VectorValue {
                 value: 10,
-                radix: mdf_format::RadixType::Decimal,
+                radix: utils::RadixType::Decimal,
             },
             increment: None
         }),
@@ -32,13 +33,13 @@ fn from_str() {
     );
     assert_eq!(
         mdf_format::Address::Stride(mdf_format::AddressStride {
-            value: mdf_format::VectorValue {
+            value: utils::VectorValue {
                 value: 64,
-                radix: mdf_format::RadixType::Hexadecimal,
+                radix: utils::RadixType::Hexadecimal,
             },
-            count: mdf_format::VectorValue {
+            count: utils::VectorValue {
                 value: 4,
-                radix: mdf_format::RadixType::Decimal,
+                radix: utils::RadixType::Decimal,
             },
             increment: None
         }),
@@ -47,17 +48,17 @@ fn from_str() {
 
     assert_eq!(
         mdf_format::Address::Stride(mdf_format::AddressStride {
-            value: mdf_format::VectorValue {
+            value: utils::VectorValue {
                 value: 64,
-                radix: mdf_format::RadixType::Hexadecimal,
+                radix: utils::RadixType::Hexadecimal,
             },
-            count: mdf_format::VectorValue {
+            count: utils::VectorValue {
                 value: 10,
-                radix: mdf_format::RadixType::Decimal,
+                radix: utils::RadixType::Decimal,
             },
-            increment: Some(mdf_format::VectorValue {
+            increment: Some(utils::VectorValue {
                 value: 4,
-                radix: mdf_format::RadixType::Hexadecimal,
+                radix: utils::RadixType::Hexadecimal,
             })
         }),
         mdf_format::Address::from_str("0x40:stride:10:0x4").unwrap()
@@ -77,9 +78,9 @@ fn from_str() {
 fn to_str() {
     assert_eq!(mdf_format::Address::Auto.to_string(), "auto");
     assert_eq!(
-        mdf_format::Address::Single(mdf_format::VectorValue {
+        mdf_format::Address::Single(utils::VectorValue {
             value: 38,
-            radix: mdf_format::RadixType::Decimal,
+            radix: utils::RadixType::Decimal,
         })
         .to_string(),
         "38"
@@ -87,13 +88,13 @@ fn to_str() {
 
     assert_eq!(
         mdf_format::Address::Stride(mdf_format::AddressStride {
-            value: mdf_format::VectorValue {
+            value: utils::VectorValue {
                 value: 64,
-                radix: mdf_format::RadixType::Hexadecimal,
+                radix: utils::RadixType::Hexadecimal,
             },
-            count: mdf_format::VectorValue {
+            count: utils::VectorValue {
                 value: 10,
-                radix: mdf_format::RadixType::Decimal,
+                radix: utils::RadixType::Decimal,
             },
             increment: None
         })
@@ -102,17 +103,17 @@ fn to_str() {
     );
     assert_eq!(
         mdf_format::Address::Stride(mdf_format::AddressStride {
-            value: mdf_format::VectorValue {
+            value: utils::VectorValue {
                 value: 64,
-                radix: mdf_format::RadixType::Hexadecimal,
+                radix: utils::RadixType::Hexadecimal,
             },
-            count: mdf_format::VectorValue {
+            count: utils::VectorValue {
                 value: 10,
-                radix: mdf_format::RadixType::Decimal,
+                radix: utils::RadixType::Decimal,
             },
-            increment: Some(mdf_format::VectorValue {
+            increment: Some(utils::VectorValue {
                 value: 4,
-                radix: mdf_format::RadixType::Hexadecimal,
+                radix: utils::RadixType::Hexadecimal,
             })
         })
         .to_string(),

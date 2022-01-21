@@ -25,6 +25,7 @@ pub mod page;
 pub mod navigation;
 pub mod undo;
 pub mod gui_blocks;
+pub mod gui_types;
 
 #[cfg(test)]
 mod tests;

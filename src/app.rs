@@ -117,23 +117,38 @@ impl epi::App for HdlWizardApp {
 
         navigation::navigate(self, ctx, frame);
 
+        let mut change_page = None;
+
         match &self.page_type {
             page::PageType::Project => {
                 page::project::panel(self, ctx, frame)
             },
 
             page::PageType::Interface(num_interface) => {
-                match self.model.interfaces.get_mut(*num_interface) {
-                    Some(interface) => {
-                        page::interface::panel(interface, ctx, frame, &mut self.undo)
-                    },
-
-                    None => {
-                        self.page_type = page::PageType::Project;
-                        ctx.request_repaint();
-                    }
+                if let Some(interface) = self.model.interfaces.get_mut(*num_interface) {
+                    // display the interface page and update the displayed page if requested
+                    change_page = page::interface::panel(*num_interface, interface, ctx, frame, &mut self.undo);
+                } else {
+                    change_page = Some(page::PageType::Project);
                 }
             }
+
+            page::PageType::Register(num_interface, num_register) => {
+                if let Some(interface) = self.model.interfaces.get_mut(*num_interface) {
+                    if let Some(register) = interface.registers.get_mut(*num_register) {
+                        change_page = page::register::panel(*num_interface, *num_register, register, ctx, frame, &mut self.undo);
+                    } else {
+                        change_page = Some(page::PageType::Interface(*num_interface));
+                    }
+                } else {
+                    change_page = Some(page::PageType::Project);
+                }
+            }
+        }
+
+        if let Some(newpage) = change_page {
+            self.page_type = newpage;
+            ctx.request_repaint();
         }
 
         self.undo.store_undo(&self.model, &self.page_type);

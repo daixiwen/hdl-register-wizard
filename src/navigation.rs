@@ -23,6 +23,17 @@ pub fn navigate(app : &mut HdlWizardApp, ctx: &egui::CtxRef, _frame: &epi::Frame
                         format!("  {}", &interface.name)).clicked() {
                             app.page_type = interface_page_type;
                     }
+
+                    for (r, register) in interface.registers.iter().enumerate() {
+                        let register_page_type = page::PageType::Register(n,r);
+                        
+                        if ui.selectable_label(
+                            app.page_type == register_page_type, 
+                            format!("    {}", &register.name)).clicked() {
+                                app.page_type = register_page_type;
+                        }
+                    }
+    
                 }
             });
         });

@@ -13,7 +13,8 @@ use strum_macros;
 use std::default::Default;
 /// temporaty include until I've redefined averything
 use crate::mdf_format;
-use std::str::FromStr;
+use crate::gui_types;
+use crate::utils;
 
 #[derive(Serialize, Deserialize, Clone)]
 /// model description file. This structure hold all the model, and can be
@@ -45,11 +46,11 @@ pub struct InterfaceGUI {
     /// interface type (protocol used)
     pub interface_type: InterfaceType,
     /// width of the address bus.
-    pub address_width : AutoManualU32,
+    pub address_width : gui_types::AutoManualU32,
     /// width of the data bus.
-    pub data_width: AutoManualU32,
+    pub data_width: gui_types::AutoManualU32,
     /// list of registers
-    pub registers: Vec<mdf_format::Register>,
+    pub registers: Vec<Register>,
 }
 
 impl InterfaceGUI {
@@ -59,9 +60,9 @@ impl InterfaceGUI {
             name: String::new(),
             description: String::new(),
             interface_type: InterfaceType::SBI,
-            registers: Vec::<mdf_format::Register>::new(),
-            address_width: AutoManualU32::new(),
-            data_width: AutoManualU32::new()
+            registers: Vec::new(),
+            address_width: gui_types::AutoManualU32::new(),
+            data_width: gui_types::AutoManualU32::new()
         }
     }
 }
@@ -92,52 +93,145 @@ pub enum InterfaceType {
     AvalonMm,
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+/// structure representing an register in the GUI
+pub struct Register {
+    /// register name
+    pub name: String,
+    /// register address type
+    pub address: AddressType,
+    /// for non auto address: (first) address value
+    pub address_value: gui_types::VectorValue,
+    /// for stride address: number of registers
+    pub address_count: gui_types::VectorValue,
+    /// for stride address: increment between registers
+    pub address_incr: gui_types::VectorValue,
+    /// quick description of register
+    pub summary: String,
+    /// longer description of register
+    pub description: String,
+    /// register width. Can be auto only if fields are used
+    pub width: gui_types::AutoManualU32,
+    /// read/write access type for register
+    pub access: AccessType,
+    /// register location.  
+    pub location: LocationType,
+    /// signal properties when in core: read enable
+    pub core_use_read_enable: CoreSignalProperty,
+    /// signal properties when in core: write enable
+    pub core_use_write_enable: CoreSignalProperty,
+    /// list of fields elements. If not empty the following parameters are ignored
+    pub fields: Vec<mdf_format::Field>,
+    /// signal type
+    pub signal_type: utils::SignalType,
+    /// reset value
+    pub reset: gui_types::VectorValue,
+}
+
+impl Register {
+    pub fn new() -> Register {
+        Register {
+            name: String::new(),
+            address: AddressType::Auto,
+            address_value: gui_types::VectorValue::new(),
+            address_count: gui_types::VectorValue::new(),
+            address_incr: gui_types::VectorValue::new(),
+            summary: String::new(),
+            description: String::new(),
+            width: gui_types::AutoManualU32::new(),
+            access: AccessType::ReadWrite,
+            location: LocationType::Core,
+            core_use_read_enable: CoreSignalProperty::No,
+            core_use_write_enable: CoreSignalProperty::No,
+            fields: Vec::new(),
+            signal_type: utils::SignalType::StdLogicVector,
+            reset: gui_types::VectorValue::new(),
+        
+        }
+    }
+}
+
+impl Default for Register {
+    fn default() -> Self {
+        Register::new()
+    }
+}
+
 #[derive(
     Serialize,
     Deserialize,
+    strum_macros::ToString,
+    strum_macros::EnumIter,
+    strum_macros::EnumString,
+    PartialEq,
     Clone,
+    Copy
 )]
-/// value that can either be "auto" or an integer manual value
-pub struct AutoManualU32 {
-    /// value actually in the GUI for manual, whether it is valid or not
-    pub value_str: String,
-    /// if asserted, automatically caculated
-    pub is_auto: bool,
-    /// if asserted, value currently in the GUI is valid
-    pub str_valid : bool,
-    /// value as an integer. Stored seperately than the string so that we can put it back
-    /// to the last known valid int value if the string is invalid
-    pub value_int : u32
+/// type of address for the register
+pub enum AddressType {
+    /// Auto, next available address
+    Auto,
+    /// Fixed single address
+    Single,
+    /// Stride, register repeated several times
+    Stride,
 }
 
-impl AutoManualU32 {
-    /// create a new empty interface with type SBI
-    pub fn new() -> AutoManualU32 {
-        AutoManualU32 {
-            value_str : String::new(),
-            is_auto : true,
-            str_valid : false,
-            value_int : 0
-        }
-    }
-
-    /// validate the string when it is changed
-    pub fn validate(&mut self) {
-        match u32::from_str(& self.value_str) {
-            Ok(value) => {
-                self.str_valid = true;
-                self.value_int = value;
-            },
-            Err(_) => {
-                self.str_valid = false;
-            }
-        }
-    }
+#[derive(
+    Serialize,
+    Deserialize,
+    strum_macros::ToString,
+    strum_macros::EnumIter,
+    strum_macros::EnumString,
+    PartialEq,
+    Clone,
+    Copy,
+)]
+/// read/write access type for a register
+pub enum AccessType {
+    /// Read/write
+    ReadWrite,
+    /// Read only
+    ReadOnly,
+    /// Write only
+    WriteOnly,
+    /// Per field
+    PerField
 }
 
-impl Default for AutoManualU32 {
-    fn default() -> Self {
-        AutoManualU32::new()
-    }
+#[derive(
+    Serialize,
+    Deserialize,
+    strum_macros::ToString,
+    strum_macros::EnumIter,
+    strum_macros::EnumString,
+    PartialEq,
+    Clone,
+    Copy,
+)]
+/// location of the register.
+pub enum LocationType {
+    /// interface module
+    Pif,
+    /// user module
+    Core,
+    /// different value per field
+    PerField
 }
 
+#[derive(
+    Serialize,
+    Deserialize,
+    strum_macros::ToString,
+    strum_macros::EnumIter,
+    strum_macros::EnumString,
+    PartialEq,
+    Clone,
+    Copy
+)]
+/// yes/no core signal property
+pub enum CoreSignalProperty {
+    Yes,
+    No,
+    PerField
+}
