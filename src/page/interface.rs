@@ -19,10 +19,10 @@ pub fn panel(interface_num : usize, interface : &mut model_gui::InterfaceGUI, ct
         gui_blocks::widget_text(&mut interface.name, &mut ui, "Name", gui_blocks::TextWidgetType::SingleLine, undo);
         gui_blocks::widget_text(&mut interface.description, &mut ui, "Description", gui_blocks::TextWidgetType::MultiLine, undo);
 
-        gui_blocks::widget_combobox(&mut interface.interface_type, &mut ui, "Interface Type", undo);
+        gui_blocks::widget_combobox(&mut interface.interface_type, &mut ui, "Interface Type", None, undo);
 
-        gui_blocks::widget_auto_manual_u32(&mut interface.address_width, &mut ui, "Address width", undo);
-        gui_blocks::widget_auto_manual_u32(&mut interface.data_width, &mut ui, "Data width", undo);
+        gui_blocks::widget_auto_manual_u32(&mut interface.address_width, &mut ui, "Address width", false, undo);
+        gui_blocks::widget_auto_manual_u32(&mut interface.data_width, &mut ui, "Data width", false, undo);
         ui.separator();
 
         ui.horizontal(|ui| {

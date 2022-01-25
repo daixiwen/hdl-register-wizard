@@ -4,34 +4,49 @@
 use eframe::egui;
 use crate::undo;
 use crate::gui_types;
+use crate::utils;
 use strum;
+use std::str::FromStr;
 
-pub fn widget_auto_manual_u32(value : &mut gui_types::AutoManualU32, ui: &mut  egui::Ui, label: &str, undo : &mut undo::Undo) {
+pub fn widget_u32_inline_nolabel(value : &mut gui_types::GuiU32, ui: &mut  egui::Ui, id: &str, label: &str, undo : &mut undo::Undo) {
+    let mut textedit = egui::TextEdit::singleline(&mut value.value_str).id_source(&id);
+    if !value.str_valid {
+        textedit = textedit.text_color(egui::Color32::RED);
+    }
+    let response = ui.add_sized([30.0, ui.available_size()[1]], textedit);
+    if response.changed() {
+        value.validate();
+        undo.register_modification(&format!("{} change",label).to_lowercase(), undo::ModificationType::OnGoing(response.id));
+    }
+    if undo.lost_focus(response.id) && ! value.str_valid {
+        value.str_valid = true;
+        value.value_str = value.value_int.to_string();
+    }
+}
 
-    ui.horizontal(|ui| {
-        ui.label(format!("{}:",label));
+pub fn widget_auto_manual_u32_inline(value : &mut gui_types::AutoManualU32, ui: &mut  egui::Ui, label: &str, forcemanual: bool, undo : &mut undo::Undo) {
+    ui.label(format!("{}:",label));
+    if forcemanual {
+        value.is_auto = false;
+    } else {
         if ui.checkbox(&mut value.is_auto, "automatic").changed() {
             undo.register_modification(&format!("{} {}", label, match value.is_auto {
                 true => "set to automatic",
                 false => "set to manual"}), 
                 undo::ModificationType::Finished);
         }
-        ui.label(" or manual:");
-        ui.add_enabled_ui(! value.is_auto, |ui| {
-            let mut textedit = egui::TextEdit::singleline(&mut value.value_str).id_source(&label);
-            if !value.str_valid {
-                textedit = textedit.text_color(egui::Color32::RED);
-            }
-            let response = ui.add_sized([30.0, ui.available_size()[1]], textedit);
-            if response.changed() {
-                value.validate();
-                undo.register_modification(&format!("{} change",label).to_lowercase(), undo::ModificationType::OnGoing(response.id));
-            }
-            if undo.lost_focus(response.id) && ! value.str_valid {
-                value.str_valid = true;
-                value.value_str = value.value_int.to_string();
-            }
-        });
+        ui.label(" or manual:");    
+    }
+    
+    ui.add_enabled_ui(! value.is_auto, |ui| {
+        widget_u32_inline_nolabel(&mut value.manual, ui, label, label, undo);
+    });
+}
+
+pub fn widget_auto_manual_u32(value : &mut gui_types::AutoManualU32, ui: &mut  egui::Ui, label: &str, forcemanual: bool, undo : &mut undo::Undo) {
+
+    ui.horizontal(|ui| {
+        widget_auto_manual_u32_inline(value, ui, label, forcemanual, undo);
     });
 }
 
@@ -53,24 +68,71 @@ pub fn widget_text(value : &mut String, ui: &mut  egui::Ui, label: &str, widget_
     });
 }
 
-pub fn widget_combobox<S : strum::IntoEnumIterator + ToString + PartialEq + Copy>
-        (value : &mut S, ui: &mut  egui::Ui, label: &str, undo : &mut undo::Undo) {
-    ui.horizontal(|ui| {
-        let previous_value = *value;
+pub fn widget_combobox_inline<S : strum::IntoEnumIterator + ToString + PartialEq + Copy>
+        (value : &mut S, ui: &mut  egui::Ui, label: &str, override_id: Option<&str>, disabled_option : Option<S>, undo : &mut undo::Undo) {
+    let previous_value = *value;
+    let id = match override_id {
+        Some(new_id) => new_id,
+        None => label
+    };
 
-        ui.label(format!("{}:", label));
-        egui::ComboBox::from_id_source(label)
-            .selected_text(value.to_string())
-            .show_ui(ui, |ui| { 
-                for int_type in S::iter() {
+    ui.label(format!("{}:", label));
+    egui::ComboBox::from_id_source(id)
+        .selected_text(value.to_string())
+        .show_ui(ui, |ui| { 
+            for int_type in S::iter() {
+                ui.add_enabled_ui(Some(int_type) != disabled_option, |ui| {
                     ui.selectable_value(value, int_type, int_type.to_string());
-                }
-            });
+                });
+            }
+        });
 
-        // egui doesn't signal a change of the combobox in the response object, so we
-        // detect a change manually
-        if *value != previous_value {
-            undo.register_modification("changed interface type", undo::ModificationType::Finished);
+    // egui doesn't signal a change of the combobox in the response object, so we
+    // detect a change manually
+    if *value != previous_value {
+        undo.register_modification(&format!("changed {}", label.to_lowercase()), undo::ModificationType::Finished);
+    }
+}
+
+pub fn widget_combobox<S : strum::IntoEnumIterator + ToString + PartialEq + Copy>
+        (value : &mut S, ui: &mut  egui::Ui, label: &str, disabled_option : Option<S>, undo : &mut undo::Undo) {
+    ui.horizontal(|ui| {
+        widget_combobox_inline(value, ui, label, None, disabled_option, undo);
+    });
+}
+
+pub fn widget_vectorvalue_inline(entry : &mut gui_types::VectorValue, ui: &mut  egui::Ui, label: &str, override_id : Option<&str>, undo : &mut undo::Undo) {
+    let id = match override_id {
+        Some(new_id) => new_id,
+        None => label
+    };
+
+    ui.label(format!("{}:",label));
+    let mut textedit = egui::TextEdit::singleline(&mut entry.value_str).id_source(&id);
+    if !entry.str_valid {
+        textedit = textedit.text_color(egui::Color32::RED);
+    }
+    let response = ui.add_sized([100.0, ui.available_size()[1]], textedit);
+    if response.changed() {
+        match utils::VectorValue::from_str(&entry.value_str) {
+            Ok(new_value) => {
+                entry.value = new_value;
+                entry.str_valid = true;
+            },
+            Err(_) => {
+                entry.str_valid = false;
+            }
         }
+        undo.register_modification(&format!("{} change",label).to_lowercase(), undo::ModificationType::OnGoing(response.id));
+    }
+    if undo.lost_focus(response.id) && ! entry.str_valid {
+        entry.str_valid = true;
+        entry.value_str = entry.value.to_string();
+    }
+}
+
+pub fn widget_vectorvalue(entry : &mut gui_types::VectorValue, ui: &mut  egui::Ui, label: &str, undo : &mut undo::Undo) {
+    ui.horizontal(|ui| {
+        widget_vectorvalue_inline(entry, ui, label, None, undo);
     });
 }

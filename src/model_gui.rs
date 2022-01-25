@@ -12,7 +12,6 @@ use serde::{Deserialize, Serialize};
 use strum_macros;
 use std::default::Default;
 /// temporaty include until I've redefined averything
-use crate::mdf_format;
 use crate::gui_types;
 use crate::utils;
 
@@ -98,18 +97,18 @@ pub enum InterfaceType {
 pub struct Register {
     /// register name
     pub name: String,
+    /// quick description of register
+    pub summary: String,
+    /// longer description of register
+    pub description: String,
     /// register address type
-    pub address: AddressType,
+    pub address_type: AddressType,
     /// for non auto address: (first) address value
     pub address_value: gui_types::VectorValue,
     /// for stride address: number of registers
     pub address_count: gui_types::VectorValue,
     /// for stride address: increment between registers
     pub address_incr: gui_types::VectorValue,
-    /// quick description of register
-    pub summary: String,
-    /// longer description of register
-    pub description: String,
     /// register width. Can be auto only if fields are used
     pub width: gui_types::AutoManualU32,
     /// read/write access type for register
@@ -121,7 +120,7 @@ pub struct Register {
     /// signal properties when in core: write enable
     pub core_use_write_enable: CoreSignalProperty,
     /// list of fields elements. If not empty the following parameters are ignored
-    pub fields: Vec<mdf_format::Field>,
+    pub fields: Vec<Field>,
     /// signal type
     pub signal_type: utils::SignalType,
     /// reset value
@@ -132,7 +131,7 @@ impl Register {
     pub fn new() -> Register {
         Register {
             name: String::new(),
-            address: AddressType::Auto,
+            address_type: AddressType::Auto,
             address_value: gui_types::VectorValue::new(),
             address_count: gui_types::VectorValue::new(),
             address_incr: gui_types::VectorValue::new(),
@@ -190,12 +189,16 @@ pub enum AddressType {
 /// read/write access type for a register
 pub enum AccessType {
     /// Read/write
+    #[strum(serialize="Read / Write")]
     ReadWrite,
     /// Read only
+    #[strum(serialize="Read Only")]
     ReadOnly,
     /// Write only
+    #[strum(serialize="Write Only")]
     WriteOnly,
     /// Per field
+    #[strum(serialize="Per Field")]    
     PerField
 }
 
@@ -216,6 +219,7 @@ pub enum LocationType {
     /// user module
     Core,
     /// different value per field
+    #[strum(serialize="Per Field")]    
     PerField
 }
 
@@ -233,5 +237,118 @@ pub enum LocationType {
 pub enum CoreSignalProperty {
     Yes,
     No,
+    #[strum(serialize="Per Field")]    
     PerField
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+/// structure representing a field element in a register
+pub struct Field {
+    /// field name
+    pub name: String,
+    /// field position
+    pub position_start: gui_types::GuiU32,
+    pub position_end: gui_types::GuiU32,
+    /// description of the register field
+    pub description: String,
+    /// read/write access type for register. Can be None if fields are used and every field has an access type
+    pub access: AccessTypeField,
+    /// signal type
+    pub signal_type: utils::SignalType,
+    /// reset value
+    pub reset: gui_types::VectorValue,
+    /// register location.  Can be None if field has a location
+    pub location: LocationTypeField,
+    /// signal properties when in core: read enable
+    pub core_use_read_enable: CoreSignalPropertyField,
+    /// signal properties when in core: write enable
+    pub core_use_write_enable: CoreSignalPropertyField,
+}
+
+impl Field {
+    pub fn new() -> Self {
+        Field {
+            name : String::new(),
+            position_start : gui_types::GuiU32::new(),
+            position_end : gui_types::GuiU32::new(),
+            description : String::new(),
+            access: AccessTypeField::ReadWrite,
+            signal_type: utils::SignalType::StdLogicVector,
+            reset: gui_types::VectorValue::new(),
+            location: LocationTypeField::Core,
+            core_use_read_enable: CoreSignalPropertyField::No,
+            core_use_write_enable: CoreSignalPropertyField::No,
+        }
+    }
+}
+
+impl Default for Field {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[derive(
+    Serialize,
+    Deserialize,
+    strum_macros::ToString,
+    strum_macros::EnumIter,
+    strum_macros::EnumString,
+    PartialEq,
+    Clone,
+    Copy,
+)]
+/// read/write access type for a register
+pub enum AccessTypeField {
+    /// Read/write
+    #[strum(serialize="Read / Write")]
+    ReadWrite,
+    /// Read only
+    #[strum(serialize="Read Only")]
+    ReadOnly,
+    /// Write only
+    #[strum(serialize="Write Only")]
+    WriteOnly,
+    /// use register setting
+    #[strum(serialize="As Register")]    
+    AsRegister
+}
+
+#[derive(
+    Serialize,
+    Deserialize,
+    strum_macros::ToString,
+    strum_macros::EnumIter,
+    strum_macros::EnumString,
+    PartialEq,
+    Clone,
+    Copy,
+)]
+/// location of the register.
+pub enum LocationTypeField {
+    /// interface module
+    Pif,
+    /// user module
+    Core,
+    /// different value per field
+    #[strum(serialize="As Register")]    
+    AsRegister
+}
+
+#[derive(
+    Serialize,
+    Deserialize,
+    strum_macros::ToString,
+    strum_macros::EnumIter,
+    strum_macros::EnumString,
+    PartialEq,
+    Clone,
+    Copy
+)]
+/// yes/no core signal property
+pub enum CoreSignalPropertyField {
+    Yes,
+    No,
+    #[strum(serialize="As Register")]    
+    AsRegister
 }

@@ -136,7 +136,7 @@ impl epi::App for HdlWizardApp {
             page::PageType::Register(num_interface, num_register) => {
                 if let Some(interface) = self.model.interfaces.get_mut(*num_interface) {
                     if let Some(register) = interface.registers.get_mut(*num_register) {
-                        change_page = page::register::panel(*num_interface, *num_register, register, ctx, frame, &mut self.undo);
+                        page::register::panel(register, ctx, frame, &mut self.undo);
                     } else {
                         change_page = Some(page::PageType::Interface(*num_interface));
                     }
