@@ -37,7 +37,7 @@ impl epi::App for HdlWizardApp {
     /// Called once before the first frame.
     fn setup(
         &mut self,
-        _ctx: &egui::CtxRef,
+        ctx: &egui::CtxRef,
         _frame: &epi::Frame,
         _storage: Option<&dyn epi::Storage>,
     ) {
@@ -50,6 +50,25 @@ impl epi::App for HdlWizardApp {
 
         self.undo.register_modification("initial", undo::ModificationType::Finished);
         self.undo.store_undo(&self.model, &self.page_type);
+
+        // install font and increase text size compared to default
+        let mut fonts = egui::FontDefinitions::default();
+        fonts.font_data.insert("dejavu".to_owned(),
+            egui::FontData::from_static(include_bytes!("files/DejaVuSans.ttf"))); // .ttf and .otf supported
+        fonts.fonts_for_family.get_mut(&egui::FontFamily::Proportional).unwrap()
+            .insert(0, "dejavu".to_owned());
+
+        fonts.family_and_size.insert(egui::TextStyle::Small,   (egui::FontFamily::Proportional, 12.0));
+        fonts.family_and_size.insert(egui::TextStyle::Body,    (egui::FontFamily::Proportional, 16.0));
+        fonts.family_and_size.insert(egui::TextStyle::Button,  (egui::FontFamily::Proportional, 16.0));
+        fonts.family_and_size.insert(egui::TextStyle::Heading, (egui::FontFamily::Proportional, 22.0));
+        ctx.set_fonts(fonts);
+
+        // increase button size
+        let mut style = egui::Style::default();
+        style.spacing.button_padding = egui::vec2(6.0, 4.0);
+        style.spacing.interact_size = egui::vec2(48.0, 24.0);
+        ctx.set_style(style);
     }
 
     /// Called by the frame work to save state before shutdown.
@@ -136,7 +155,7 @@ impl epi::App for HdlWizardApp {
             page::PageType::Register(num_interface, num_register) => {
                 if let Some(interface) = self.model.interfaces.get_mut(*num_interface) {
                     if let Some(register) = interface.registers.get_mut(*num_register) {
-                        page::register::panel(register, ctx, frame, &mut self.undo);
+                        page::register::panel(register, &interface.data_width, ctx, frame, &mut self.undo);
                     } else {
                         change_page = Some(page::PageType::Interface(*num_interface));
                     }

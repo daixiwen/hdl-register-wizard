@@ -3,6 +3,7 @@ use eframe::{egui, epi};
 use crate::model_gui;
 use crate::undo;
 use crate::gui_blocks;
+use crate::gui_types;
 
 enum FieldsModification {
     Delete(usize),
@@ -17,7 +18,7 @@ fn absdiff(a: u32, b:u32) -> u32 {
     }
 }
 
-pub fn panel(register : &mut model_gui::Register, ctx: &egui::CtxRef, 
+pub fn panel(register : &mut model_gui::Register, interface_data_width: &gui_types::AutoManualU32, ctx: &egui::CtxRef, 
         _frame: &epi::Frame, undo: &mut undo::Undo) {
 
     egui::CentralPanel::default().show(ctx, |mut ui| {
@@ -74,22 +75,40 @@ pub fn panel(register : &mut model_gui::Register, ctx: &egui::CtxRef,
                 gui_blocks::widget_combobox_inline(&mut register.signal_type, &mut ui, "Signal type", None, None, undo);
                 gui_blocks::widget_vectorvalue_inline(&mut register.reset, &mut ui, "reset value", None, undo);
             });
+            ui.separator();
         } else {
-            ui.label("fields bitmap");
+            ui.separator();
+            register.update_bitfield(interface_data_width);
+            gui_blocks::widget_bitfield(ui, &register.bitfield);
         }
 
-        ui.separator();
 
         ui.horizontal(|ui| {
             ui.heading("Fields:");
             if ui.button("New").clicked() {
-                register.fields.push(Default::default());
+                // find highest bit to put the new field over it 
+                let mut new_bit = 0;
+                for field in &register.fields {
+                    new_bit = u32::max(new_bit, u32::max(field.position_start.value_int, field.position_end.value_int) + 1);
+                }
+                let position = gui_types::GuiU32 {
+                    value_str : new_bit.to_string(),
+                    str_valid : true,
+                    value_int : new_bit
+                };
+
+                register.fields.push(model_gui::Field {
+                    position_start : position.clone(),
+                    position_end : position,
+                    ..Default::default()
+                });
                 undo.register_modification("create new field", undo::ModificationType::Finished);
             }
         });
 
         if ! register.fields.is_empty() {
             let mut action : Option<FieldsModification> = None;
+            let mut hovered_field : Option<usize> = None;
             let num_fields = register.fields.len();
             let can_access_as_register = register.access != model_gui::AccessType::PerField;
             let can_location_as_register = register.location != model_gui::LocationType::PerField;
@@ -98,75 +117,82 @@ pub fn panel(register : &mut model_gui::Register, ctx: &egui::CtxRef,
             let can_use_we_as_register = register_location_core && register.core_use_write_enable != model_gui::CoreSignalProperty::PerField;
 
             ui.add_space(5.0);
-            egui::ScrollArea::vertical().auto_shrink([false; 2]).show(ui, | mut ui | {
+            egui::ScrollArea::vertical().auto_shrink([false; 2]).show(ui, | ui | {
                 for (n, field) in register.fields.iter_mut().enumerate() {
-                    ui.separator();
+                    let field_inner_response = ui.vertical(|mut ui| {
+                        ui.separator();
 
-                    ui.horizontal(|ui| {
-                        ui.label("from bit ");
-                        gui_blocks::widget_u32_inline_nolabel(&mut field.position_start, ui, &format!("bit start {}", n), "field bit start", undo);
-                        ui.label("to bit ");
-                        gui_blocks::widget_u32_inline_nolabel(&mut field.position_end, ui, &format!("bit stop {}", n), "field bit start", undo);
+                        ui.horizontal(|ui| {
+                            ui.label("from bit ");
+                            gui_blocks::widget_u32_inline_nolabel(&mut field.position_start, ui, &format!("bit start {}", n), "field bit start", undo);
+                            ui.label("to bit ");
+                            gui_blocks::widget_u32_inline_nolabel(&mut field.position_end, ui, &format!("bit stop {}", n), "field bit start", undo);
 
-                        let size_text = match absdiff(field.position_end.value_int, field.position_start.value_int) {
-                            0 => "(1 bit)".to_string(),
-                            n => format!("({} bits)", n+1)
-                        };
-                        ui.label(size_text);
+                            let size_text = match absdiff(field.position_end.value_int, field.position_start.value_int) {
+                                0 => "(1 bit)".to_string(),
+                                n => format!("({} bits)", n+1)
+                            };
+                            ui.label(size_text);
 
-                        if ui.button("🗑").clicked() {
-                            action = Some(FieldsModification::Delete(n));
-                            undo.register_modification("delete field", undo::ModificationType::Finished);
-                        }
-                        ui.add_enabled_ui(n > 0, |ui| {
-                            if ui.button("⬆").clicked() {
-                                action = Some(FieldsModification::Swap(n-1,n));
-                                undo.register_modification("move field", undo::ModificationType::Finished);
+                            if ui.button("🗑").clicked() {
+                                action = Some(FieldsModification::Delete(n));
+                                undo.register_modification("delete field", undo::ModificationType::Finished);
+                            }
+                            ui.add_enabled_ui(n > 0, |ui| {
+                                if ui.button("⬆").clicked() {
+                                    action = Some(FieldsModification::Swap(n-1,n));
+                                    undo.register_modification("move field", undo::ModificationType::Finished);
+                                }
+                            });
+                            ui.add_enabled_ui(n < (num_fields - 1), |ui| {
+                                if ui.button("⬇").clicked() {
+                                    action = Some(FieldsModification::Swap(n,n+1));
+                                    undo.register_modification("move field", undo::ModificationType::Finished);
+                                }
+                            });
+
+                        });
+
+                        gui_blocks::widget_text(&mut field.name, &mut ui, "Name", gui_blocks::TextWidgetType::SingleLine, undo);
+
+                        ui.horizontal(|mut ui| {
+                            gui_blocks::widget_combobox_inline(&mut field.access, &mut ui, "Access", Some(&format!("field access{}",n)),
+                                match can_access_as_register {
+                                    false => Some(model_gui::AccessTypeField::AsRegister),
+                                    true => None}, undo);
+                            gui_blocks::widget_combobox_inline(&mut field.location, &mut ui, "Location", Some(&format!("field location{}",n)),
+                                match can_location_as_register {
+                                    false => Some(model_gui::LocationTypeField::AsRegister),
+                                    true => None}, undo);
+
+                            if (register_location_core && field.location == model_gui::LocationTypeField::AsRegister) || field.location == model_gui::LocationTypeField::Core {
+                                gui_blocks::widget_combobox_inline(&mut field.core_use_read_enable, &mut ui, "use read enable", 
+                                    Some(&format!("core use re field {}",n)),
+                                    match can_use_re_as_register {
+                                        false => Some(model_gui::CoreSignalPropertyField::AsRegister),
+                                        true => None}, undo);
+                                gui_blocks::widget_combobox_inline(&mut field.core_use_write_enable, &mut ui, "use write enable",
+                                    Some(&format!("core use we field {}",n)),
+                                    match can_use_we_as_register {
+                                        false => Some(model_gui::CoreSignalPropertyField::AsRegister),
+                                        true => None}, undo);
                             }
                         });
-                        ui.add_enabled_ui(n < (num_fields - 1), |ui| {
-                            if ui.button("⬇").clicked() {
-                                action = Some(FieldsModification::Swap(n,n+1));
-                                undo.register_modification("move field", undo::ModificationType::Finished);
-                            }
+                        ui.horizontal(|mut ui| {
+                            gui_blocks::widget_combobox_inline(&mut field.signal_type, &mut ui, "Signal type", 
+                                Some(&format!("field signal type {}",n)), None, undo);
+                            gui_blocks::widget_vectorvalue_inline(&mut field.reset, &mut ui, "reset value", 
+                                Some(&format!("field signal reset value {}",n)), undo);
                         });
-
+                        gui_blocks::widget_text(&mut field.description, &mut ui, "Description", gui_blocks::TextWidgetType::MultiLine, undo);
                     });
 
-                    gui_blocks::widget_text(&mut field.name, &mut ui, "Name", gui_blocks::TextWidgetType::SingleLine, undo);
-                    gui_blocks::widget_text(&mut field.description, &mut ui, "Description", gui_blocks::TextWidgetType::MultiLine, undo);
-
-                    ui.horizontal(|mut ui| {
-                        gui_blocks::widget_combobox_inline(&mut field.access, &mut ui, "Access", Some(&format!("field access{}",n)),
-                            match can_access_as_register {
-                                false => Some(model_gui::AccessTypeField::AsRegister),
-                                true => None}, undo);
-                        gui_blocks::widget_combobox_inline(&mut field.location, &mut ui, "Location", Some(&format!("field location{}",n)),
-                            match can_location_as_register {
-                                false => Some(model_gui::LocationTypeField::AsRegister),
-                                true => None}, undo);
-
-                        if (register_location_core && field.location == model_gui::LocationTypeField::AsRegister) || field.location == model_gui::LocationTypeField::Core {
-                            gui_blocks::widget_combobox_inline(&mut field.core_use_read_enable, &mut ui, "use read enable", 
-                                Some(&format!("core use re field {}",n)),
-                                match can_use_re_as_register {
-                                    false => Some(model_gui::CoreSignalPropertyField::AsRegister),
-                                    true => None}, undo);
-                            gui_blocks::widget_combobox_inline(&mut field.core_use_write_enable, &mut ui, "use write enable",
-                                Some(&format!("core use we field {}",n)),
-                                match can_use_we_as_register {
-                                    false => Some(model_gui::CoreSignalPropertyField::AsRegister),
-                                    true => None}, undo);
-                        }
-                    });
-                    ui.horizontal(|mut ui| {
-                        gui_blocks::widget_combobox_inline(&mut field.signal_type, &mut ui, "Signal type", 
-                            Some(&format!("field signal type {}",n)), None, undo);
-                        gui_blocks::widget_vectorvalue_inline(&mut field.reset, &mut ui, "reset value", 
-                            Some(&format!("field signal reset value {}",n)), undo);
-                    });
-        
+                    if field_inner_response.response.hovered() {
+                        hovered_field = Some(n);
+                    }
                 }
+
+                register.hovered_field = hovered_field;
             });
             
             match action {

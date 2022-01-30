@@ -93,6 +93,7 @@ pub enum InterfaceType {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+#[serde(default)]
 /// structure representing an register in the GUI
 pub struct Register {
     /// register name
@@ -125,6 +126,12 @@ pub struct Register {
     pub signal_type: utils::SignalType,
     /// reset value
     pub reset: gui_types::VectorValue,
+    /// string used by the gui to represent the bitfield. Updated with the update_field() method
+    #[serde(skip)]
+    pub bitfield : String,
+    /// which field is currently hovered by the mouse, if any
+    #[serde(skip)]
+    pub hovered_field : Option<usize>
 }
 
 impl Register {
@@ -145,7 +152,61 @@ impl Register {
             fields: Vec::new(),
             signal_type: utils::SignalType::StdLogicVector,
             reset: gui_types::VectorValue::new(),
-        
+            bitfield : String::new(),
+            hovered_field : None
+        }
+    }
+
+    pub fn calculate_width(&self, interface_width : &gui_types::AutoManualU32) -> Result<usize, String> {
+        if ! self.width.is_auto {
+            Ok(self.width.manual.value_int as usize)
+        } else if  ! interface_width.is_auto {
+            Ok(interface_width.manual.value_int as usize)
+        } else if self.fields.is_empty() {
+            Err(format!("register {} has no width specified", self.name))
+        } else {
+            let mut max_bit_num = 0;
+            for field in &self.fields {
+                max_bit_num = usize::max(max_bit_num, usize::max(field.position_start.value_int as usize, field.position_end.value_int as usize) + 1);
+            }
+            Ok(max_bit_num)
+        }
+    }
+
+    pub fn update_bitfield(&mut self, interface_width : &gui_types::AutoManualU32) {
+ 
+        if let Ok(total_reg_size) = self.calculate_width(interface_width) {
+            self.bitfield = "e".repeat(total_reg_size);
+
+            // check that the bitfield values are not over the register size
+            let mut total_size = total_reg_size;
+            for field in &self.fields {
+                let highest_pos = usize::max(field.position_start.value_int as usize, field.position_end.value_int as usize);
+
+                if highest_pos + 1 > total_size {
+                    self.bitfield.insert_str(0, &"*".repeat(highest_pos + 1 - total_size));
+                    total_size = highest_pos + 1;
+                }
+            }
+
+            for (n, field) in self.fields.iter().enumerate() {
+                let min = usize::max(0,total_size - 1 - usize::max(field.position_start.value_int as usize, field.position_end.value_int as usize));
+                let max = usize::max(0,total_size - 1 - usize::min(field.position_start.value_int as usize, field.position_end.value_int as usize));
+                if let Some(field_slice) = self.bitfield.get(min..max+1) {
+                    let mut new_char = 'u';
+                    if self.hovered_field == Some(n) {
+                        new_char = 'h'
+                    }
+                    let field_slice : String = field_slice.chars().map({ | c | match c {
+                        'e' => new_char,
+                        'h' => '*',
+                        _ => '*'
+                    }}).collect();
+    
+                    self.bitfield.replace_range(min..max+1, &field_slice);
+                }
+                
+            }    
         }
     }
 }

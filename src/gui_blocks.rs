@@ -136,3 +136,48 @@ pub fn widget_vectorvalue(entry : &mut gui_types::VectorValue, ui: &mut  egui::U
         widget_vectorvalue_inline(entry, ui, label, None, undo);
     });
 }
+
+// custom widget representing a register with bitfields
+pub fn widget_bitfield(ui: &mut egui::Ui, bitfield: &str) {
+    // Deciding widget size:
+    let desired_size = ui.spacing().interact_size.y * egui::vec2(bitfield.len() as f32, 1.0);
+
+    // Allocating space:
+    let (rect, mut _response) = ui.allocate_exact_size(desired_size, egui::Sense::click());
+ //   let (_id, rect) = ui.allocate_space(desired_size);
+
+    // 4. Paint!
+    // Make sure we need to paint:
+    if ui.is_rect_visible(rect) {
+//        let inactive_color = ui.style().visuals.widgets.inactive.bg_fill;
+        let empty_color = ui.style().visuals.extreme_bg_color;
+        let used_color = ui.style().visuals.widgets.inactive.bg_fill;
+        let hovered_color = ui.style().visuals.widgets.inactive.fg_stroke.color;
+        let error_color = egui::Color32::RED;
+        let grid_stroke = ui.style().visuals.widgets.noninteractive.fg_stroke;
+
+        let mut single_bit_rec = rect;
+        single_bit_rec.set_width(single_bit_rec.height());
+        for (i,c) in bitfield.chars().enumerate() {
+            ui.painter().rect(single_bit_rec.shrink(2.0), 2.0, match c {
+                    'e' => empty_color,
+                    'u' => used_color,
+                    'h' => hovered_color,
+                    _ => error_color
+                }, ui.style().visuals.widgets.inactive.bg_stroke);
+
+            if i != 0 {
+                let bitnum = bitfield.len() - i;
+                if bitnum != 0 {
+                    if bitnum % 8 == 0 {
+                        ui.painter().line_segment([single_bit_rec.left_center(), single_bit_rec.left_bottom()], grid_stroke);
+                    } else if bitnum % 4 == 0 {
+                        ui.painter().line_segment([single_bit_rec.left_bottom() + egui::vec2(0.0, -4.0), single_bit_rec.left_bottom()], grid_stroke);
+                    }
+                }
+            }
+            *single_bit_rec.right_mut() += rect.height();
+            *single_bit_rec.left_mut() += rect.height();
+        }
+    }
+}
