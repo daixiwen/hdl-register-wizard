@@ -1,4 +1,4 @@
-//! Model description file structures module
+//! Model description file version 1.0 import/export
 
 use serde::{de::Error, Deserialize, Serialize};
 
@@ -8,6 +8,7 @@ use strum_macros;
 use std::default::Default;
 use crate::model_gui;
 use crate::utils;
+use std::convert::From;
 use std::convert::TryInto;
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -119,7 +120,7 @@ impl Register {
     pub fn new() -> Register {
         Register {
             name: String::new(),
-            address: Address::Auto,
+            address: Default::default(),
             summary: None,
             description: None,
             width: Some(32),
@@ -144,24 +145,35 @@ impl Default for Register {
 
 #[derive(Debug, PartialEq, Clone)]
 /// diferent ways of defining a register address
-pub enum Address {
-    /// automatic address, the first available spot is used
-    Auto,
-    /// fixed unique address
-    Single(utils::VectorValue),
-    /// fixed group of addresses
-    Stride(AddressStride),
+pub struct Address {
+    /// if none, automatic address. If some, defined address
+    pub value : Option<utils::VectorValue>,
+    /// stride option
+    pub stride : Option<AddressStride>
 }
 
 #[derive(Debug, PartialEq, Clone)]
 /// structure to represent a stride address definition, where the register can be repeated several times
 pub struct AddressStride {
-    /// starting value
-    pub value: utils::VectorValue,
     /// number of addresses
     pub count: utils::VectorValue,
     /// increment between two addresses. If None, use the register size as increment
     pub increment: Option<utils::VectorValue>,
+}
+
+impl Address {
+    pub fn new() -> Self {
+        Address {
+            value : None,
+            stride : None
+        }
+    }
+}
+
+impl Default for Address {
+    fn default() -> Self {
+        Address::new()
+    }
 }
 
 #[derive(
@@ -283,26 +295,24 @@ pub enum FieldPosition {
 impl fmt::Display for Address {
     /// conversion to string
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &self {
-            Address::Auto => write!(f, "auto"),
-
-            Address::Single(value) => write!(f, "{}", &value.to_string()),
-
-            Address::Stride(stride) => match &stride.increment {
-                None => write!(
-                    f,
-                    "{}:stride:{}",
-                    &stride.value.to_string(),
-                    &stride.count.to_string()
-                ),
-                Some(inc) => write!(
-                    f,
-                    "{}:stride:{}:{}",
-                    &stride.value.to_string(),
-                    &stride.count.to_string(),
-                    &inc.to_string()
-                ),
+        let value_str = match self.value {
+            None => "auto".to_string(),
+            Some(address_value) => address_value.to_string()
+        };
+        match &self.stride {
+            None => {
+                write!(f, "{}", value_str)
             },
+            Some(stride) => {
+                match stride.increment {
+                    None => {
+                        write!(f, "{}:stride:{}", value_str, stride.count)
+                    },
+                    Some(increment) => {
+                        write!(f, "{}:stride:{}:{}", value_str, stride.count, increment)
+                    }
+                }
+            }
         }
     }
 }
@@ -310,29 +320,35 @@ impl fmt::Display for Address {
 impl Address {
     /// conversion to string for human reading in tables
     pub fn nice_str(&self) -> String {
-        match &self {
-            Address::Auto => "auto".to_string(),
-
-            Address::Single(value) => value.to_string(),
-
-            Address::Stride(stride) => {
+        let value_str = match self.value {
+            None => "auto".to_string(),
+            Some(address_value) => address_value.to_string()
+        };
+        match &self.stride {
+            None => {
+                value_str
+            },
+            Some(stride) => {
                 let count_minus_one = utils::VectorValue {
                     value: stride.count.value - 1,
                     radix: stride.count.radix,
                 };
 
-                match &stride.increment {
-                    None => format!(
-                        "{} + (0..{})",
-                        &stride.value.to_string(),
-                        &count_minus_one.to_string()
-                    ),
-                    Some(inc) => format!(
-                        "{} + (0..{})*{}",
-                        &stride.value.to_string(),
-                        &count_minus_one.to_string(),
-                        &inc.to_string()
-                    ),
+                match stride.increment {
+                    None => {
+                        format!(
+                            "{} + (0..{})",
+                            value_str,
+                            count_minus_one)
+                    },
+                    Some(increment) => {
+                        format!(
+                            "{} + (0..{})*{}",
+                            value_str,
+                            count_minus_one,
+                            increment
+                        )
+                    }
                 }
             }
         }
@@ -350,42 +366,57 @@ impl Serialize for Address {
 }
 
 impl std::str::FromStr for Address {
-    type Err = std::num::ParseIntError;
+    type Err = &'static str;
 
     /// conversion from string to address, using the format described in the mdf specification for stride addresses
-    fn from_str(s: &str) -> Result<Self, std::num::ParseIntError> {
-        if s == "auto" {
+    fn from_str(s: &str) -> Result<Self, &'static str> {
+/*        if s == "auto" {
             Ok(Address::Auto)
-        } else {
-            let elements: Vec<&str> = s.split(':').collect();
-            match elements.len() {
-                1 => Ok(Address::Single(utils::VectorValue::from_str(s)?)),
-                3 => {
-                    if elements[1] == "stride" {
-                        Ok(Address::Stride(AddressStride {
-                            value: utils::VectorValue::from_str(elements[0])?,
-                            count: utils::VectorValue::from_str(elements[2])?,
-                            increment: None,
-                        }))
-                    } else {
-                        Err(u32::from_str("abc").err().unwrap())
-                    }
+            Ok(Address::Single(utils::VectorValue::from_str(s)?))
+*/
+        let elements: Vec<&str> = s.split(':').collect();
+        let (value_str, stride) = match elements.len() {
+            1 => (s, None),
+            3 => {
+                if elements[1] == "stride" {
+                    (elements[0], Some(AddressStride {
+                        count: utils::VectorValue::from_str(elements[2])
+                            .map_err(|_| "could not parse stride count")?,
+                        increment: None
+                    }))
+                } else {
+                    return Err("'stride' keyword expected");
                 }
-                4 => {
-                    if elements[1] == "stride" {
-                        Ok(Address::Stride(AddressStride {
-                            value: utils::VectorValue::from_str(elements[0])?,
-                            count: utils::VectorValue::from_str(elements[2])?,
-                            increment: Some(utils::VectorValue::from_str(elements[3])?),
-                        }))
-                    } else {
-                        Err(u32::from_str("abc").err().unwrap())
-                    }
-                }
+            },
+            4 => {
+                if elements[1] == "stride" {
+                    (elements[0], Some(AddressStride {
+                        count: utils::VectorValue::from_str(elements[2])
+                            .map_err(|_| "could not parse stride count")?,
+                        increment: Some(utils::VectorValue::from_str(elements[3])
+                            .map_err(|_| "could not parse stride increment")?,
 
-                _ => Err(u32::from_str("abc").err().unwrap()),
+                    ) }))
+                } else {
+                    return Err("'stride' keyword expected");
+                }
+            },
+
+            _ => {
+                return Err("bad number of arguments between ':'")
             }
-        }
+        };
+        let address_value = if value_str == "auto" {
+            None
+        } else {
+            Some(utils::VectorValue::from_str(value_str)
+                .map_err(|_| "could not parse address value")?)
+        };
+        
+        Ok(Address {
+            value  : address_value,
+            stride
+        })
     }
 }
 
@@ -406,10 +437,12 @@ impl<'de> Deserialize<'de> for Address {
                 ))),
             },
 
-            utils::StrOrNum::Num(n) => Ok(Address::Single(utils::VectorValue {
-                value: n.into(),
-                radix: utils::RadixType::Decimal,
-            })),
+            utils::StrOrNum::Num(n) => Ok(Address {
+                value : Some(utils::VectorValue {
+                    value: n.into(),
+                    radix: utils::RadixType::Decimal,
+                }),
+                stride : None })
         }
     }
 }
@@ -476,3 +509,71 @@ impl<'de> Deserialize<'de> for FieldPosition {
         }
     }
 }
+
+/// conversion from to and from gui model
+impl From<model_gui::Model> for Mdf {
+
+    fn from(model_from_gui : model_gui::Model) -> Self {
+        Mdf {
+            name : model_from_gui.name,
+            interfaces : model_from_gui.interfaces.into_iter().map(Interface::from).collect()
+        }
+    }
+}
+
+impl From<Mdf> for model_gui::Model {
+
+    fn from(model : Mdf) -> Self {
+        model_gui::Model {
+            name : model.name,
+            interfaces : model.interfaces.into_iter().map(model_gui::Interface::from).collect()
+        }
+    }
+}
+
+impl From<model_gui::Interface> for Interface {
+
+    fn from(interface_from_gui : model_gui::Interface) -> Self {
+        Interface {
+            name : interface_from_gui.name,
+            description : utils::textarea_to_opt_vec_str(&interface_from_gui.description),
+            interface_type : interface_from_gui.interface_type,
+            address_width : utils::automanual_to_opt_u32(&interface_from_gui.address_width),
+            data_width : utils::automanual_to_opt_u32(&interface_from_gui.data_width),
+            registers : interface_from_gui.registers.into_iter().map(Register::from).collect()
+        }
+    }
+}
+
+impl From<Interface> for model_gui::Interface  {
+
+    fn from(interface : Interface) -> Self {
+        model_gui::Interface {
+            name : interface.name,
+            description : utils::opt_vec_str_to_textarea(&interface.description),
+            interface_type : interface.interface_type,
+            address_width : utils::opt_u32_to_automanual(&interface.address_width),
+            data_width : utils::opt_u32_to_automanual(&interface.data_width),
+            registers : interface.registers.into_iter().map(model_gui::Register::from).collect()
+        }
+    }
+}
+
+impl From<model_gui::Register> for Register {
+
+    fn from(register_from_gui : model_gui::Register) -> Self {
+        Register {
+            name : register_from_gui.name,
+            ..Default::default()
+        }
+    }
+}
+
+impl From<Register> for model_gui::Register {
+    fn from(register : Register) -> Self {
+        model_gui::Register {
+            name : register.name,
+            ..Default::default()
+        }
+    }
+} 

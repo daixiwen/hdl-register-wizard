@@ -3,13 +3,15 @@ use crate::model_gui;
 use crate::page;
 use crate::navigation;
 use crate::undo;
+use crate::settings;
+use crate::utils;
+use crate::gui_blocks;
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "persistence", serde(default))] // if we add new fields, give them default values when deserializing old state
 pub struct HdlWizardApp {
-    // Example stuff:
-    pub model: model_gui::MdfGui,
+    pub model: model_gui::Model,
 
     #[cfg_attr(feature = "persistence", serde(skip))]
     pub page_type: page::PageType,
@@ -17,6 +19,7 @@ pub struct HdlWizardApp {
     #[cfg_attr(feature = "persistence", serde(skip))]
     pub undo: undo::Undo,
 
+    pub settings : settings::Settings,
 }
 
 impl Default for HdlWizardApp {
@@ -24,7 +27,8 @@ impl Default for HdlWizardApp {
         Self {
             model: Default::default(),
             page_type : page::PageType::Project,
-            undo: Default::default()
+            undo: Default::default(),
+            settings: Default::default()
         }
     }
 }
@@ -69,6 +73,9 @@ impl epi::App for HdlWizardApp {
         style.spacing.button_padding = egui::vec2(6.0, 4.0);
         style.spacing.interact_size = egui::vec2(48.0, 24.0);
         ctx.set_style(style);
+
+        // light/dark mode
+        utils::set_theme(ctx, & self.settings.dark_mode);
     }
 
     /// Called by the frame work to save state before shutdown.
@@ -87,6 +94,7 @@ impl epi::App for HdlWizardApp {
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             // The top panel is often a good place for a menu bar:
             egui::menu::bar(ui, |ui| {
+                gui_blocks::dark_light_mode_switch(ui, ctx, &mut self.settings.dark_mode);
                 ui.menu_button("File", |ui| {
                     if ui.button("Quit").clicked() {
                         frame.quit();

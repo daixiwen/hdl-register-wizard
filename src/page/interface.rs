@@ -5,7 +5,7 @@ use crate::undo;
 use crate::gui_blocks;
 use crate::page;
 
-pub fn panel(interface_num : usize, interface : &mut model_gui::InterfaceGUI, ctx: &egui::CtxRef, 
+pub fn panel(interface_num : usize, interface : &mut model_gui::Interface, ctx: &egui::CtxRef, 
         _frame: &epi::Frame, undo: &mut undo::Undo) 
         -> Option<page::PageType> {
 

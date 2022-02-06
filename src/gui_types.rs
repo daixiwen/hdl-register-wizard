@@ -11,7 +11,7 @@ use crate::utils;
     Deserialize,
     Clone,
 )]
-/// value that can either be "auto" or an integer manual value
+/// integer value
 pub struct GuiU32 {
     /// value actually in the GUI, whether it is valid or not
     pub value_str: String,
@@ -106,5 +106,34 @@ impl VectorValue {
 impl Default for VectorValue {
     fn default() -> Self {
         VectorValue::new()
+    }
+}
+
+#[derive(
+    Serialize,
+    Deserialize,
+    Clone,
+)]
+/// value that can either be "auto" or a manual vector value
+pub struct AutoManualVectorValue {
+    /// if asserted, automatically caculated
+    pub is_auto: bool,
+    /// manual value
+    pub manual : VectorValue
+}
+
+impl AutoManualVectorValue {
+    /// create a new empty interface with type SBI
+    pub fn new() -> AutoManualVectorValue {
+        AutoManualVectorValue {
+            is_auto : true,
+            manual  : VectorValue::new()
+        }
+    }
+}
+
+impl Default for AutoManualVectorValue {
+    fn default() -> Self {
+        AutoManualVectorValue::new()
     }
 }

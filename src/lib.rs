@@ -18,7 +18,6 @@
 
 mod app;
 pub use app::HdlWizardApp;
-pub mod mdf_format;
 pub mod model_gui;
 pub mod utils;
 pub mod page;
@@ -26,6 +25,8 @@ pub mod navigation;
 pub mod undo;
 pub mod gui_blocks;
 pub mod gui_types;
+pub mod file_formats;
+pub mod settings;
 
 #[cfg(test)]
 mod tests;

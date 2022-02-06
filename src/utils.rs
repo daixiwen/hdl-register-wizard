@@ -4,6 +4,8 @@ use serde::{de::Error, Deserialize, Serialize};
 use std::fmt;
 use std::str::FromStr;
 use strum_macros;
+use crate::gui_types;
+use eframe::egui;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 /// structure used to represent a vector or integer value, with both the value itself and the radix type
@@ -196,5 +198,41 @@ pub fn textarea_to_opt_vec_str(value_str: &str) -> Option<Vec<String>> {
         None
     } else {
         Some(value_str.split('\n').map(|s| s.to_string()).collect())
+    }
+}
+
+/// convert from an Option<u32> to an AutoManualU32
+pub fn opt_u32_to_automanual(entry : &Option<u32>) -> gui_types::AutoManualU32 {
+    match entry {
+        None => gui_types::AutoManualU32 {
+            is_auto : true,
+            ..Default::default()
+        },
+        Some(value) => gui_types::AutoManualU32 {
+            is_auto : false,
+            manual : gui_types::GuiU32 {
+                value_str : value.to_string(),
+                str_valid : true,
+                value_int : *value
+            }
+        }
+    }
+}
+
+/// convert from a AutoManualU32 to an Option<u32>
+pub fn automanual_to_opt_u32(gui_field : &gui_types::AutoManualU32) -> Option<u32> {
+    if gui_field.is_auto {
+        None
+    } else {
+        Some(gui_field.manual.value_int)
+    }
+}
+
+/// set the light/dark theme depending on settings
+pub fn set_theme(ctx: &egui::CtxRef, setting: &Option<bool>) {
+    match setting {
+        Some(true) => { ctx.set_visuals(egui::Visuals::dark())},
+        Some(false) => { ctx.set_visuals(egui::Visuals::light())},
+        None => { ctx.set_visuals(egui::Visuals::default()) }
     }
 }

@@ -16,19 +16,19 @@ use crate::gui_types;
 use crate::utils;
 
 #[derive(Serialize, Deserialize, Clone)]
-/// model description file. This structure hold all the model, and can be
+/// model description. This structure hold all the model, and can be
 /// imported or exported as JSON
-pub struct MdfGui {
+pub struct Model {
     /// file name
     pub name: String,
     /// list of interfaces
-    pub interfaces: Vec<InterfaceGUI>,
+    pub interfaces: Vec<Interface>,
 }
 
-impl Default for MdfGui {
+impl Default for Model {
     /// create an empty model
-    fn default() -> MdfGui {
-        MdfGui {
+    fn default() -> Model {
+        Model {
             name: String::new(),
             interfaces: Vec::new(),
         }
@@ -37,7 +37,7 @@ impl Default for MdfGui {
 
 #[derive(Serialize, Deserialize, Clone)]
 /// structure representing an interface in the model
-pub struct InterfaceGUI {
+pub struct Interface {
     /// interface name
     pub name: String,
     /// description for the interface
@@ -52,10 +52,10 @@ pub struct InterfaceGUI {
     pub registers: Vec<Register>,
 }
 
-impl InterfaceGUI {
+impl Interface {
     /// create a new empty interface with type SBI
-    pub fn new() -> InterfaceGUI {
-        InterfaceGUI {
+    pub fn new() -> Interface {
+        Interface {
             name: String::new(),
             description: String::new(),
             interface_type: InterfaceType::SBI,
@@ -66,9 +66,9 @@ impl InterfaceGUI {
     }
 }
 
-impl Default for InterfaceGUI {
+impl Default for Interface {
     fn default() -> Self {
-        InterfaceGUI::new()
+        Interface::new()
     }
 }
 
@@ -102,14 +102,14 @@ pub struct Register {
     pub summary: String,
     /// longer description of register
     pub description: String,
-    /// register address type
-    pub address_type: AddressType,
-    /// for non auto address: (first) address value
-    pub address_value: gui_types::VectorValue,
+    /// (first) address value
+    pub address_value: gui_types::AutoManualVectorValue,
+    /// is it a stride address?
+    pub address_stride : bool,
     /// for stride address: number of registers
     pub address_count: gui_types::VectorValue,
     /// for stride address: increment between registers
-    pub address_incr: gui_types::VectorValue,
+    pub address_incr: gui_types::AutoManualVectorValue,
     /// register width. Can be auto only if fields are used
     pub width: gui_types::AutoManualU32,
     /// read/write access type for register
@@ -138,10 +138,10 @@ impl Register {
     pub fn new() -> Register {
         Register {
             name: String::new(),
-            address_type: AddressType::Auto,
-            address_value: gui_types::VectorValue::new(),
+            address_value: gui_types::AutoManualVectorValue::new(),
+            address_stride: false,
             address_count: gui_types::VectorValue::new(),
-            address_incr: gui_types::VectorValue::new(),
+            address_incr: gui_types::AutoManualVectorValue::new(),
             summary: String::new(),
             description: String::new(),
             width: gui_types::AutoManualU32::new(),

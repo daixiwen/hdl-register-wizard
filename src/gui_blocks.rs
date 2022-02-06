@@ -137,6 +137,20 @@ pub fn widget_vectorvalue(entry : &mut gui_types::VectorValue, ui: &mut  egui::U
     });
 }
 
+pub fn widget_auto_manual_vectorvalue_inline(value : &mut gui_types::AutoManualVectorValue, ui: &mut  egui::Ui, label: &str, undo : &mut undo::Undo) {
+    ui.label(format!("{}:",label));
+    if ui.checkbox(&mut value.is_auto, "auto").changed() {
+        undo.register_modification(&format!("{} {}", label, match value.is_auto {
+            true => "set to automatic",
+            false => "set to manual"}), 
+            undo::ModificationType::Finished);
+    }  
+    
+    ui.add_enabled_ui(! value.is_auto, |ui| {
+        widget_vectorvalue_inline(&mut value.manual, ui, " or manual:", None, undo);
+    });
+}
+
 // custom widget representing a register with bitfields
 pub fn widget_bitfield(ui: &mut egui::Ui, bitfield: &str) {
     // Deciding widget size:
@@ -179,5 +193,26 @@ pub fn widget_bitfield(ui: &mut egui::Ui, bitfield: &str) {
             *single_bit_rec.right_mut() += rect.height();
             *single_bit_rec.left_mut() += rect.height();
         }
+    }
+}
+
+pub fn dark_light_mode_switch(ui: &mut egui::Ui, ctx: &egui::CtxRef, setting: &mut Option<bool>)
+{
+    if ctx.style().visuals.dark_mode {
+        if ui
+            .add(egui::Button::new("☀").frame(false))
+            .on_hover_text("Switch to light mode")
+            .clicked()
+        {
+            *setting = Some(false);
+            utils::set_theme(ctx, setting);
+        }
+    } else if ui
+        .add(egui::Button::new("🌙").frame(false))
+        .on_hover_text("Switch to dark mode")
+        .clicked()
+    {
+        *setting = Some(true);
+        utils::set_theme(ctx, setting);
     }
 }

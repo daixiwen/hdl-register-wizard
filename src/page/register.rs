@@ -32,22 +32,22 @@ pub fn panel(register : &mut model_gui::Register, interface_data_width: &gui_typ
 
         ui.horizontal(|mut ui| {
 
-            gui_blocks::widget_combobox(&mut register.address_type, &mut ui, "Address", None, undo);
-
-            match register.address_type {
-                model_gui::AddressType::Auto => (),
-
-                model_gui::AddressType::Single => {
-                    gui_blocks::widget_vectorvalue(&mut register.address_value, &mut ui, "Value", undo);
-                }
-                model_gui::AddressType::Stride => {
-                    gui_blocks::widget_vectorvalue(&mut register.address_value, &mut ui, "First", undo);
-                    gui_blocks::widget_vectorvalue(&mut register.address_count, &mut ui, "Count", undo);
-                    gui_blocks::widget_vectorvalue(&mut register.address_incr, &mut ui, "Increment", undo);
-                }
-            }
-
+            gui_blocks::widget_auto_manual_vectorvalue_inline(&mut register.address_value, &mut ui, "Address", undo);
         });
+        ui.horizontal(|ui| {
+            if ui.checkbox(&mut register.address_stride, "Address stride:").changed() {
+                undo.register_modification(match register.address_stride {
+                    true => "address stride enabled",
+                    false => "address stride disabled",},
+                    undo::ModificationType::Finished);
+            }  
+            
+            ui.add_enabled_ui(register.address_stride, |mut ui| {
+                gui_blocks::widget_vectorvalue(&mut register.address_count, &mut ui, "Count", undo);
+                gui_blocks::widget_auto_manual_vectorvalue_inline(&mut register.address_incr, &mut ui, "Increment", undo);
+            });
+        });
+
         ui.horizontal(|mut ui| {
 
             gui_blocks::widget_auto_manual_u32_inline(&mut register.width, &mut ui, "Width", register.fields.is_empty(), undo);
@@ -86,11 +86,15 @@ pub fn panel(register : &mut model_gui::Register, interface_data_width: &gui_typ
         ui.horizontal(|ui| {
             ui.heading("Fields:");
             if ui.button("New").clicked() {
-                // find highest bit to put the new field over it 
-                let mut new_bit = 0;
-                for field in &register.fields {
-                    new_bit = u32::max(new_bit, u32::max(field.position_start.value_int, field.position_end.value_int) + 1);
+                // if this is the first field and the register width is not valid, switch it to auto
+                if register.fields.is_empty() && (!register.width.manual.str_valid) {
+                    register.width.is_auto = true;
                 }
+                // find highest bit to put the new field over it 
+                let new_bit = register.fields.iter().fold(0, | maxbit, field | {
+                    u32::max(maxbit, u32::max(field.position_start.value_int, field.position_end.value_int)+1)
+                });
+
                 let position = gui_types::GuiU32 {
                     value_str : new_bit.to_string(),
                     str_valid : true,

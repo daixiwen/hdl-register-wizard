@@ -17,7 +17,7 @@ pub struct Undo {
 #[derive(Clone)]
 pub struct UndoState {
     pub change_description : String,
-    pub model : model_gui::MdfGui,
+    pub model : model_gui::Model,
     pub page_type : page::PageType
 }
 
@@ -65,7 +65,7 @@ impl Undo {
         self.modification_status = modification_type;
     }
 
-    pub fn store_undo(&mut self, model : &model_gui::MdfGui, page_type : &page::PageType) {
+    pub fn store_undo(&mut self, model : &model_gui::Model, page_type : &page::PageType) {
         if self.current_modification.is_some() && match self.modification_status {
                 ModificationType::OnGoing(id) => self.current_focus != Some(id),
                 ModificationType::Finished => true
