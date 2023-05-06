@@ -3,17 +3,17 @@
 //! are not in a form easy to process for the GUI (for example multi line texts), and with an immediate GUI it is better
 //! to avoid gaving to convert data at each frame. There could have been only the GUI model structure with custom
 //! implemantations for Serialize and Deserialize, but while a Serialize custom implementation is easy to write, a custom
-//! deserialization function is more difficult and not very clean. Besides having different structures for GUI and 
+//! deserialization function is more difficult and not very clean. Besides having different structures for GUI and
 //! (de)serialization will enable more easily support for several versions of the file format in the future or even
 //! different file formats
-//! 
+//!
 
-use serde::{Deserialize, Serialize};
-use strum_macros;
-use std::default::Default;
 /// temporaty include until I've redefined averything
 use crate::gui_types;
 use crate::utils;
+use serde::{Deserialize, Serialize};
+use std::default::Default;
+use strum_macros;
 
 #[derive(Serialize, Deserialize, Clone)]
 /// model description. This structure hold all the model, and can be
@@ -45,7 +45,7 @@ pub struct Interface {
     /// interface type (protocol used)
     pub interface_type: InterfaceType,
     /// width of the address bus.
-    pub address_width : gui_types::AutoManualU32,
+    pub address_width: gui_types::AutoManualU32,
     /// width of the data bus.
     pub data_width: gui_types::AutoManualU32,
     /// list of registers
@@ -61,7 +61,7 @@ impl Interface {
             interface_type: InterfaceType::SBI,
             registers: Vec::new(),
             address_width: gui_types::AutoManualU32::new(),
-            data_width: gui_types::AutoManualU32::new()
+            data_width: gui_types::AutoManualU32::new(),
         }
     }
 }
@@ -80,7 +80,7 @@ impl Default for Interface {
     strum_macros::EnumString,
     PartialEq,
     Clone,
-    Copy
+    Copy,
 )]
 /// type of interface. Only SBI is officially spported by the Bitvis tool RegisterWizard
 pub enum InterfaceType {
@@ -105,7 +105,7 @@ pub struct Register {
     /// (first) address value
     pub address_value: gui_types::AutoManualVectorValue,
     /// is it a stride address?
-    pub address_stride : bool,
+    pub address_stride: bool,
     /// for stride address: number of registers
     pub address_count: gui_types::VectorValue,
     /// for stride address: increment between registers
@@ -128,10 +128,10 @@ pub struct Register {
     pub reset: gui_types::VectorValue,
     /// string used by the gui to represent the bitfield. Updated with the update_field() method
     #[serde(skip)]
-    pub bitfield : String,
+    pub bitfield: String,
     /// which field is currently hovered by the mouse, if any
     #[serde(skip)]
-    pub hovered_field : Option<usize>
+    pub hovered_field: Option<usize>,
 }
 
 impl Register {
@@ -152,61 +152,93 @@ impl Register {
             fields: Vec::new(),
             signal_type: utils::SignalType::StdLogicVector,
             reset: gui_types::VectorValue::new(),
-            bitfield : String::new(),
-            hovered_field : None
+            bitfield: String::new(),
+            hovered_field: None,
         }
     }
 
-    pub fn calculate_width(&self, interface_width : &gui_types::AutoManualU32) -> Result<usize, String> {
-        if ! self.width.is_auto {
+    pub fn calculate_width(
+        &self,
+        interface_width: &gui_types::AutoManualU32,
+    ) -> Result<usize, String> {
+        if !self.width.is_auto {
             Ok(self.width.manual.value_int as usize)
-        } else if  ! interface_width.is_auto {
+        } else if !interface_width.is_auto {
             Ok(interface_width.manual.value_int as usize)
         } else if self.fields.is_empty() {
             Err(format!("register {} has no width specified", self.name))
         } else {
             let mut max_bit_num = 0;
             for field in &self.fields {
-                max_bit_num = usize::max(max_bit_num, usize::max(field.position_start.value_int as usize, field.position_end.value_int as usize) + 1);
+                max_bit_num = usize::max(
+                    max_bit_num,
+                    usize::max(
+                        field.position_start.value_int as usize,
+                        field.position_end.value_int as usize,
+                    ) + 1,
+                );
             }
             Ok(max_bit_num)
         }
     }
 
-    pub fn update_bitfield(&mut self, interface_width : &gui_types::AutoManualU32) {
- 
+    pub fn update_bitfield(&mut self, interface_width: &gui_types::AutoManualU32) {
         if let Ok(total_reg_size) = self.calculate_width(interface_width) {
             self.bitfield = "e".repeat(total_reg_size);
 
             // check that the bitfield values are not over the register size
             let mut total_size = total_reg_size;
             for field in &self.fields {
-                let highest_pos = usize::max(field.position_start.value_int as usize, field.position_end.value_int as usize);
+                let highest_pos = usize::max(
+                    field.position_start.value_int as usize,
+                    field.position_end.value_int as usize,
+                );
 
                 if highest_pos + 1 > total_size {
-                    self.bitfield.insert_str(0, &"*".repeat(highest_pos + 1 - total_size));
+                    self.bitfield
+                        .insert_str(0, &"*".repeat(highest_pos + 1 - total_size));
                     total_size = highest_pos + 1;
                 }
             }
 
             for (n, field) in self.fields.iter().enumerate() {
-                let min = usize::max(0,total_size - 1 - usize::max(field.position_start.value_int as usize, field.position_end.value_int as usize));
-                let max = usize::max(0,total_size - 1 - usize::min(field.position_start.value_int as usize, field.position_end.value_int as usize));
-                if let Some(field_slice) = self.bitfield.get(min..max+1) {
+                let min = usize::max(
+                    0,
+                    total_size
+                        - 1
+                        - usize::max(
+                            field.position_start.value_int as usize,
+                            field.position_end.value_int as usize,
+                        ),
+                );
+                let max = usize::max(
+                    0,
+                    total_size
+                        - 1
+                        - usize::min(
+                            field.position_start.value_int as usize,
+                            field.position_end.value_int as usize,
+                        ),
+                );
+                if let Some(field_slice) = self.bitfield.get(min..max + 1) {
                     let mut new_char = 'u';
                     if self.hovered_field == Some(n) {
                         new_char = 'h'
                     }
-                    let field_slice : String = field_slice.chars().map({ | c | match c {
-                        'e' => new_char,
-                        'h' => '*',
-                        _ => '*'
-                    }}).collect();
-    
-                    self.bitfield.replace_range(min..max+1, &field_slice);
+                    let field_slice: String = field_slice
+                        .chars()
+                        .map({
+                            |c| match c {
+                                'e' => new_char,
+                                'h' => '*',
+                                _ => '*',
+                            }
+                        })
+                        .collect();
+
+                    self.bitfield.replace_range(min..max + 1, &field_slice);
                 }
-                
-            }    
+            }
         }
     }
 }
@@ -225,7 +257,7 @@ impl Default for Register {
     strum_macros::EnumString,
     PartialEq,
     Clone,
-    Copy
+    Copy,
 )]
 /// type of address for the register
 pub enum AddressType {
@@ -250,17 +282,17 @@ pub enum AddressType {
 /// read/write access type for a register
 pub enum AccessType {
     /// Read/write
-    #[strum(serialize="Read / Write")]
+    #[strum(serialize = "Read / Write")]
     ReadWrite,
     /// Read only
-    #[strum(serialize="Read Only")]
+    #[strum(serialize = "Read Only")]
     ReadOnly,
     /// Write only
-    #[strum(serialize="Write Only")]
+    #[strum(serialize = "Write Only")]
     WriteOnly,
     /// Per field
-    #[strum(serialize="Per Field")]    
-    PerField
+    #[strum(serialize = "Per Field")]
+    PerField,
 }
 
 #[derive(
@@ -280,8 +312,8 @@ pub enum LocationType {
     /// user module
     Core,
     /// different value per field
-    #[strum(serialize="Per Field")]    
-    PerField
+    #[strum(serialize = "Per Field")]
+    PerField,
 }
 
 #[derive(
@@ -292,14 +324,14 @@ pub enum LocationType {
     strum_macros::EnumString,
     PartialEq,
     Clone,
-    Copy
+    Copy,
 )]
 /// yes/no core signal property
 pub enum CoreSignalProperty {
     Yes,
     No,
-    #[strum(serialize="Per Field")]    
-    PerField
+    #[strum(serialize = "Per Field")]
+    PerField,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -329,10 +361,10 @@ pub struct Field {
 impl Field {
     pub fn new() -> Self {
         Field {
-            name : String::new(),
-            position_start : gui_types::GuiU32::new(),
-            position_end : gui_types::GuiU32::new(),
-            description : String::new(),
+            name: String::new(),
+            position_start: gui_types::GuiU32::new(),
+            position_end: gui_types::GuiU32::new(),
+            description: String::new(),
             access: AccessTypeField::ReadWrite,
             signal_type: utils::SignalType::StdLogicVector,
             reset: gui_types::VectorValue::new(),
@@ -362,17 +394,17 @@ impl Default for Field {
 /// read/write access type for a register
 pub enum AccessTypeField {
     /// Read/write
-    #[strum(serialize="Read / Write")]
+    #[strum(serialize = "Read / Write")]
     ReadWrite,
     /// Read only
-    #[strum(serialize="Read Only")]
+    #[strum(serialize = "Read Only")]
     ReadOnly,
     /// Write only
-    #[strum(serialize="Write Only")]
+    #[strum(serialize = "Write Only")]
     WriteOnly,
     /// use register setting
-    #[strum(serialize="As Register")]    
-    AsRegister
+    #[strum(serialize = "As Register")]
+    AsRegister,
 }
 
 #[derive(
@@ -392,8 +424,8 @@ pub enum LocationTypeField {
     /// user module
     Core,
     /// different value per field
-    #[strum(serialize="As Register")]    
-    AsRegister
+    #[strum(serialize = "As Register")]
+    AsRegister,
 }
 
 #[derive(
@@ -404,12 +436,12 @@ pub enum LocationTypeField {
     strum_macros::EnumString,
     PartialEq,
     Clone,
-    Copy
+    Copy,
 )]
 /// yes/no core signal property
 pub enum CoreSignalPropertyField {
     Yes,
     No,
-    #[strum(serialize="As Register")]    
-    AsRegister
+    #[strum(serialize = "As Register")]
+    AsRegister,
 }

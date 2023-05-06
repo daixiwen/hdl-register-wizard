@@ -2,14 +2,14 @@
 
 use serde::{de::Error, Deserialize, Serialize};
 
-use std::fmt;
-use std::str::FromStr;
-use strum_macros;
-use std::default::Default;
 use crate::model_gui;
 use crate::utils;
 use std::convert::From;
 use std::convert::TryInto;
+use std::default::Default;
+use std::fmt;
+use std::str::FromStr;
+use strum_macros;
 
 #[derive(Serialize, Deserialize, Clone)]
 /// model description file. This structure hold all the model, and can be
@@ -147,9 +147,9 @@ impl Default for Register {
 /// diferent ways of defining a register address
 pub struct Address {
     /// if none, automatic address. If some, defined address
-    pub value : Option<utils::VectorValue>,
+    pub value: Option<utils::VectorValue>,
     /// stride option
-    pub stride : Option<AddressStride>
+    pub stride: Option<AddressStride>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -164,8 +164,8 @@ pub struct AddressStride {
 impl Address {
     pub fn new() -> Self {
         Address {
-            value : None,
-            stride : None
+            value: None,
+            stride: None,
         }
     }
 }
@@ -228,7 +228,7 @@ pub struct CoreSignalProperties {
 }
 
 impl CoreSignalProperties {
-    pub fn must_skip ( &self) -> bool {
+    pub fn must_skip(&self) -> bool {
         self.use_read_enable.is_none() && self.use_write_enable.is_none()
     }
 }
@@ -297,22 +297,20 @@ impl fmt::Display for Address {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let value_str = match self.value {
             None => "auto".to_string(),
-            Some(address_value) => address_value.to_string()
+            Some(address_value) => address_value.to_string(),
         };
         match &self.stride {
             None => {
                 write!(f, "{}", value_str)
-            },
-            Some(stride) => {
-                match stride.increment {
-                    None => {
-                        write!(f, "{}:stride:{}", value_str, stride.count)
-                    },
-                    Some(increment) => {
-                        write!(f, "{}:stride:{}:{}", value_str, stride.count, increment)
-                    }
-                }
             }
+            Some(stride) => match stride.increment {
+                None => {
+                    write!(f, "{}:stride:{}", value_str, stride.count)
+                }
+                Some(increment) => {
+                    write!(f, "{}:stride:{}:{}", value_str, stride.count, increment)
+                }
+            },
         }
     }
 }
@@ -322,12 +320,10 @@ impl Address {
     pub fn nice_str(&self) -> String {
         let value_str = match self.value {
             None => "auto".to_string(),
-            Some(address_value) => address_value.to_string()
+            Some(address_value) => address_value.to_string(),
         };
         match &self.stride {
-            None => {
-                value_str
-            },
+            None => value_str,
             Some(stride) => {
                 let count_minus_one = utils::VectorValue {
                     value: stride.count.value - 1,
@@ -336,18 +332,10 @@ impl Address {
 
                 match stride.increment {
                     None => {
-                        format!(
-                            "{} + (0..{})",
-                            value_str,
-                            count_minus_one)
-                    },
+                        format!("{} + (0..{})", value_str, count_minus_one)
+                    }
                     Some(increment) => {
-                        format!(
-                            "{} + (0..{})*{}",
-                            value_str,
-                            count_minus_one,
-                            increment
-                        )
+                        format!("{} + (0..{})*{}", value_str, count_minus_one, increment)
                     }
                 }
             }
@@ -370,52 +358,59 @@ impl std::str::FromStr for Address {
 
     /// conversion from string to address, using the format described in the mdf specification for stride addresses
     fn from_str(s: &str) -> Result<Self, &'static str> {
-/*        if s == "auto" {
-            Ok(Address::Auto)
-            Ok(Address::Single(utils::VectorValue::from_str(s)?))
-*/
+        /*        if s == "auto" {
+                    Ok(Address::Auto)
+                    Ok(Address::Single(utils::VectorValue::from_str(s)?))
+        */
         let elements: Vec<&str> = s.split(':').collect();
         let (value_str, stride) = match elements.len() {
             1 => (s, None),
             3 => {
                 if elements[1] == "stride" {
-                    (elements[0], Some(AddressStride {
-                        count: utils::VectorValue::from_str(elements[2])
-                            .map_err(|_| "could not parse stride count")?,
-                        increment: None
-                    }))
+                    (
+                        elements[0],
+                        Some(AddressStride {
+                            count: utils::VectorValue::from_str(elements[2])
+                                .map_err(|_| "could not parse stride count")?,
+                            increment: None,
+                        }),
+                    )
                 } else {
                     return Err("'stride' keyword expected");
                 }
-            },
+            }
             4 => {
                 if elements[1] == "stride" {
-                    (elements[0], Some(AddressStride {
-                        count: utils::VectorValue::from_str(elements[2])
-                            .map_err(|_| "could not parse stride count")?,
-                        increment: Some(utils::VectorValue::from_str(elements[3])
-                            .map_err(|_| "could not parse stride increment")?,
-
-                    ) }))
+                    (
+                        elements[0],
+                        Some(AddressStride {
+                            count: utils::VectorValue::from_str(elements[2])
+                                .map_err(|_| "could not parse stride count")?,
+                            increment: Some(
+                                utils::VectorValue::from_str(elements[3])
+                                    .map_err(|_| "could not parse stride increment")?,
+                            ),
+                        }),
+                    )
                 } else {
                     return Err("'stride' keyword expected");
                 }
-            },
-
-            _ => {
-                return Err("bad number of arguments between ':'")
             }
+
+            _ => return Err("bad number of arguments between ':'"),
         };
         let address_value = if value_str == "auto" {
             None
         } else {
-            Some(utils::VectorValue::from_str(value_str)
-                .map_err(|_| "could not parse address value")?)
+            Some(
+                utils::VectorValue::from_str(value_str)
+                    .map_err(|_| "could not parse address value")?,
+            )
         };
-        
+
         Ok(Address {
-            value  : address_value,
-            stride
+            value: address_value,
+            stride,
         })
     }
 }
@@ -438,11 +433,12 @@ impl<'de> Deserialize<'de> for Address {
             },
 
             utils::StrOrNum::Num(n) => Ok(Address {
-                value : Some(utils::VectorValue {
+                value: Some(utils::VectorValue {
                     value: n.into(),
                     radix: utils::RadixType::Decimal,
                 }),
-                stride : None })
+                stride: None,
+            }),
         }
     }
 }
@@ -451,12 +447,9 @@ impl fmt::Display for FieldPosition {
     /// conversion to string
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self {
-            FieldPosition::Single(position) => 
-                write!(f, "{}", position),
+            FieldPosition::Single(position) => write!(f, "{}", position),
 
-            FieldPosition::Field(msb, lsb) => 
-                write!(f, "{}:{}", msb, lsb),
-
+            FieldPosition::Field(msb, lsb) => write!(f, "{}:{}", msb, lsb),
         }
     }
 }
@@ -480,8 +473,9 @@ impl std::str::FromStr for FieldPosition {
         match elements.len() {
             1 => Ok(FieldPosition::Single(u32::from_str(s)?)),
             2 => Ok(FieldPosition::Field(
-                        u32::from_str(elements[0])?,
-                        u32::from_str(elements[1])?)),
+                u32::from_str(elements[0])?,
+                u32::from_str(elements[1])?,
+            )),
 
             _ => Err(u32::from_str("abc").err().unwrap()),
         }
@@ -512,68 +506,79 @@ impl<'de> Deserialize<'de> for FieldPosition {
 
 /// conversion from to and from gui model
 impl From<model_gui::Model> for Mdf {
-
-    fn from(model_from_gui : model_gui::Model) -> Self {
+    fn from(model_from_gui: model_gui::Model) -> Self {
         Mdf {
-            name : model_from_gui.name,
-            interfaces : model_from_gui.interfaces.into_iter().map(Interface::from).collect()
+            name: model_from_gui.name,
+            interfaces: model_from_gui
+                .interfaces
+                .into_iter()
+                .map(Interface::from)
+                .collect(),
         }
     }
 }
 
 impl From<Mdf> for model_gui::Model {
-
-    fn from(model : Mdf) -> Self {
+    fn from(model: Mdf) -> Self {
         model_gui::Model {
-            name : model.name,
-            interfaces : model.interfaces.into_iter().map(model_gui::Interface::from).collect()
+            name: model.name,
+            interfaces: model
+                .interfaces
+                .into_iter()
+                .map(model_gui::Interface::from)
+                .collect(),
         }
     }
 }
 
 impl From<model_gui::Interface> for Interface {
-
-    fn from(interface_from_gui : model_gui::Interface) -> Self {
+    fn from(interface_from_gui: model_gui::Interface) -> Self {
         Interface {
-            name : interface_from_gui.name,
-            description : utils::textarea_to_opt_vec_str(&interface_from_gui.description),
-            interface_type : interface_from_gui.interface_type,
-            address_width : utils::automanual_to_opt_u32(&interface_from_gui.address_width),
-            data_width : utils::automanual_to_opt_u32(&interface_from_gui.data_width),
-            registers : interface_from_gui.registers.into_iter().map(Register::from).collect()
+            name: interface_from_gui.name,
+            description: utils::textarea_to_opt_vec_str(&interface_from_gui.description),
+            interface_type: interface_from_gui.interface_type,
+            address_width: utils::automanual_to_opt_u32(&interface_from_gui.address_width),
+            data_width: utils::automanual_to_opt_u32(&interface_from_gui.data_width),
+            registers: interface_from_gui
+                .registers
+                .into_iter()
+                .map(Register::from)
+                .collect(),
         }
     }
 }
 
-impl From<Interface> for model_gui::Interface  {
-
-    fn from(interface : Interface) -> Self {
+impl From<Interface> for model_gui::Interface {
+    fn from(interface: Interface) -> Self {
         model_gui::Interface {
-            name : interface.name,
-            description : utils::opt_vec_str_to_textarea(&interface.description),
-            interface_type : interface.interface_type,
-            address_width : utils::opt_u32_to_automanual(&interface.address_width),
-            data_width : utils::opt_u32_to_automanual(&interface.data_width),
-            registers : interface.registers.into_iter().map(model_gui::Register::from).collect()
+            name: interface.name,
+            description: utils::opt_vec_str_to_textarea(&interface.description),
+            interface_type: interface.interface_type,
+            address_width: utils::opt_u32_to_automanual(&interface.address_width),
+            data_width: utils::opt_u32_to_automanual(&interface.data_width),
+            registers: interface
+                .registers
+                .into_iter()
+                .map(model_gui::Register::from)
+                .collect(),
         }
     }
 }
 
 impl From<model_gui::Register> for Register {
-
-    fn from(register_from_gui : model_gui::Register) -> Self {
+    fn from(register_from_gui: model_gui::Register) -> Self {
         Register {
-            name : register_from_gui.name,
+            name: register_from_gui.name,
             ..Default::default()
         }
     }
 }
 
 impl From<Register> for model_gui::Register {
-    fn from(register : Register) -> Self {
+    fn from(register: Register) -> Self {
         model_gui::Register {
-            name : register.name,
+            name: register.name,
             ..Default::default()
         }
     }
-} 
+}

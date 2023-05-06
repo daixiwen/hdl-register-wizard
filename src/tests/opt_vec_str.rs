@@ -1,6 +1,5 @@
 use super::super::utils;
 
-
 // test creating VectorValue with string
 #[test]
 fn from_str() {

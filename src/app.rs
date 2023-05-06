@@ -1,11 +1,11 @@
-use eframe::{egui, epi};
-use crate::model_gui;
-use crate::page;
-use crate::navigation;
-use crate::undo;
-use crate::settings;
-use crate::utils;
 use crate::gui_blocks;
+use crate::model_gui;
+use crate::navigation;
+use crate::page;
+use crate::settings;
+use crate::undo;
+use crate::utils;
+use eframe::{egui, epi};
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
@@ -19,16 +19,16 @@ pub struct HdlWizardApp {
     #[cfg_attr(feature = "persistence", serde(skip))]
     pub undo: undo::Undo,
 
-    pub settings : settings::Settings,
+    pub settings: settings::Settings,
 }
 
 impl Default for HdlWizardApp {
     fn default() -> Self {
         Self {
             model: Default::default(),
-            page_type : page::PageType::Project,
+            page_type: page::PageType::Project,
             undo: Default::default(),
-            settings: Default::default()
+            settings: Default::default(),
         }
     }
 }
@@ -52,20 +52,38 @@ impl epi::App for HdlWizardApp {
             *self = epi::get_value(storage, epi::APP_KEY).unwrap_or_default()
         }
 
-        self.undo.register_modification("initial", undo::ModificationType::Finished);
+        self.undo
+            .register_modification("initial", undo::ModificationType::Finished);
         self.undo.store_undo(&self.model, &self.page_type);
 
         // install font and increase text size compared to default
         let mut fonts = egui::FontDefinitions::default();
-        fonts.font_data.insert("dejavu".to_owned(),
-            egui::FontData::from_static(include_bytes!("files/DejaVuSans.ttf"))); // .ttf and .otf supported
-        fonts.fonts_for_family.get_mut(&egui::FontFamily::Proportional).unwrap()
+        fonts.font_data.insert(
+            "dejavu".to_owned(),
+            egui::FontData::from_static(include_bytes!("files/DejaVuSans.ttf")),
+        ); // .ttf and .otf supported
+        fonts
+            .fonts_for_family
+            .get_mut(&egui::FontFamily::Proportional)
+            .unwrap()
             .insert(0, "dejavu".to_owned());
 
-        fonts.family_and_size.insert(egui::TextStyle::Small,   (egui::FontFamily::Proportional, 12.0));
-        fonts.family_and_size.insert(egui::TextStyle::Body,    (egui::FontFamily::Proportional, 16.0));
-        fonts.family_and_size.insert(egui::TextStyle::Button,  (egui::FontFamily::Proportional, 16.0));
-        fonts.family_and_size.insert(egui::TextStyle::Heading, (egui::FontFamily::Proportional, 22.0));
+        fonts.family_and_size.insert(
+            egui::TextStyle::Small,
+            (egui::FontFamily::Proportional, 12.0),
+        );
+        fonts.family_and_size.insert(
+            egui::TextStyle::Body,
+            (egui::FontFamily::Proportional, 16.0),
+        );
+        fonts.family_and_size.insert(
+            egui::TextStyle::Button,
+            (egui::FontFamily::Proportional, 16.0),
+        );
+        fonts.family_and_size.insert(
+            egui::TextStyle::Heading,
+            (egui::FontFamily::Proportional, 22.0),
+        );
         ctx.set_fonts(fonts);
 
         // increase button size
@@ -75,7 +93,7 @@ impl epi::App for HdlWizardApp {
         ctx.set_style(style);
 
         // light/dark mode
-        utils::set_theme(ctx, & self.settings.dark_mode);
+        utils::set_theme(ctx, &self.settings.dark_mode);
     }
 
     /// Called by the frame work to save state before shutdown.
@@ -88,7 +106,6 @@ impl epi::App for HdlWizardApp {
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
     fn update(&mut self, ctx: &egui::CtxRef, frame: &epi::Frame) {
-
         self.undo.update_focus(ctx.memory().focus());
 
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
@@ -103,12 +120,12 @@ impl epi::App for HdlWizardApp {
                 ui.menu_button("Edit", |ui| {
                     match self.undo.get_undo_description() {
                         None => {
-                            ui.add_enabled_ui(false, | ui | {
+                            ui.add_enabled_ui(false, |ui| {
                                 if ui.button("Undo").clicked() {
                                     unreachable!();
                                 }
-                            }); 
-                        },
+                            });
+                        }
 
                         Some(change) => {
                             if ui.button(format!("Undo {}", change)).clicked() {
@@ -116,18 +133,18 @@ impl epi::App for HdlWizardApp {
                                     self.model = undo_state.model;
                                     self.page_type = undo_state.page_type;
                                 }
-                            }    
+                            }
                         }
                     }
 
                     match self.undo.get_redo_description() {
                         None => {
-                            ui.add_enabled_ui(false, | ui | {
+                            ui.add_enabled_ui(false, |ui| {
                                 if ui.button("Redo").clicked() {
                                     unreachable!();
                                 }
-                            }); 
-                        },
+                            });
+                        }
 
                         Some(change) => {
                             if ui.button(format!("Redo {}", change)).clicked() {
@@ -135,7 +152,7 @@ impl epi::App for HdlWizardApp {
                                     self.model = redo_state.model;
                                     self.page_type = redo_state.page_type;
                                 }
-                            }    
+                            }
                         }
                     }
                 });
@@ -147,14 +164,18 @@ impl epi::App for HdlWizardApp {
         let mut change_page = None;
 
         match &self.page_type {
-            page::PageType::Project => {
-                page::project::panel(self, ctx, frame)
-            },
+            page::PageType::Project => page::project::panel(self, ctx, frame),
 
             page::PageType::Interface(num_interface) => {
                 if let Some(interface) = self.model.interfaces.get_mut(*num_interface) {
                     // display the interface page and update the displayed page if requested
-                    change_page = page::interface::panel(*num_interface, interface, ctx, frame, &mut self.undo);
+                    change_page = page::interface::panel(
+                        *num_interface,
+                        interface,
+                        ctx,
+                        frame,
+                        &mut self.undo,
+                    );
                 } else {
                     change_page = Some(page::PageType::Project);
                 }
@@ -163,7 +184,13 @@ impl epi::App for HdlWizardApp {
             page::PageType::Register(num_interface, num_register) => {
                 if let Some(interface) = self.model.interfaces.get_mut(*num_interface) {
                     if let Some(register) = interface.registers.get_mut(*num_register) {
-                        page::register::panel(register, &interface.data_width, ctx, frame, &mut self.undo);
+                        page::register::panel(
+                            register,
+                            &interface.data_width,
+                            ctx,
+                            frame,
+                            &mut self.undo,
+                        );
                     } else {
                         change_page = Some(page::PageType::Interface(*num_interface));
                     }
@@ -181,4 +208,3 @@ impl epi::App for HdlWizardApp {
         self.undo.store_undo(&self.model, &self.page_type);
     }
 }
-

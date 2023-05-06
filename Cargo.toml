@@ -13,6 +13,8 @@ edition = "2018"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+dioxus = "0.3.2"
+dioxus-desktop = "0.3.0"
 eframe = "0.16.0" # Gives us egui, epi and web+native backends
 serde = { version = "1.0.116", features = ["derive"],  optional = true }
 serde_json = "1.0.59"

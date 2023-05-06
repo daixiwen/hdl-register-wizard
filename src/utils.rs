@@ -1,11 +1,11 @@
 //! several utilities and types used in the project, both on the gui side
 //! and on the file I/O side
+use crate::gui_types;
+use eframe::egui;
 use serde::{de::Error, Deserialize, Serialize};
 use std::fmt;
 use std::str::FromStr;
 use strum_macros;
-use crate::gui_types;
-use eframe::egui;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 /// structure used to represent a vector or integer value, with both the value itself and the radix type
@@ -182,8 +182,6 @@ pub enum SignalType {
     Boolean,
 }
 
-
-
 /// convert to string for a text area, each line separated by an end of line
 pub fn opt_vec_str_to_textarea(field: &Option<Vec<String>>) -> String {
     match field {
@@ -202,25 +200,25 @@ pub fn textarea_to_opt_vec_str(value_str: &str) -> Option<Vec<String>> {
 }
 
 /// convert from an Option<u32> to an AutoManualU32
-pub fn opt_u32_to_automanual(entry : &Option<u32>) -> gui_types::AutoManualU32 {
+pub fn opt_u32_to_automanual(entry: &Option<u32>) -> gui_types::AutoManualU32 {
     match entry {
         None => gui_types::AutoManualU32 {
-            is_auto : true,
+            is_auto: true,
             ..Default::default()
         },
         Some(value) => gui_types::AutoManualU32 {
-            is_auto : false,
-            manual : gui_types::GuiU32 {
-                value_str : value.to_string(),
-                str_valid : true,
-                value_int : *value
-            }
-        }
+            is_auto: false,
+            manual: gui_types::GuiU32 {
+                value_str: value.to_string(),
+                str_valid: true,
+                value_int: *value,
+            },
+        },
     }
 }
 
 /// convert from a AutoManualU32 to an Option<u32>
-pub fn automanual_to_opt_u32(gui_field : &gui_types::AutoManualU32) -> Option<u32> {
+pub fn automanual_to_opt_u32(gui_field: &gui_types::AutoManualU32) -> Option<u32> {
     if gui_field.is_auto {
         None
     } else {
@@ -231,8 +229,8 @@ pub fn automanual_to_opt_u32(gui_field : &gui_types::AutoManualU32) -> Option<u3
 /// set the light/dark theme depending on settings
 pub fn set_theme(ctx: &egui::CtxRef, setting: &Option<bool>) {
     match setting {
-        Some(true) => { ctx.set_visuals(egui::Visuals::dark())},
-        Some(false) => { ctx.set_visuals(egui::Visuals::light())},
-        None => { ctx.set_visuals(egui::Visuals::default()) }
+        Some(true) => ctx.set_visuals(egui::Visuals::dark()),
+        Some(false) => ctx.set_visuals(egui::Visuals::light()),
+        None => ctx.set_visuals(egui::Visuals::default()),
     }
 }

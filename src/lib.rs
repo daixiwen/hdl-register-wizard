@@ -18,15 +18,15 @@
 
 mod app;
 pub use app::HdlWizardApp;
-pub mod model_gui;
-pub mod utils;
-pub mod page;
-pub mod navigation;
-pub mod undo;
+pub mod file_formats;
 pub mod gui_blocks;
 pub mod gui_types;
-pub mod file_formats;
+pub mod model_gui;
+pub mod navigation;
+pub mod page;
 pub mod settings;
+pub mod undo;
+pub mod utils;
 
 #[cfg(test)]
 mod tests;
