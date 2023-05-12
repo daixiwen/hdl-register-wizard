@@ -1,4 +1,4 @@
-use crate::file_formats::mdf_10;
+use crate::file_formats::mdf;
 use crate::utils;
 use std::str::FromStr;
 
@@ -6,31 +6,31 @@ use std::str::FromStr;
 #[test]
 fn from_str() {
     assert_eq!(
-        mdf_10::Address {
+        mdf::Address {
             value: None,
             stride: None
         },
-        mdf_10::Address::from_str("auto").unwrap()
+        mdf::Address::from_str("auto").unwrap()
     );
 
     assert_eq!(
-        mdf_10::Address {
+        mdf::Address {
             value: Some(utils::VectorValue {
                 value: 38,
                 radix: utils::RadixType::Decimal
             }),
             stride: None
         },
-        mdf_10::Address::from_str("38").unwrap()
+        mdf::Address::from_str("38").unwrap()
     );
 
     assert_eq!(
-        mdf_10::Address {
+        mdf::Address {
             value: Some(utils::VectorValue {
                 value: 64,
                 radix: utils::RadixType::Hexadecimal
             }),
-            stride: Some(mdf_10::AddressStride {
+            stride: Some(mdf::AddressStride {
                 count: utils::VectorValue {
                     value: 10,
                     radix: utils::RadixType::Decimal
@@ -38,16 +38,16 @@ fn from_str() {
                 increment: None
             })
         },
-        mdf_10::Address::from_str("0x40:stride:10").unwrap()
+        mdf::Address::from_str("0x40:stride:10").unwrap()
     );
 
     assert_eq!(
-        mdf_10::Address {
+        mdf::Address {
             value: Some(utils::VectorValue {
                 value: 64,
                 radix: utils::RadixType::Hexadecimal
             }),
-            stride: Some(mdf_10::AddressStride {
+            stride: Some(mdf::AddressStride {
                 count: utils::VectorValue {
                     value: 4,
                     radix: utils::RadixType::Decimal
@@ -55,47 +55,16 @@ fn from_str() {
                 increment: None
             })
         },
-        mdf_10::Address::from_str("0x40:stride:4").unwrap()
+        mdf::Address::from_str("0x40:stride:4").unwrap()
     );
 
     assert_eq!(
-        mdf_10::Address {
+        mdf::Address {
             value: Some(utils::VectorValue {
                 value: 64,
                 radix: utils::RadixType::Hexadecimal
             }),
-            stride: Some(mdf_10::AddressStride {
-                count: utils::VectorValue {
-                    value: 10,
-                    radix: utils::RadixType::Decimal
-                },
-                increment: Some(utils::VectorValue {
-                    value: 4,
-                    radix: utils::RadixType::Hexadecimal
-                })
-            })
-        },
-        mdf_10::Address::from_str("0x40:stride:10:0x4").unwrap()
-    );
-
-    assert_eq!(
-        mdf_10::Address {
-            value: None,
-            stride: Some(mdf_10::AddressStride {
-                count: utils::VectorValue {
-                    value: 4,
-                    radix: utils::RadixType::Decimal
-                },
-                increment: None
-            })
-        },
-        mdf_10::Address::from_str("auto:stride:4").unwrap()
-    );
-
-    assert_eq!(
-        mdf_10::Address {
-            value: None,
-            stride: Some(mdf_10::AddressStride {
+            stride: Some(mdf::AddressStride {
                 count: utils::VectorValue {
                     value: 10,
                     radix: utils::RadixType::Decimal
@@ -106,14 +75,45 @@ fn from_str() {
                 })
             })
         },
-        mdf_10::Address::from_str("auto:stride:10:0x4").unwrap()
+        mdf::Address::from_str("0x40:stride:10:0x4").unwrap()
+    );
+
+    assert_eq!(
+        mdf::Address {
+            value: None,
+            stride: Some(mdf::AddressStride {
+                count: utils::VectorValue {
+                    value: 4,
+                    radix: utils::RadixType::Decimal
+                },
+                increment: None
+            })
+        },
+        mdf::Address::from_str("auto:stride:4").unwrap()
+    );
+
+    assert_eq!(
+        mdf::Address {
+            value: None,
+            stride: Some(mdf::AddressStride {
+                count: utils::VectorValue {
+                    value: 10,
+                    radix: utils::RadixType::Decimal
+                },
+                increment: Some(utils::VectorValue {
+                    value: 4,
+                    radix: utils::RadixType::Hexadecimal
+                })
+            })
+        },
+        mdf::Address::from_str("auto:stride:10:0x4").unwrap()
     );
 
     // test parse error
-    if mdf_10::Address::from_str("abcd").is_ok() {
+    if mdf::Address::from_str("abcd").is_ok() {
         panic!("should generate an error")
     }
-    if mdf_10::Address::from_str("0x40:bug:10:0x4").is_ok() {
+    if mdf::Address::from_str("0x40:bug:10:0x4").is_ok() {
         panic!("should generate an error")
     }
 }
@@ -122,7 +122,7 @@ fn from_str() {
 #[test]
 fn to_str() {
     assert_eq!(
-        mdf_10::Address {
+        mdf::Address {
             value: None,
             stride: None
         }
@@ -131,7 +131,7 @@ fn to_str() {
     );
 
     assert_eq!(
-        mdf_10::Address {
+        mdf::Address {
             value: Some(utils::VectorValue {
                 value: 38,
                 radix: utils::RadixType::Decimal
@@ -143,12 +143,12 @@ fn to_str() {
     );
 
     assert_eq!(
-        mdf_10::Address {
+        mdf::Address {
             value: Some(utils::VectorValue {
                 value: 64,
                 radix: utils::RadixType::Hexadecimal
             }),
-            stride: Some(mdf_10::AddressStride {
+            stride: Some(mdf::AddressStride {
                 count: utils::VectorValue {
                     value: 10,
                     radix: utils::RadixType::Decimal
@@ -161,12 +161,12 @@ fn to_str() {
     );
 
     assert_eq!(
-        mdf_10::Address {
+        mdf::Address {
             value: Some(utils::VectorValue {
                 value: 64,
                 radix: utils::RadixType::Hexadecimal
             }),
-            stride: Some(mdf_10::AddressStride {
+            stride: Some(mdf::AddressStride {
                 count: utils::VectorValue {
                     value: 10,
                     radix: utils::RadixType::Decimal
@@ -182,9 +182,9 @@ fn to_str() {
     );
 
     assert_eq!(
-        mdf_10::Address {
+        mdf::Address {
             value: None,
-            stride: Some(mdf_10::AddressStride {
+            stride: Some(mdf::AddressStride {
                 count: utils::VectorValue {
                     value: 10,
                     radix: utils::RadixType::Decimal
@@ -197,9 +197,9 @@ fn to_str() {
     );
 
     assert_eq!(
-        mdf_10::Address {
+        mdf::Address {
             value: None,
-            stride: Some(mdf_10::AddressStride {
+            stride: Some(mdf::AddressStride {
                 count: utils::VectorValue {
                     value: 10,
                     radix: utils::RadixType::Decimal

@@ -1,0 +1,12 @@
+.ext-sticky {
+    position: sticky;
+    display: inline-block;
+    vertical-align: top;
+    height: calc(100vh - 6.25rem);
+    overflow-y: auto;
+  }
+
+.page-title {
+  margin-top: 1em;
+  text-align: center;
+}

@@ -3,7 +3,7 @@ use crate::gui_blocks;
 use crate::gui_types;
 use crate::model_gui;
 use crate::undo;
-use eframe::{egui, epi};
+
 
 enum FieldsModification {
     Delete(usize),
@@ -18,6 +18,7 @@ fn absdiff(a: u32, b: u32) -> u32 {
     }
 }
 
+/*
 pub fn panel(
     register: &mut model_gui::Register,
     interface_data_width: &gui_types::AutoManualU32,
@@ -382,3 +383,4 @@ pub fn panel(
         }
     });
 }
+*/

@@ -25,7 +25,7 @@ impl Default for Mdf {
     /// create an empty model
     fn default() -> Mdf {
         Mdf {
-            name: String::new(),
+            name: "New Project".to_owned(),
             interfaces: Vec::new(),
         }
     }

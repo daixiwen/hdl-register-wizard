@@ -1,10 +1,35 @@
 //! main page for the project
+#![allow(non_snake_case)]
+
+use dioxus::prelude::*;
 use crate::app::HdlWizardApp;
 use crate::gui_blocks;
-use crate::page;
-use crate::undo;
-use eframe::{egui, epi};
+use std::cell::RefCell;
 
+#[inline_props]
+pub fn Content<'a>(
+    cx: Scope<'a>,
+    app_data: &'a UseRef<HdlWizardApp>
+) -> Element<'a> {
+    let project_name = app_data.read().data.model.name.clone();
+
+    cx.render(rsx! {
+        div { class: "container",
+            h1 { class:"title page-title", "HDL Register Wizard Project" },
+            div { class:"m-4",
+            gui_blocks::TextGeneric {
+                app_data: app_data,
+                update_model: RefCell::new(Box::new( |model, value : &String| model.name = value.clone())),
+                gui_label: "Name",
+                undo_label: "project name",
+                value: project_name              
+                }
+            }
+        }
+    })
+}
+
+/*
 pub fn panel(app: &mut HdlWizardApp, ctx: &egui::CtxRef, _frame: &epi::Frame) {
     egui::CentralPanel::default().show(ctx, |mut ui| {
         //        ui.spacing_mut().item_spacing.y = 10.0;
@@ -89,3 +114,4 @@ pub fn panel(app: &mut HdlWizardApp, ctx: &egui::CtxRef, _frame: &epi::Frame) {
             });
     });
 }
+*/

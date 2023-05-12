@@ -1,13 +1,124 @@
 //! building blocks for GUI
 //!
+#![allow(non_snake_case)]
+use crate::app::HdlWizardApp;
+use dioxus::prelude::*;
 
 use crate::gui_types;
 use crate::undo;
 use crate::utils;
-use eframe::egui;
 use std::str::FromStr;
 use strum;
+use std::cell::RefCell;
+use crate::file_formats::mdf;
+use crate::page;
 
+// this structure holds a function to update a part of the model: either the project root, an interface or a register
+pub enum UpdateFunction<F> {
+    Project(Box<dyn FnOnce(&mut mdf::Mdf, &F) -> ()>),
+    Interface(Box<dyn FnOnce(&mut mdf::Interface, &F) -> ()>),
+    Register(Box<dyn FnOnce(&mut mdf::Register, &F) -> ()>)
+}
+
+// apply the update function to the relevant part of the model, indicated by the page type
+pub fn ApplyUpdate<F>(func : UpdateFunction<F>, model : &mut mdf::Mdf, page_type: page::PageType, value: &F) -> Result<(), std::io::Error>{
+
+    match (func, page_type) {
+        (UpdateFunction::Project(fp), page::PageType::Project) => {
+            fp(model, value);
+            Ok(())
+        },
+        (UpdateFunction::Interface(fi), page::PageType::Interface(interface_num)) => {
+            if let Some(int_ref) = model.interfaces.get_mut(interface_num) {
+                fi(int_ref, value);
+                Ok(())
+            } else {
+                Err(std::io::Error::from(std::io::ErrorKind::AddrNotAvailable))
+            }
+        },
+        (UpdateFunction::Register(fr), page::PageType::Register(interface_num, register_num)) => {
+            if let Some(int_ref) = model.interfaces.get_mut(interface_num) {
+                if let Some(reg_ref) = int_ref.registers.get_mut(register_num) {
+                    fr(reg_ref, value);
+                    Ok(())
+                } else {
+                    Err(std::io::Error::from(std::io::ErrorKind::AddrNotAvailable))
+                }
+            } else {
+                Err(std::io::Error::from(std::io::ErrorKind::AddrNotAvailable))
+            }
+        }
+
+        _ => Err(std::io::Error::from(std::io::ErrorKind::InvalidData))
+    }
+}
+
+// simple text widget component
+#[derive(Props)]
+pub struct TextGenericProps<'a, F> {
+    app_data: &'a UseRef<HdlWizardApp>,
+    gui_label : &'a str,
+    value : F,
+    undo_label : Option<&'a str>,
+    update_model: Option<RefCell<Box<dyn FnMut(&mut mdf::Mdf, &F) -> () + 'a>>>,
+    update_int: Option<Box<dyn FnMut(&mut mdf::Interface, &F) -> () + 'a>>,
+    update_reg: Option<Box<dyn FnMut(&mut mdf::Register, &F) -> () + 'a>>,
+}
+
+//#[inline_props]
+pub fn TextGeneric<'a, F: gui_types::Validable + std::string::ToString + std::str::FromStr>(
+    cx: Scope<'a, TextGenericProps<'a, F>>) -> Element<'a>
+{
+    let gui_label = cx.props.gui_label;
+    let value = cx.props.value.to_string();
+    let undo_description = cx.props.undo_label.unwrap_or_default();
+
+    cx.render(rsx!{
+        div { class:"field is-horizontal",
+            div { class:"field-label is-normal",
+                label { class:"label", "{gui_label}" }
+            }
+            div { class:"field-body",
+                div { class:"field",
+                    p { class:"control is-expanded",
+                        input { class:"input", r#type:"text", placeholder:"{gui_label}",
+                            onchange: move | evt | {
+                                if let Some(updatefn_ref) = &cx.props.update_model {
+                                    let mut updatefn = updatefn_ref.borrow_mut();
+                                    if let Ok(value) = F::from_str(&evt.value) {
+                                        cx.props.app_data.with_mut(|app_data| {
+                                            updatefn(&mut app_data.data.model, &value);
+                                            app_data.register_undo(undo_description);
+                                        })
+                                    }
+                                }
+                            },
+                            value: "{value}"
+                        }
+                    }
+                }
+            }
+        }      
+    })
+}
+
+pub fn Test<'a>(
+    cx: Scope<'a>,
+    app_data: &'a UseRef<HdlWizardApp>) -> Element<'a>
+{
+
+    cx.render(rsx!{
+        TextGeneric {
+            app_data: app_data,
+            update_model: RefCell::new(Box::new( |model : &mut mdf::Mdf, value : &String| model.name = value.clone())),
+            gui_label: "label",
+            undo_label: "undo label",
+            value: "blop".to_owned()
+        }
+    })
+}
+
+/*
 pub fn widget_u32_inline_nolabel(
     value: &mut gui_types::GuiU32,
     ui: &mut egui::Ui,
@@ -309,3 +420,4 @@ pub fn dark_light_mode_switch(ui: &mut egui::Ui, ctx: &egui::CtxRef, setting: &m
         utils::set_theme(ctx, setting);
     }
 }
+*/

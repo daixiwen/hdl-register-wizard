@@ -16,8 +16,7 @@
 #![cfg_attr(not(debug_assertions), deny(warnings))] // Forbid warnings in release builds
 #![warn(clippy::all, rust_2018_idioms)]
 
-mod app;
-pub use app::HdlWizardApp;
+pub mod app;
 pub mod file_formats;
 pub mod gui_blocks;
 pub mod gui_types;

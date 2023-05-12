@@ -4,6 +4,19 @@ use crate::utils;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
+// trait for all types that can be edited as a string to provide a validate function
+// this function will be called by the GUI to report to the user whether the value
+// is valid or not
+pub trait Validable {
+    fn validate(&self) -> bool;
+}
+
+impl Validable for String {
+    fn validate(&self) -> bool {
+        true
+    }
+}
+
 /// egui doesn't have a way of controlling an integer value from a text edit
 /// so we have a type that regroups both a string and the integer value
 #[derive(Serialize, Deserialize, Clone)]

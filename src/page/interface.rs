@@ -3,9 +3,8 @@ use crate::gui_blocks;
 use crate::model_gui;
 use crate::page;
 use crate::undo;
-use eframe::{egui, epi};
 
-pub fn panel(
+/*pub fn panel(
     interface_num: usize,
     interface: &mut model_gui::Interface,
     ctx: &egui::CtxRef,
@@ -125,3 +124,4 @@ pub fn panel(
 
     return_value
 }
+*/

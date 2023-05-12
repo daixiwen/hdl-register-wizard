@@ -1,7 +1,6 @@
 //! several utilities and types used in the project, both on the gui side
 //! and on the file I/O side
 use crate::gui_types;
-use eframe::egui;
 use serde::{de::Error, Deserialize, Serialize};
 use std::fmt;
 use std::str::FromStr;
@@ -223,14 +222,5 @@ pub fn automanual_to_opt_u32(gui_field: &gui_types::AutoManualU32) -> Option<u32
         None
     } else {
         Some(gui_field.manual.value_int)
-    }
-}
-
-/// set the light/dark theme depending on settings
-pub fn set_theme(ctx: &egui::CtxRef, setting: &Option<bool>) {
-    match setting {
-        Some(true) => ctx.set_visuals(egui::Visuals::dark()),
-        Some(false) => ctx.set_visuals(egui::Visuals::light()),
-        None => ctx.set_visuals(egui::Visuals::default()),
     }
 }

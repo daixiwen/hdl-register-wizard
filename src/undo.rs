@@ -1,23 +1,20 @@
 //! Undo functionality
 
-use crate::model_gui;
+use crate::file_formats::mdf;
 use crate::page;
-use eframe::egui;
 use std::default;
 
 pub struct Undo {
-    current_focus: Option<egui::Id>,
-    previous_focus: Option<egui::Id>,
+//    current_focus: Option<egui::Id>,
+//    previous_focus: Option<egui::Id>,
     undo_list: Vec<UndoState>,
     redo_list: Vec<UndoState>,
-    current_modification: Option<String>,
-    modification_status: ModificationType,
 }
 
 #[derive(Clone)]
 pub struct UndoState {
     pub change_description: String,
-    pub model: model_gui::Model,
+    pub model: mdf::Mdf,
     pub page_type: page::PageType,
 }
 
@@ -25,12 +22,8 @@ impl default::Default for Undo {
     /// create an empty object
     fn default() -> Undo {
         Undo {
-            current_focus: None,
-            previous_focus: None,
             undo_list: Default::default(),
             redo_list: Default::default(),
-            current_modification: None,
-            modification_status: ModificationType::Finished,
         }
     }
 }
@@ -45,71 +38,48 @@ impl default::Default for UndoState {
     }
 }
 
-pub enum ModificationType {
-    OnGoing(egui::Id),
-    Finished,
-}
-
 impl Undo {
-    pub fn update_focus(&mut self, focus: Option<egui::Id>) {
-        self.previous_focus = self.current_focus;
-        self.current_focus = focus;
-    }
-
-    pub fn lost_focus(&self, object: egui::Id) -> bool {
-        (Some(object) == self.previous_focus) && (Some(object) != self.current_focus)
-    }
 
     pub fn register_modification(
         &mut self,
         description: &str,
-        modification_type: ModificationType,
-    ) {
-        self.current_modification = Some(description.to_string());
-        self.modification_status = modification_type;
-    }
-
-    pub fn store_undo(&mut self, model: &model_gui::Model, page_type: &page::PageType) {
-        if self.current_modification.is_some()
-            && match self.modification_status {
-                ModificationType::OnGoing(id) => self.current_focus != Some(id),
-                ModificationType::Finished => true,
-            }
-        {
+        model: &mdf::Mdf,
+        page_type: &page::PageType) {
             self.undo_list.push(UndoState {
-                change_description: self.current_modification.take().unwrap(),
+                change_description: description.to_owned(),
                 model: model.clone(),
                 page_type: page_type.clone(),
             });
 
             self.redo_list.clear();
         }
-    }
 
-    pub fn get_undo_description(&self) -> Option<&str> {
+    pub fn get_undo_description(&self) -> Option<String> {
         let num_elements = self.undo_list.len();
         if num_elements > 1 {
             Some(
-                &self
+                self
                     .undo_list
                     .get(num_elements - 1)
                     .unwrap()
-                    .change_description,
+                    .change_description
+                    .to_owned()
             )
         } else {
             None
         }
     }
 
-    pub fn get_redo_description(&self) -> Option<&str> {
+    pub fn get_redo_description(&self) -> Option<String> {
         let num_elements = self.redo_list.len();
         if num_elements > 0 {
             Some(
-                &self
+                self
                     .redo_list
                     .get(num_elements - 1)
                     .unwrap()
-                    .change_description,
+                    .change_description
+                    .to_owned()
             )
         } else {
             None

@@ -1,210 +1,191 @@
-use crate::gui_blocks;
-use crate::model_gui;
+#![allow(non_snake_case)]
+use dioxus_desktop::tao;
+
+use crate::file_formats;
 use crate::navigation;
 use crate::page;
 use crate::settings;
 use crate::undo;
-use crate::utils;
-use eframe::{egui, epi};
+//use crate::utils;
+use dioxus_desktop::use_window;
+use directories_next::ProjectDirs;
+use std::path::PathBuf;
+use std::fs::File;
+use std::io::{BufReader, BufWriter};
+
+// import the prelude to get access to the `rsx!` macro and the `Scope` and `Element` types
+use dioxus::prelude::*;
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
-#[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
-#[cfg_attr(feature = "persistence", serde(default))] // if we add new fields, give them default values when deserializing old state
+#[derive(serde::Deserialize, serde::Serialize)]
+#[serde(default)] // if we add new fields, give them default values when deserializing old state
+pub struct HdlWizardAppSaveData {
+    pub model: file_formats::mdf::Mdf,
+    pub settings: settings::Settings,
+
+    // window size and position
+    pub window_pos : tao::dpi::PhysicalPosition<i32>,
+    pub window_size : tao::dpi::PhysicalSize<u32>,
+}
+// Application state data, including what will be saved in data, and volatile data in the other fields
 pub struct HdlWizardApp {
-    pub model: model_gui::Model,
 
-    #[cfg_attr(feature = "persistence", serde(skip))]
-    pub page_type: page::PageType,
-
-    #[cfg_attr(feature = "persistence", serde(skip))]
     pub undo: undo::Undo,
 
-    pub settings: settings::Settings,
+    pub data: HdlWizardAppSaveData,
+
+    // gui state
+    pub burger_menu: bool,
+    pub live_help: bool,
+    pub page_type: page::PageType,
+}
+
+impl Default for HdlWizardAppSaveData {
+    fn default() -> Self {
+        Self {
+            model: Default::default(),
+            settings: Default::default(),
+            window_pos : tao::dpi::PhysicalPosition::new(0,100),
+            window_size : tao::dpi::PhysicalSize::new(1024,800),
+        }
+    }
 }
 
 impl Default for HdlWizardApp {
     fn default() -> Self {
         Self {
-            model: Default::default(),
+            data: Default::default(),
+            burger_menu : false,
+            live_help: false,
             page_type: page::PageType::Project,
             undo: Default::default(),
-            settings: Default::default(),
         }
     }
 }
 
-impl epi::App for HdlWizardApp {
-    fn name(&self) -> &str {
-        "HDL Register Wizard"
+// fin the path for the save file
+fn data_file_path() -> Option<PathBuf> {
+    match ProjectDirs::from("", "Sylvain Tertois",  "HDL Register Wizard") {
+        Some(proj) => Some(proj.config_dir().to_path_buf()),
+        _ => None
     }
+}
 
-    /// Called once before the first frame.
-    fn setup(
-        &mut self,
-        ctx: &egui::CtxRef,
-        _frame: &epi::Frame,
-        _storage: Option<&dyn epi::Storage>,
-    ) {
-        // Load previous app state (if any).
-        // Note that you must enable the `persistence` feature for this to work.
-        #[cfg(feature = "persistence")]
-        if let Some(storage) = _storage {
-            *self = epi::get_value(storage, epi::APP_KEY).unwrap_or_default()
-        }
-
-        self.undo
-            .register_modification("initial", undo::ModificationType::Finished);
-        self.undo.store_undo(&self.model, &self.page_type);
-
-        // install font and increase text size compared to default
-        let mut fonts = egui::FontDefinitions::default();
-        fonts.font_data.insert(
-            "dejavu".to_owned(),
-            egui::FontData::from_static(include_bytes!("files/DejaVuSans.ttf")),
-        ); // .ttf and .otf supported
-        fonts
-            .fonts_for_family
-            .get_mut(&egui::FontFamily::Proportional)
-            .unwrap()
-            .insert(0, "dejavu".to_owned());
-
-        fonts.family_and_size.insert(
-            egui::TextStyle::Small,
-            (egui::FontFamily::Proportional, 12.0),
-        );
-        fonts.family_and_size.insert(
-            egui::TextStyle::Body,
-            (egui::FontFamily::Proportional, 16.0),
-        );
-        fonts.family_and_size.insert(
-            egui::TextStyle::Button,
-            (egui::FontFamily::Proportional, 16.0),
-        );
-        fonts.family_and_size.insert(
-            egui::TextStyle::Heading,
-            (egui::FontFamily::Proportional, 22.0),
-        );
-        ctx.set_fonts(fonts);
-
-        // increase button size
-        let mut style = egui::Style::default();
-        style.spacing.button_padding = egui::vec2(6.0, 4.0);
-        style.spacing.interact_size = egui::vec2(48.0, 24.0);
-        ctx.set_style(style);
-
-        // light/dark mode
-        utils::set_theme(ctx, &self.settings.dark_mode);
+fn load_app_data() -> Result<HdlWizardAppSaveData, std::io::Error> {
+    if let Some(path) = data_file_path() {
+        // read the settings
+        let file = File::open(path)?;
+        let reader = BufReader::new(file);
+    
+        // Read the JSON contents of the file as an instance of `HdlWizardAppSaveData`.
+        let data = serde_json::from_reader(reader)?;
+        Ok(data)
     }
-
-    /// Called by the frame work to save state before shutdown.
-    /// Note that you must enable the `persistence` feature for this to work.
-    #[cfg(feature = "persistence")]
-    fn save(&mut self, storage: &mut dyn epi::Storage) {
-        epi::set_value(storage, epi::APP_KEY, self);
+    else {
+        Err(std::io::Error::from(std::io::ErrorKind::AddrNotAvailable))
     }
+}
 
-    /// Called each time the UI needs repainting, which may be many times per second.
-    /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
-    fn update(&mut self, ctx: &egui::CtxRef, frame: &epi::Frame) {
-        self.undo.update_focus(ctx.memory().focus());
-
-        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            // The top panel is often a good place for a menu bar:
-            egui::menu::bar(ui, |ui| {
-                gui_blocks::dark_light_mode_switch(ui, ctx, &mut self.settings.dark_mode);
-                ui.menu_button("File", |ui| {
-                    if ui.button("Quit").clicked() {
-                        frame.quit();
-                    }
-                });
-                ui.menu_button("Edit", |ui| {
-                    match self.undo.get_undo_description() {
-                        None => {
-                            ui.add_enabled_ui(false, |ui| {
-                                if ui.button("Undo").clicked() {
-                                    unreachable!();
-                                }
-                            });
-                        }
-
-                        Some(change) => {
-                            if ui.button(format!("Undo {}", change)).clicked() {
-                                if let Some(undo_state) = self.undo.apply_undo() {
-                                    self.model = undo_state.model;
-                                    self.page_type = undo_state.page_type;
-                                }
-                            }
-                        }
-                    }
-
-                    match self.undo.get_redo_description() {
-                        None => {
-                            ui.add_enabled_ui(false, |ui| {
-                                if ui.button("Redo").clicked() {
-                                    unreachable!();
-                                }
-                            });
-                        }
-
-                        Some(change) => {
-                            if ui.button(format!("Redo {}", change)).clicked() {
-                                if let Some(redo_state) = self.undo.apply_redo() {
-                                    self.model = redo_state.model;
-                                    self.page_type = redo_state.page_type;
-                                }
-                            }
-                        }
-                    }
-                });
-            });
-        });
-
-        navigation::navigate(self, ctx, frame);
-
-        let mut change_page = None;
-
-        match &self.page_type {
-            page::PageType::Project => page::project::panel(self, ctx, frame),
-
-            page::PageType::Interface(num_interface) => {
-                if let Some(interface) = self.model.interfaces.get_mut(*num_interface) {
-                    // display the interface page and update the displayed page if requested
-                    change_page = page::interface::panel(
-                        *num_interface,
-                        interface,
-                        ctx,
-                        frame,
-                        &mut self.undo,
-                    );
-                } else {
-                    change_page = Some(page::PageType::Project);
-                }
-            }
-
-            page::PageType::Register(num_interface, num_register) => {
-                if let Some(interface) = self.model.interfaces.get_mut(*num_interface) {
-                    if let Some(register) = interface.registers.get_mut(*num_register) {
-                        page::register::panel(
-                            register,
-                            &interface.data_width,
-                            ctx,
-                            frame,
-                            &mut self.undo,
-                        );
-                    } else {
-                        change_page = Some(page::PageType::Interface(*num_interface));
-                    }
-                } else {
-                    change_page = Some(page::PageType::Project);
-                }
+fn save_app_data(data: &HdlWizardAppSaveData) -> Result<(), std::io::Error>{
+    if let Some(path) = data_file_path() {
+        // check that the parent dir exists
+        if let Some(parent) = path.parent() {
+            if !parent.exists() {
+                std::fs::create_dir_all(parent)?;
             }
         }
 
-        if let Some(newpage) = change_page {
-            self.page_type = newpage;
-            ctx.request_repaint();
-        }
+        // create the settings file
+        let file = File::create(path)?;
+        let writer = BufWriter::new(file);
+    
+        // Write the JSON contents of the file as an instance of `User`.
+        serde_json::to_writer(writer, data)?;
 
-        self.undo.store_undo(&self.model, &self.page_type);
+        Ok(())
     }
+    else {
+        Err(std::io::Error::from(std::io::ErrorKind::AddrNotAvailable))
+    }
+}
+
+impl Drop for HdlWizardApp {
+    fn drop(&mut self) {
+        if let Err(error) = save_app_data(&self.data) {
+            println!("Error while writing application configuration: {}", error);
+        }
+    }
+}
+
+impl HdlWizardApp {
+    pub fn try_load() -> Self {
+        let data = match load_app_data() {
+            Ok(data) => data,
+            Err(error) => { println!("Error while reading application configuration: {}", error); Default::default()}
+        };
+
+        Self {
+            data,
+            burger_menu : false,
+            live_help: false,
+            undo: Default::default(),
+            page_type: page::PageType::Project
+        }
+    }
+
+    pub fn register_undo(&mut self, description : &str) {
+        self.undo.register_modification(description, &self.data.model, &self.page_type)
+    }
+
+    pub fn apply_undo(&mut self) {
+        if let Some(new_model) = self.undo.apply_undo() {
+            self.data.model = new_model.model;
+        }
+    }
+
+    pub fn apply_redo(&mut self) {
+        if let Some(new_model) = self.undo.apply_redo() {
+            self.data.model = new_model.model;
+        }
+    }
+}
+
+pub fn App<'a>(cx: Scope<'a>) -> Element<'a> {
+    // this structure holds all the application data and will be sent over all the GUI modules
+    let app_data = use_ref(cx, || {
+        let mut app = HdlWizardApp::try_load();
+        app.register_undo("initial load");
+        app });
+
+    // I didn't find a clean way to get an event when the window size is changed yet, so for now I just update the position
+    // and size at each re-render
+    let window = use_window(cx).webview.as_ref().window();
+    let size = window.inner_size();
+    let pos = window.inner_position();
+
+    if let Ok(pos) = pos {
+        app_data.write_silent().data.window_pos = pos;
+        app_data.write_silent().data.window_size = size;
+    }
+
+    cx.render(rsx! {
+        link {
+            href: "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css",
+            rel: "stylesheet"
+        }
+        script { src: "https://kit.fontawesome.com/e5a7832160.js", crossorigin: "anonymous" }
+        div {
+            style { include_str!("./style.css") }
+            navigation::NavBar { app_data: app_data }
+            div { class: "columns",
+                navigation::SideBar { app_data: app_data},
+                div { class: "column ext-sticky mr-4",
+
+                    page::Content {
+                        app_data: app_data
+                    }
+                }
+            }
+        }
+    })
 }
