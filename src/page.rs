@@ -24,7 +24,15 @@ pub fn Content<'a>(
             cx.render(rsx! {
                 project::Content { app_data: app_data}
             })
-        }
+        },
+        PageType::Interface(interface_num) => {
+            cx.render(rsx! {
+                interface::Content { 
+                    app_data: app_data,
+                    interface_num: *interface_num
+                }
+            })
+        },
         _ =>{
             cx.render(rsx! {
                 p { "Not implemented yet"}

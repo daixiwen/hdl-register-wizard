@@ -1,8 +1,39 @@
 //! page to edit an interface
+//! main page for the project
+#![allow(non_snake_case)]
+
+use dioxus::prelude::*;
+use crate::app::HdlWizardApp;
 use crate::gui_blocks;
-use crate::model_gui;
-use crate::page;
-use crate::undo;
+use std::cell::RefCell;
+use crate::file_formats::mdf;
+use crate::page::PageType;
+
+#[inline_props]
+pub fn Content<'a>(
+    cx: Scope<'a>,
+    app_data: &'a UseRef<HdlWizardApp>,
+    interface_num: usize
+) -> Element<'a> {
+    if let Some(interface) = app_data.read().data.model.interfaces.get(*interface_num) {
+        cx.render(rsx! {
+            h1 { class:"title page-title", "Interface" },
+            div { class:"m-4",
+            gui_blocks::TextGeneric {
+                app_data: app_data,
+                update_int: RefCell::new(Box::new( |interface, value : &String| interface.name = value.clone())),
+                gui_label: "Name",
+                undo_label: "change interface name",
+                value: interface.name.clone()              
+                }
+            }
+        })
+    } else {
+        cx.render(rsx! {
+            p { "Wrong interface"}
+        })
+    }
+}
 
 /*pub fn panel(
     interface_num: usize,

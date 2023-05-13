@@ -1,7 +1,7 @@
 //! GUI navigation: both the menu bar and the left sidebar
 #![allow(non_snake_case)]
 use crate::app::HdlWizardApp;
-//use crate::page;
+use crate::page::PageType;
 use dioxus::prelude::*;
 
 #[inline_props]
@@ -25,12 +25,18 @@ pub fn NavBar<'a>(
         nav { class: "navbar is-link", role: "navigation", aria_label: "main navigation",
             div { class: "navbar-brand",
                 div { class: "navbar-item",
-                    i { class: "fa-solid fa-house mr-1" }
+                    a { class: "navbar-item has-text-white",
+                        i { class: "fa-solid fa-house",
+                            onclick: move |_| app_data.with_mut(|app| {
+                                app.page_type = PageType::Project;
+                                }),
+                        }
+                    }
                     "{app_data.read().data.model.name}",
                     if let Some(undo) = app_data.read().undo.get_undo_description() {
                         rsx!(
-                            div { class:"dropdown is-hoverable ml-1",
-                                div { class: "dropdown-trigger",
+                            div { class:"navbar-item dropdown is-hoverable",
+                                a { class: "dropdown-trigger has-text-white",
                                     i {
                                         class: "fa-solid fa-rotate-left",
                                         aria_haspopup:"true",
@@ -41,21 +47,25 @@ pub fn NavBar<'a>(
                                 div { class:"dropdown-menu", id:"dropdown-menu-undo", role:"menu",
                                     div { class:"dropdown-content",
                                         div { class:"dropdown-item",
-                                            p { class:"has-text-black is-size-7", "undo change {undo}"}
+                                            p { class:"has-text-black is-size-7", "undo {undo}"}
                                         }
                                     }
                                 }
                             }
                         )
                     } else {
-                        rsx!(i {
-                            class: "fa-solid fa-rotate-left has-text-grey-light ml-1"
-                        })
+                        rsx!(
+                            div { class:"navbar-item",
+                                i {
+                                    class: "fa-solid fa-rotate-left has-text-grey-light"
+                                }
+                            }
+                        )
                     }
                     if let Some(redo) = app_data.read().undo.get_redo_description() {
                         rsx!(
-                            div { class:"dropdown is-hoverable ml-1",
-                                div { class: "dropdown-trigger",
+                            div { class:"navbar-item dropdown is-hoverable",
+                                a { class: "dropdown-trigger has-text-white",
                                     i {
                                         class: "fa-solid fa-rotate-right",
                                         aria_haspopup:"true",
@@ -66,16 +76,20 @@ pub fn NavBar<'a>(
                                 div { class:"dropdown-menu", id:"dropdown-menu-redo", role:"menu",
                                     div { class:"dropdown-content",
                                         div { class:"dropdown-item",
-                                            p { class:"has-text-black is-size-7", "redo change {redo}"}
+                                            p { class:"has-text-black is-size-7", "redo {redo}"}
                                         }
                                     }
                                 }
                             }
                         )
                     } else {
-                        rsx!(i {
-                            class: "fa-solid fa-rotate-right has-text-grey-light ml-1"
-                        })
+                        rsx!(
+                            div { class:"navbar-item",
+                                i {
+                                    class: "fa-solid fa-rotate-right has-text-grey-light"
+                                }
+                            }
+                        )
                     }
                 }
                 a {

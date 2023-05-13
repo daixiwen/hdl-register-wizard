@@ -138,14 +138,16 @@ impl HdlWizardApp {
     }
 
     pub fn apply_undo(&mut self) {
-        if let Some(new_model) = self.undo.apply_undo() {
-            self.data.model = new_model.model;
+        if let Some(new_state) = self.undo.apply_undo() {
+            self.data.model = new_state.model;
+            self.page_type = new_state.page_type;
         }
     }
 
     pub fn apply_redo(&mut self) {
-        if let Some(new_model) = self.undo.apply_redo() {
-            self.data.model = new_model.model;
+        if let Some(new_state) = self.undo.apply_redo() {
+            self.data.model = new_state.model;
+            self.page_type = new_state.page_type;
         }
     }
 }

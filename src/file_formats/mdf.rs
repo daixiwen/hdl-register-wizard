@@ -2,7 +2,6 @@
 
 use serde::{de::Error, Deserialize, Serialize};
 
-use crate::model_gui;
 use crate::utils;
 use std::convert::From;
 use std::convert::TryInto;
@@ -31,6 +30,26 @@ impl Default for Mdf {
     }
 }
 
+#[derive(
+    Serialize,
+    Deserialize,
+    strum_macros::ToString,
+    strum_macros::EnumIter,
+    strum_macros::EnumString,
+    PartialEq,
+    Clone,
+    Copy,
+)]
+/// type of interface. Only SBI is officially spported by the Bitvis tool RegisterWizard
+pub enum InterfaceType {
+    /// SBI protocol, defined by Bitvis
+    SBI,
+    /// APB3 protocol, used in ARM systems among others
+    APB3,
+    /// Avalon Memory mapped interface, used in Altera/Intel FPGA designs
+    AvalonMm,
+}
+
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 /// structure representing an interface in the model
@@ -42,7 +61,7 @@ pub struct Interface {
     pub description: Option<Vec<String>>,
     /// interface type (protocol used)
     #[serde(rename = "type")]
-    pub interface_type: model_gui::InterfaceType,
+    pub interface_type: InterfaceType,
     /// width of the address bus.
     /// if empty, automatically caculated from the highest register address
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -62,7 +81,7 @@ impl Interface {
         Interface {
             name: String::new(),
             description: None,
-            interface_type: model_gui::InterfaceType::SBI,
+            interface_type: InterfaceType::SBI,
             registers: Vec::<Register>::new(),
             address_width: None,
             data_width: None,
@@ -500,85 +519,6 @@ impl<'de> Deserialize<'de> for FieldPosition {
             },
 
             utils::StrOrNum::Num(n) => Ok(FieldPosition::Single(n.try_into().unwrap())),
-        }
-    }
-}
-
-/// conversion from to and from gui model
-impl From<model_gui::Model> for Mdf {
-    fn from(model_from_gui: model_gui::Model) -> Self {
-        Mdf {
-            name: model_from_gui.name,
-            interfaces: model_from_gui
-                .interfaces
-                .into_iter()
-                .map(Interface::from)
-                .collect(),
-        }
-    }
-}
-
-impl From<Mdf> for model_gui::Model {
-    fn from(model: Mdf) -> Self {
-        model_gui::Model {
-            name: model.name,
-            interfaces: model
-                .interfaces
-                .into_iter()
-                .map(model_gui::Interface::from)
-                .collect(),
-        }
-    }
-}
-
-impl From<model_gui::Interface> for Interface {
-    fn from(interface_from_gui: model_gui::Interface) -> Self {
-        Interface {
-            name: interface_from_gui.name,
-            description: utils::textarea_to_opt_vec_str(&interface_from_gui.description),
-            interface_type: interface_from_gui.interface_type,
-            address_width: utils::automanual_to_opt_u32(&interface_from_gui.address_width),
-            data_width: utils::automanual_to_opt_u32(&interface_from_gui.data_width),
-            registers: interface_from_gui
-                .registers
-                .into_iter()
-                .map(Register::from)
-                .collect(),
-        }
-    }
-}
-
-impl From<Interface> for model_gui::Interface {
-    fn from(interface: Interface) -> Self {
-        model_gui::Interface {
-            name: interface.name,
-            description: utils::opt_vec_str_to_textarea(&interface.description),
-            interface_type: interface.interface_type,
-            address_width: utils::opt_u32_to_automanual(&interface.address_width),
-            data_width: utils::opt_u32_to_automanual(&interface.data_width),
-            registers: interface
-                .registers
-                .into_iter()
-                .map(model_gui::Register::from)
-                .collect(),
-        }
-    }
-}
-
-impl From<model_gui::Register> for Register {
-    fn from(register_from_gui: model_gui::Register) -> Self {
-        Register {
-            name: register_from_gui.name,
-            ..Default::default()
-        }
-    }
-}
-
-impl From<Register> for model_gui::Register {
-    fn from(register: Register) -> Self {
-        model_gui::Register {
-            name: register.name,
-            ..Default::default()
         }
     }
 }

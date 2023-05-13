@@ -10,3 +10,7 @@
   margin-top: 1em;
   text-align: center;
 }
+
+.ext-buttons-in-table {
+  justify-content: flex-end;
+}

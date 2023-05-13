@@ -5,53 +5,10 @@ use crate::app::HdlWizardApp;
 use dioxus::prelude::*;
 
 use crate::gui_types;
-use crate::undo;
-use crate::utils;
-use std::str::FromStr;
 use strum;
 use std::cell::RefCell;
 use crate::file_formats::mdf;
-use crate::page;
-
-// this structure holds a function to update a part of the model: either the project root, an interface or a register
-pub enum UpdateFunction<F> {
-    Project(Box<dyn FnOnce(&mut mdf::Mdf, &F) -> ()>),
-    Interface(Box<dyn FnOnce(&mut mdf::Interface, &F) -> ()>),
-    Register(Box<dyn FnOnce(&mut mdf::Register, &F) -> ()>)
-}
-
-// apply the update function to the relevant part of the model, indicated by the page type
-pub fn ApplyUpdate<F>(func : UpdateFunction<F>, model : &mut mdf::Mdf, page_type: page::PageType, value: &F) -> Result<(), std::io::Error>{
-
-    match (func, page_type) {
-        (UpdateFunction::Project(fp), page::PageType::Project) => {
-            fp(model, value);
-            Ok(())
-        },
-        (UpdateFunction::Interface(fi), page::PageType::Interface(interface_num)) => {
-            if let Some(int_ref) = model.interfaces.get_mut(interface_num) {
-                fi(int_ref, value);
-                Ok(())
-            } else {
-                Err(std::io::Error::from(std::io::ErrorKind::AddrNotAvailable))
-            }
-        },
-        (UpdateFunction::Register(fr), page::PageType::Register(interface_num, register_num)) => {
-            if let Some(int_ref) = model.interfaces.get_mut(interface_num) {
-                if let Some(reg_ref) = int_ref.registers.get_mut(register_num) {
-                    fr(reg_ref, value);
-                    Ok(())
-                } else {
-                    Err(std::io::Error::from(std::io::ErrorKind::AddrNotAvailable))
-                }
-            } else {
-                Err(std::io::Error::from(std::io::ErrorKind::AddrNotAvailable))
-            }
-        }
-
-        _ => Err(std::io::Error::from(std::io::ErrorKind::InvalidData))
-    }
-}
+use crate::page::PageType;
 
 // simple text widget component
 #[derive(Props)]
@@ -61,8 +18,8 @@ pub struct TextGenericProps<'a, F> {
     value : F,
     undo_label : Option<&'a str>,
     update_model: Option<RefCell<Box<dyn FnMut(&mut mdf::Mdf, &F) -> () + 'a>>>,
-    update_int: Option<Box<dyn FnMut(&mut mdf::Interface, &F) -> () + 'a>>,
-    update_reg: Option<Box<dyn FnMut(&mut mdf::Register, &F) -> () + 'a>>,
+    update_int: Option<RefCell<Box<dyn FnMut(&mut mdf::Interface, &F) -> () + 'a>>>,
+    update_reg: Option<RefCell<Box<dyn FnMut(&mut mdf::Register, &F) -> () + 'a>>>,
 }
 
 //#[inline_props]
@@ -83,14 +40,34 @@ pub fn TextGeneric<'a, F: gui_types::Validable + std::string::ToString + std::st
                     p { class:"control is-expanded",
                         input { class:"input", r#type:"text", placeholder:"{gui_label}",
                             onchange: move | evt | {
-                                if let Some(updatefn_ref) = &cx.props.update_model {
-                                    let mut updatefn = updatefn_ref.borrow_mut();
-                                    if let Ok(value) = F::from_str(&evt.value) {
-                                        cx.props.app_data.with_mut(|app_data| {
-                                            updatefn(&mut app_data.data.model, &value);
-                                            app_data.register_undo(undo_description);
-                                        })
-                                    }
+                                // call one of the update functions depending on the page type
+                                let page_type = &cx.props.app_data.read().page_type.clone();
+                                match page_type {
+                                    PageType::Project => {
+                                        if let Some(updatefn_ref) = &cx.props.update_model {
+                                            let mut updatefn = updatefn_ref.borrow_mut();
+                                            if let Ok(value) = F::from_str(&evt.value) {
+                                                cx.props.app_data.with_mut(|app_data| {
+                                                    updatefn(&mut app_data.data.model, &value);
+                                                    app_data.register_undo(undo_description);
+                                                })
+                                            }
+                                        }        
+                                    },
+                                    PageType::Interface(interface_number) => {
+                                        if let Some(updatefn_ref) = &cx.props.update_int {
+                                            let mut updatefn = updatefn_ref.borrow_mut();
+                                            if let Ok(value) = F::from_str(&evt.value) {
+                                                cx.props.app_data.with_mut(|app_data| {
+                                                    if let Some(mut interface) = app_data.data.model.interfaces.get_mut(*interface_number) {
+                                                        updatefn(&mut interface, &value);
+                                                        app_data.register_undo(undo_description);
+                                                    }
+                                                })
+                                            }
+                                        }      
+                                    },  
+                                    _ => {}
                                 }
                             },
                             value: "{value}"
