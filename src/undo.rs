@@ -91,6 +91,7 @@ impl Undo {
 
         if num_elements > 1 {
             let latest = self.undo_list.pop().unwrap();
+            let latest_page = latest.page_type.clone();
             self.redo_list.push(latest);
 
             let previous_model = self.undo_list.get(num_elements - 2).unwrap().model.clone();
@@ -99,7 +100,7 @@ impl Undo {
             Some(UndoState {
                 change_description: Default::default(),
                 model: previous_model,
-                page_type: previous_page,
+                page_type: latest_page,
             })
         } else {
             None

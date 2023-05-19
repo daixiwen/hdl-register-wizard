@@ -17,41 +17,64 @@ fn TableLine<'a>(
     interface_name: String,
     interface_type: mdf::InterfaceType
 ) -> Element<'a> {
-    let num_of_interfaces = 2;//app_data.read().data.model.interfaces.len();
+    let num_of_interfaces = app_data.read().data.model.interfaces.len();
     let up_disabled = *interface_number == 0;
     let down_disabled = *interface_number == num_of_interfaces-1;
 
+    let display_name = if interface_name.is_empty() {"(empty)" } else  {interface_name};
+
     cx.render(rsx! {
         tr {
-            td { "{interface_name}"},
+            td { 
+                a {
+                    onclick: move | _ | app_data.with_mut(|data| data.page_type = PageType::Interface(*interface_number)),
+                    "{display_name}",
+                }
+            },
             td { "{interface_type.to_string()}"},
             td { 
                 div { class:"buttons are-small ext-buttons-in-table",
                     button { class:"button is-primary", disabled:"{up_disabled}",
-                        onclick: move | _evt | println!("click"),
+                        onclick: move | _ | if !up_disabled {
+                            app_data.with_mut(|data| {
+                                data.data.model.interfaces.swap(*interface_number-1, *interface_number);
+                                data.register_undo("move interface up")
+                            })
+                        },
                         span {
                             class:"icon is_small",
                             i { class:"fa-solid fa-caret-up"}
                         }
                     }
                     button { class:"button is-primary", disabled:"{down_disabled}",
-                        span {
+                        onclick: move | _ | if !down_disabled {
+                            app_data.with_mut(|data| {
+                                data.data.model.interfaces.swap(*interface_number, *interface_number+1);
+                                data.register_undo("move interface down")
+                            })
+                        },
+                    span {
                             class:"icon is_small",
                             i { class:"fa-solid fa-caret-down"}
                         }
                     }
                     button { class:"button is-link",
+                        onclick: move | _ | app_data.with_mut(|data| data.page_type = PageType::Interface(*interface_number)),
                         span {
                             class:"icon is_small",
                             i { class:"fa-solid fa-pen"}
                         }
                     }
                     button { class:"button is-danger",
+                        onclick: move | _ | app_data.with_mut(|data| {
+                            data.data.model.interfaces.remove(*interface_number);
+                            data.register_undo("remove interface")
+                        }),
                         span {
-                            class:"icon is_small",
-                            i { class:"fa-solid fa-trash"}
+                                class:"icon is_small",
+                                i { class:"fa-solid fa-trash"}
+                            }
                         }
-                    }
                 }
             }
         }
