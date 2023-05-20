@@ -14,3 +14,8 @@
 .ext-buttons-in-table {
   justify-content: flex-end;
 }
+
+input:invalid {
+  color: red;
+  background-color: pink;
+}

@@ -4,9 +4,10 @@
 use dioxus::prelude::*;
 use crate::app::HdlWizardApp;
 use crate::gui_blocks;
-use std::cell::RefCell;
+use crate::gui_blocks::callback;
 use crate::file_formats::mdf;
 use crate::page::PageType;
+
 
 // builds a line in the table with all the interfaces
 #[inline_props]
@@ -100,7 +101,7 @@ pub fn Content<'a>(
                         app_data: app_data,
                         interface_number: *n,
                         interface_name: int_name.clone(),
-                        interface_type: *int_type
+                        interface_type: *int_type,
                         key: "{int_name}{n}"
                     }
                 )
@@ -113,7 +114,7 @@ pub fn Content<'a>(
             div { class:"m-4",
             gui_blocks::TextGeneric {
                 app_data: app_data,
-                update_model: RefCell::new(Box::new( |model, value : &String| model.name = value.clone())),
+                update_model: callback( |model, value : &String| model.name = value.clone()),
                 gui_label: "Name",
                 undo_label: "change project name",
                 value: project_name              

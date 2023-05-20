@@ -33,65 +33,65 @@ pub fn NavBar<'a>(
                         }
                     }
                     "{app_data.read().data.model.name}",
-                    if let Some(undo) = app_data.read().undo.get_undo_description() {
-                        rsx!(
-                            div { class:"navbar-item dropdown is-hoverable",
-                                a { class: "dropdown-trigger has-text-white",
-                                    i {
-                                        class: "fa-solid fa-rotate-left",
-                                        aria_haspopup:"true",
-                                        aria_controls:"dropdown-menu-undo",
-                                        onclick : move | _ | app_data.with_mut(|data| data.apply_undo())
-                                    }
-                                },
-                                div { class:"dropdown-menu", id:"dropdown-menu-undo", role:"menu",
-                                    div { class:"dropdown-content",
-                                        div { class:"dropdown-item",
-                                            p { class:"has-text-black is-size-7", "undo {undo}"}
-                                        }
-                                    }
-                                }
-                            }
-                        )
-                    } else {
-                        rsx!(
-                            div { class:"navbar-item",
+                },
+                if let Some(undo) = app_data.read().undo.get_undo_description() {
+                    rsx!(
+                        div { class:"navbar-item dropdown is-hoverable",
+                            a { class: "dropdown-trigger has-text-white",
                                 i {
-                                    class: "fa-solid fa-rotate-left has-text-grey-light"
+                                    class: "fa-solid fa-rotate-left",
+                                    aria_haspopup:"true",
+                                    aria_controls:"dropdown-menu-undo",
+                                    onclick : move | _ | app_data.with_mut(|data| data.apply_undo())
                                 }
-                            }
-                        )
-                    }
-                    if let Some(redo) = app_data.read().undo.get_redo_description() {
-                        rsx!(
-                            div { class:"navbar-item dropdown is-hoverable",
-                                a { class: "dropdown-trigger has-text-white",
-                                    i {
-                                        class: "fa-solid fa-rotate-right",
-                                        aria_haspopup:"true",
-                                        aria_controls:"dropdown-menu-redo",
-                                        onclick : move | _ | app_data.with_mut(|data| data.apply_redo())
-                                    }
-                                },
-                                div { class:"dropdown-menu", id:"dropdown-menu-redo", role:"menu",
-                                    div { class:"dropdown-content",
-                                        div { class:"dropdown-item",
-                                            p { class:"has-text-black is-size-7", "redo {redo}"}
-                                        }
+                            },
+                            div { class:"dropdown-menu", id:"dropdown-menu-undo", role:"menu",
+                                div { class:"dropdown-content",
+                                    div { class:"dropdown-item",
+                                        p { class:"has-text-black is-size-7", "undo {undo}"}
                                     }
                                 }
                             }
-                        )
-                    } else {
-                        rsx!(
-                            div { class:"navbar-item",
-                                i {
-                                    class: "fa-solid fa-rotate-right has-text-grey-light"
-                                }
+                        }
+                    )
+                } else {
+                    rsx!(
+                        div { class:"navbar-item",
+                            i {
+                                class: "fa-solid fa-rotate-left has-text-grey-light"
                             }
-                        )
-                    }
+                        }
+                    )
                 }
+                if let Some(redo) = app_data.read().undo.get_redo_description() {
+                    rsx!(
+                        div { class:"navbar-item dropdown is-hoverable",
+                            a { class: "dropdown-trigger has-text-white",
+                                i {
+                                    class: "fa-solid fa-rotate-right",
+                                    aria_haspopup:"true",
+                                    aria_controls:"dropdown-menu-redo",
+                                    onclick : move | _ | app_data.with_mut(|data| data.apply_redo())
+                                }
+                            },
+                            div { class:"dropdown-menu", id:"dropdown-menu-redo", role:"menu",
+                                div { class:"dropdown-content",
+                                    div { class:"dropdown-item",
+                                        p { class:"has-text-black is-size-7", "redo {redo}"}
+                                    }
+                                }
+                            }
+                        }
+                    )
+                } else {
+                    rsx!(
+                        div { class:"navbar-item",
+                            i {
+                                class: "fa-solid fa-rotate-right has-text-grey-light"
+                            }
+                        }
+                    )
+                },
                 a {
                     role: "button",
                     class: "{burger_class}",
@@ -129,7 +129,7 @@ pub fn NavBar<'a>(
                                     checked: "{live_help}",
                                     onchange: move |evt| app_data.with_mut(|data| data.live_help = evt.value == "true")
                                 }
-                                "Live help"
+                                " Live help "
                             }
                         }
                     }

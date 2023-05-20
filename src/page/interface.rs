@@ -5,9 +5,7 @@
 use dioxus::prelude::*;
 use crate::app::HdlWizardApp;
 use crate::gui_blocks;
-use std::cell::RefCell;
-use crate::file_formats::mdf;
-use crate::page::PageType;
+use crate::gui_blocks::callback;
 
 #[inline_props]
 pub fn Content<'a>(
@@ -19,14 +17,44 @@ pub fn Content<'a>(
         cx.render(rsx! {
             h1 { class:"title page-title", "Interface" },
             div { class:"m-4",
-            gui_blocks::TextGeneric {
-                app_data: app_data,
-                update_int: RefCell::new(Box::new( |interface, value : &String| interface.name = value.clone())),
-                gui_label: "Name",
-                undo_label: "change interface name",
-                value: interface.name.clone()              
-                }
-            }
+                gui_blocks::TextGeneric {
+                    app_data: app_data,
+                    update_int: callback( |interface, value : &String| interface.name = value.clone()),
+                    gui_label: "Name",
+                    undo_label: "change interface name",
+                    value: interface.name.clone()              
+                },
+                gui_blocks::EnumWidget {
+                    app_data: app_data,
+                    update_int: callback( |interface, value | interface.interface_type = *value),
+                    gui_label: "Type",
+                    undo_label: "change interface type",
+                    value: interface.interface_type
+                },
+                gui_blocks::TextArea {
+                    app_data: app_data,
+                    update_int: callback( |interface, value | interface.description = value.clone()),
+                    gui_label: "Description",
+                    undo_label: "change description",
+                    value: interface.description.clone()
+                },
+                gui_blocks::AutoManuText {
+                    app_data: app_data,
+                    update_int: callback( |interface, value | interface.address_width = *value),
+                    gui_label: "Address width",
+                    undo_label: "change address width",
+                    value: interface.address_width,
+                    default: 32
+                },
+                gui_blocks::AutoManuText {
+                    app_data: app_data,
+                    update_int: callback( |interface, value | interface.data_width = *value),
+                    gui_label: "Data width",
+                    undo_label: "change data width",
+                    value: interface.data_width,
+                    default: 32
+                },
+            },
         })
     } else {
         cx.render(rsx! {

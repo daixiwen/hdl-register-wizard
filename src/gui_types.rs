@@ -8,12 +8,18 @@ use std::str::FromStr;
 // this function will be called by the GUI to report to the user whether the value
 // is valid or not
 pub trait Validable {
-    fn validate(&self) -> bool;
+    fn validate_pattern() -> &'static str;
 }
 
 impl Validable for String {
-    fn validate(&self) -> bool {
-        true
+    fn validate_pattern() -> &'static str {
+        ".+"
+    }
+}
+
+impl Validable for u32 {
+    fn validate_pattern() -> &'static str {
+        "\\d+"
     }
 }
 

@@ -95,7 +95,7 @@ impl Undo {
             self.redo_list.push(latest);
 
             let previous_model = self.undo_list.get(num_elements - 2).unwrap().model.clone();
-            let previous_page = self.undo_list.get(num_elements - 2).unwrap().page_type.clone();
+            //let previous_page = self.undo_list.get(num_elements - 2).unwrap().page_type.clone();
 
             Some(UndoState {
                 change_description: Default::default(),

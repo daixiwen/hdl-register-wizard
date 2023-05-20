@@ -33,7 +33,7 @@ impl Default for Mdf {
 #[derive(
     Serialize,
     Deserialize,
-    strum_macros::ToString,
+    strum_macros::Display,
     strum_macros::EnumIter,
     strum_macros::EnumString,
     PartialEq,
