@@ -189,9 +189,24 @@ impl Address {
     }
 }
 
+impl AddressStride {
+    pub fn new() -> Self {
+        AddressStride {
+            count: Default::default(),
+            increment: None,
+        }
+    }
+}
+
 impl Default for Address {
     fn default() -> Self {
         Address::new()
+    }
+}
+
+impl Default for AddressStride {
+    fn default() -> Self {
+        AddressStride::new()
     }
 }
 
@@ -443,7 +458,7 @@ impl<'de> Deserialize<'de> for Address {
         let raw = utils::StrOrNum::deserialize(deserializer)?;
 
         match raw {
-            utils::StrOrNum::Str(s) => match Address::from_str(s) {
+            utils::StrOrNum::Str(s) => match Address::from_str(&s) {
                 Ok(a) => Ok(a),
                 Err(_) => Err(D::Error::custom(&format!(
                     "couldn't parse string '{}' as a vector value",
@@ -510,7 +525,7 @@ impl<'de> Deserialize<'de> for FieldPosition {
         let raw = utils::StrOrNum::deserialize(deserializer)?;
 
         match raw {
-            utils::StrOrNum::Str(s) => match FieldPosition::from_str(s) {
+            utils::StrOrNum::Str(s) => match FieldPosition::from_str(&s) {
                 Ok(a) => Ok(a),
                 Err(_) => Err(D::Error::custom(&format!(
                     "couldn't parse string '{}' as a field position",

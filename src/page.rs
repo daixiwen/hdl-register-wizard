@@ -33,10 +33,19 @@ pub fn Content<'a>(
                 }
             })
         },
-        _ =>{
+        PageType::Register(interface_num, register_num) => {
+            cx.render(rsx! {
+                register::Content { 
+                    app_data: app_data,
+                    interface_num: *interface_num,
+                    register_num: *register_num
+                }
+            })
+        },        
+/*        _ =>{
             cx.render(rsx! {
                 p { "Not implemented yet"}
             })
-        }
+        }*/
     }
 }

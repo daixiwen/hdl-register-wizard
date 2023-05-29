@@ -19,3 +19,7 @@ input:invalid {
   color: red;
   background-color: pink;
 }
+
+.ext-vector-field {
+  max-width: 8em;
+}

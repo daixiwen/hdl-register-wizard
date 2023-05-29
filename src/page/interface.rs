@@ -1,11 +1,97 @@
 //! page to edit an interface
-//! main page for the project
 #![allow(non_snake_case)]
 
 use dioxus::prelude::*;
 use crate::app::HdlWizardApp;
 use crate::gui_blocks;
 use crate::gui_blocks::callback;
+use crate::file_formats::mdf;
+use crate::page::PageType;
+use crate::utils;
+
+// builds a line in the table with all the registers
+#[inline_props]
+fn TableLine<'a>(
+    cx: Scope<'a>,
+    app_data: &'a UseRef<HdlWizardApp>,
+    register_number: usize,
+    register_name: String,
+    #[props(!optional)]
+    register_type: Option<utils::SignalType>,
+    register_address: mdf::Address
+) -> Element<'a> {
+    if let PageType::Interface(interface_number) = app_data.read().page_type {
+        let num_of_registers = app_data.read().data.model.interfaces[interface_number].registers.len();
+        let up_disabled = *register_number == 0;
+        let down_disabled = *register_number == num_of_registers-1;
+    
+        let display_name = if register_name.is_empty() {"(empty)" } else  {register_name};
+        let display_type = match register_type {
+            Some(signal_type) => signal_type.to_string(),
+            None => "bitfield".to_owned()
+        };
+    
+        cx.render(rsx! {
+            tr {
+                td { 
+                    a {
+                        onclick: move | _ | app_data.with_mut(|data| data.page_type = PageType::Register(interface_number, *register_number)),
+                        "{display_name}",
+                    }
+                },
+                td { "{register_address.nice_str()}"},
+                td { "{display_type}"},
+                td { 
+                    div { class:"buttons are-small ext-buttons-in-table",
+                        button { class:"button is-primary", disabled:"{up_disabled}",
+                            onclick: move | _ | if !up_disabled {
+                                app_data.with_mut(|data| {
+                                    data.data.model.interfaces[interface_number].registers.swap(*register_number-1, *register_number);
+                                    data.register_undo("move register up")
+                                })
+                            },
+                            span {
+                                class:"icon is_small",
+                                i { class:"fa-solid fa-caret-up"}
+                            }
+                        }
+                        button { class:"button is-primary", disabled:"{down_disabled}",
+                            onclick: move | _ | if !down_disabled {
+                                app_data.with_mut(|data| {
+                                    data.data.model.interfaces[interface_number].registers.swap(*register_number, *register_number+1);
+                                    data.register_undo("move register down")
+                                })
+                            },
+                        span {
+                                class:"icon is_small",
+                                i { class:"fa-solid fa-caret-down"}
+                            }
+                        }
+                        button { class:"button is-link",
+                            onclick: move | _ | app_data.with_mut(|data| data.page_type = PageType::Register(interface_number, *register_number)),
+                            span {
+                                class:"icon is_small",
+                                i { class:"fa-solid fa-pen"}
+                            }
+                        }
+                        button { class:"button is-danger",
+                            onclick: move | _ | app_data.with_mut(|data| {
+                                data.data.model.interfaces[interface_number].registers.remove(*register_number);
+                                data.register_undo("remove register")
+                            }),
+                            span {
+                                    class:"icon is_small",
+                                    i { class:"fa-solid fa-trash"}
+                                }
+                            }
+                    }
+                }
+            }
+        })    
+    } else {
+        cx.render(rsx!(p { "error.... not in a interface page"}))
+    }
+}
 
 #[inline_props]
 pub fn Content<'a>(
@@ -14,6 +100,26 @@ pub fn Content<'a>(
     interface_num: usize
 ) -> Element<'a> {
     if let Some(interface) = app_data.read().data.model.interfaces.get(*interface_num) {
+
+    // extract a list of registers, addresses and types
+    let int_list = interface.registers.iter().enumerate().map(
+        |(n, reg)| (n, reg.name.clone(), reg.address.clone(), reg.signal.clone())).collect::<Vec<_>>();
+
+    // now build some items from that list
+    let int_items = int_list.iter().map( |(n, int_name, int_address, int_type) | {
+                rsx!(
+                    TableLine {
+                        app_data: app_data,
+                        register_number: *n,
+                        register_name: int_name.clone(),
+                        register_type: *int_type,
+                        register_address: int_address.clone()
+                        key: "{int_name}{n}"
+                    }
+                )
+            }
+        );
+
         cx.render(rsx! {
             h1 { class:"title page-title", "Interface" },
             div { class:"m-4",
@@ -35,14 +141,14 @@ pub fn Content<'a>(
                     app_data: app_data,
                     update_int: callback( |interface, value | interface.description = value.clone()),
                     gui_label: "Description",
-                    undo_label: "change description",
+                    undo_label: "change interface description",
                     value: interface.description.clone()
                 },
                 gui_blocks::AutoManuText {
                     app_data: app_data,
                     update_int: callback( |interface, value | interface.address_width = *value),
                     gui_label: "Address width",
-                    undo_label: "change address width",
+                    undo_label: "change interface address width",
                     value: interface.address_width,
                     default: 32
                 },
@@ -50,11 +156,37 @@ pub fn Content<'a>(
                     app_data: app_data,
                     update_int: callback( |interface, value | interface.data_width = *value),
                     gui_label: "Data width",
-                    undo_label: "change data width",
+                    undo_label: "change interface data width",
                     value: interface.data_width,
                     default: 32
                 },
             },
+            h2 { class:"subtitle page-title", "Registers"},
+            table {
+                class:"table is-striped is-hoverable is-fullwidth",
+                thead {
+                    tr {
+                        th { "Name"},
+                        th { "Address"},
+                        th { "Type"},
+                        th {}
+                    }
+                },
+                tbody {
+                    int_items
+                }
+            }
+            div { class:"buttons",
+                button { class:"button is-primary",
+                    onclick: move |_| app_data.with_mut(|app| {
+                        app.data.model.interfaces[*interface_num].registers.push(mdf::Register::new());
+                        app.page_type = PageType::Register(*interface_num, app.data.model.interfaces[*interface_num].registers.len()-1);
+                        app.register_undo("create register")
+                        }),
+                    "New register"
+                }
+            }
+
         })
     } else {
         cx.render(rsx! {
@@ -62,125 +194,3 @@ pub fn Content<'a>(
         })
     }
 }
-
-/*pub fn panel(
-    interface_num: usize,
-    interface: &mut model_gui::Interface,
-    ctx: &egui::CtxRef,
-    _frame: &epi::Frame,
-    undo: &mut undo::Undo,
-) -> Option<page::PageType> {
-    let mut return_value = None;
-
-    egui::CentralPanel::default().show(ctx, |mut ui| {
-        ui.spacing_mut().item_spacing.y = 10.0;
-
-        ui.heading("Interface");
-
-        gui_blocks::widget_text(
-            &mut interface.name,
-            &mut ui,
-            "Name",
-            gui_blocks::TextWidgetType::SingleLine,
-            undo,
-        );
-        gui_blocks::widget_text(
-            &mut interface.description,
-            &mut ui,
-            "Description",
-            gui_blocks::TextWidgetType::MultiLine,
-            undo,
-        );
-
-        gui_blocks::widget_combobox(
-            &mut interface.interface_type,
-            &mut ui,
-            "Interface Type",
-            None,
-            undo,
-        );
-
-        gui_blocks::widget_auto_manual_u32(
-            &mut interface.address_width,
-            &mut ui,
-            "Address width",
-            false,
-            undo,
-        );
-        gui_blocks::widget_auto_manual_u32(
-            &mut interface.data_width,
-            &mut ui,
-            "Data width",
-            false,
-            undo,
-        );
-        ui.separator();
-
-        ui.horizontal(|ui| {
-            ui.heading("Registers:");
-            if ui.button("New").clicked() {
-                interface.registers.push(Default::default());
-                return_value = Some(page::PageType::Register(
-                    interface_num,
-                    interface.registers.len() - 1,
-                ));
-                undo.register_modification("create new register", undo::ModificationType::Finished);
-            }
-        });
-
-        let num_registers = interface.registers.len();
-        let register_names: Vec<String> = interface
-            .registers
-            .iter()
-            .map(|int| int.name.clone())
-            .collect();
-
-        ui.add_space(5.0);
-        egui::ScrollArea::vertical()
-            .auto_shrink([false; 2])
-            .show(ui, |ui| {
-                egui::Grid::new("registers_grid")
-                    .striped(true)
-                    .spacing([30.0, 5.0])
-                    .show(ui, |ui| {
-                        for (n, register_name) in register_names.iter().enumerate() {
-                            let register_page_type = page::PageType::Register(interface_num, n);
-                            if ui.selectable_label(false, register_name).clicked() {
-                                return_value = Some(register_page_type);
-                            }
-                            ui.horizontal(|ui| {
-                                if ui.button("🗑").clicked() {
-                                    interface.registers.remove(n);
-                                    undo.register_modification(
-                                        "delete register",
-                                        undo::ModificationType::Finished,
-                                    );
-                                }
-                                ui.add_enabled_ui(n > 0, |ui| {
-                                    if ui.button("⬆").clicked() {
-                                        interface.registers.swap(n - 1, n);
-                                        undo.register_modification(
-                                            "move register",
-                                            undo::ModificationType::Finished,
-                                        );
-                                    }
-                                });
-                                ui.add_enabled_ui(n < (num_registers - 1), |ui| {
-                                    if ui.button("⬇").clicked() {
-                                        interface.registers.swap(n, n + 1);
-                                        undo.register_modification(
-                                            "move register",
-                                            undo::ModificationType::Finished,
-                                        );
-                                    }
-                                });
-                            });
-                            ui.end_row();
-                        }
-                    });
-            });
-    });
-
-    return_value
-}
-*/

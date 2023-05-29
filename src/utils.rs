@@ -125,8 +125,8 @@ impl std::str::FromStr for VectorValue {
 /// the field type as a number or a string
 #[derive(Deserialize)]
 #[serde(untagged)]
-pub enum StrOrNum<'a> {
-    Str(&'a str),
+pub enum StrOrNum {
+    Str(String),
     Num(u64),
 }
 
@@ -139,7 +139,7 @@ impl<'de> Deserialize<'de> for VectorValue {
         let raw = StrOrNum::deserialize(deserializer)?;
 
         match raw {
-            StrOrNum::Str(s) => match VectorValue::from_str(s) {
+            StrOrNum::Str(s) => match VectorValue::from_str(&s) {
                 Ok(v) => Ok(v),
                 Err(_) => Err(D::Error::custom(&format!(
                     "couldn't parse string '{}' as a vector value",

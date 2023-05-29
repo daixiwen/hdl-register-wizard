@@ -1,90 +1,330 @@
 //! page to edit a register
+#![allow(non_snake_case)]
+
+use dioxus::prelude::*;
+use crate::app::HdlWizardApp;
 use crate::gui_blocks;
-use crate::gui_types;
-use crate::model_gui;
-use crate::undo;
+use crate::gui_blocks::callback;
+use crate::file_formats::mdf;
+use std::cell::RefCell;
+use crate::gui_types::Validable;
+use crate::utils;
+use std::str::FromStr;
+use std::default::Default;
 
+//fn absdiff(a: u32, b: u32) -> u32 {
+//    if a > b {
+//        a - b
+//    } else {
+//        b - a
+//    }
+//}
 
-enum FieldsModification {
-    Delete(usize),
-    Swap(usize, usize),
+// default values for some fields when changing the signal type
+fn default_fields(interface_width : u32, register: &mut mdf::Register) {
+    let default_width = match register.signal {
+        Some(utils::SignalType::Boolean) | Some(utils::SignalType::StdLogic) => 1,
+        Some(utils::SignalType::Signed) | Some(utils::SignalType::Unsigned) | Some(utils::SignalType::StdLogicVector) =>
+            interface_width,
+        None => 0 
+    };
+
+    if register.signal.is_none() {
+        // signal is a bitfield. There are a bunch of parameters that aren't available
+        register.width = None;
+        register.access = None;
+        register.reset = None;
+        register.core_signal_properties = mdf::CoreSignalProperties::default();
+    } else {
+        if register.width.is_none() {
+            register.width = Some(default_width);
+        }
+        if register.access.is_none() {
+            register.access = Some(mdf::AccessType::RW);
+        }
+        if register.reset.is_none() {
+            register.reset = Some(utils::VectorValue::new());
+        }
+    }
 }
 
-fn absdiff(a: u32, b: u32) -> u32 {
-    if a > b {
-        a - b
+// widget for the address stride
+#[derive(Props)]
+struct GuiAddressStrideProps<'a> {
+    app_data: &'a UseRef<HdlWizardApp>,
+    #[props(!optional)]
+    value : Option<mdf::AddressStride>,
+    update_reg: Option<RefCell<Box<dyn FnMut(&mut mdf::Register, &Option<mdf::AddressStride>) -> () + 'a>>>,
+}
+
+fn AddressStride<'a>(
+    cx: Scope<'a, GuiAddressStrideProps<'a>>) -> Element<'a>
+{
+    let validate_pattern = utils::VectorValue::validate_pattern();
+    let value = &cx.props.value;
+    let is_stride = value.is_some();
+    let has_increment = match value {
+        Some(addrstr) => addrstr.increment.is_some(),
+        _ => false
+    };
+    let count = match value {
+        Some(addrstr) => addrstr.count,
+        _ => Default::default()
+    };
+    let count_string = if is_stride {
+        count.to_string()
     } else {
-        b - a
+        Default::default()
+    };
+    let increment_field = match value {
+        Some(addrstr) => addrstr.increment,
+        _ => Default::default()
+    };
+    let increment = increment_field.unwrap_or_default();
+    let increment_string = if has_increment {
+        increment.to_string()
+    } else {
+        Default::default()
+    };
+    let label_class = if is_stride {
+        ""
+    } else {
+        "has-text-grey-light"
+    };
+
+    cx.render(rsx!{
+        div { class:"field is-horizontal",
+            div { class:"field-label is-normal",
+                label { class:"label", " " }
+            }
+            div { class:"field-body",
+                div { class:"field is-grouped is-align-items-center",
+                    div { class:"control",
+                        label { class:"checkbox",
+                            input { 
+                                r#type: "checkbox", 
+                                onclick : move | _ | {
+                                    let new_value : Option<mdf::AddressStride> = if is_stride {
+                                        None
+                                    } else {
+                                        Some(mdf::AddressStride {
+                                            count: utils::VectorValue {
+                                                value: 1,
+                                                radix: utils::RadixType::Decimal    
+                                            },
+                                            increment : None
+                                        })
+                                    };
+                                    gui_blocks::apply_function(&cx.props.app_data, new_value, "change address stride status", &None, &None, &cx.props.update_reg);
+                                },
+                                checked: "{is_stride}"
+                            },
+                            " Stride: "
+                        },
+                    },
+                    div { class:"control",
+                        label {
+                            class: "{label_class}",
+                            "Count: "
+                        }
+                    },
+                    div { class:"control",    
+                        input { class:"input ext-vector-field", r#type:"text", placeholder:"count", pattern:"{validate_pattern}",
+                            onchange: move | evt | {
+                                if let Ok(new_value) = utils::VectorValue::from_str(&evt.value) {
+                                    let new_stride = mdf::AddressStride {
+                                        count : new_value,
+                                        increment : increment_field
+                                    };
+                                    gui_blocks::apply_function(&cx.props.app_data, Some(new_stride), "change stride count", &None, &None, &cx.props.update_reg);
+                                }
+                            },
+                            value: "{count_string}",
+                            disabled: "{!is_stride}"
+                        }
+                    },
+                    div { class:"control",
+                        label { class:"checkbox",
+                            class : "{label_class}",
+                            input { 
+                                r#type: "checkbox", 
+                                onclick : move | _ | {
+                                    if is_stride {
+                                        let new_value : Option<mdf::AddressStride> = if has_increment {
+                                            Some(mdf::AddressStride{
+                                                count : count,
+                                                increment : None
+                                            })
+                                        } else {
+                                            Some(mdf::AddressStride{
+                                                count : count,
+                                                increment : Some(Default::default())
+                                            })
+                                        };
+                                        gui_blocks::apply_function(&cx.props.app_data, new_value, "change address stride increment option", &None, &None, &cx.props.update_reg);    
+                                    }
+                                },
+                                checked: "{has_increment}",
+                                disabled: "{!is_stride}"
+                            },
+                            " Increment: "
+                        },
+                    },
+                    div { class:"control",
+                        label {
+                            input { class:"input ext-vector-field", r#type:"text", placeholder:"auto", pattern:"{validate_pattern}",
+                                onchange: move | evt | {
+                                    if let Ok(new_value) = utils::VectorValue::from_str(&evt.value) {
+                                        let new_stride = mdf::AddressStride {
+                                            count : count,
+                                            increment : Some(new_value)
+                                        };
+                                        gui_blocks::apply_function(&cx.props.app_data, Some(new_stride), "change stride increment value", &None, &None, &cx.props.update_reg);
+                                    }
+                                },
+                                value: "{increment_string}",
+                                disabled: "{!has_increment}"
+                            }
+                        }
+                    }
+                }
+            }
+        }      
+    })
+}
+
+#[inline_props]
+pub fn Content<'a>(
+    cx: Scope<'a>,
+    app_data: &'a UseRef<HdlWizardApp>,
+    interface_num: usize,
+    register_num: usize
+) -> Element<'a> {
+    if let Some(interface) = app_data.read().data.model.interfaces.get(*interface_num) {
+        if let Some(register) = interface.registers.get(*register_num) {
+
+            let interface_data_width = interface.data_width.unwrap_or(32);
+
+            cx.render(rsx! {
+                h1 { class:"title page-title", "Register" },
+                div { class:"m-4",
+                    gui_blocks::TextGeneric {
+                        app_data: app_data,
+                        update_reg: callback( |register, value : &String| register.name = value.clone()),
+                        gui_label: "Name",
+                        undo_label: "change register name",
+                        value: register.name.clone()              
+                    },
+                    gui_blocks::TextArea {
+                        app_data: app_data,
+                        update_reg: callback( |register, value | register.summary = value.clone()),
+                        gui_label: "Summary",
+                        undo_label: "change register summary",
+                        rows: 1,
+                        value: register.summary.clone()
+                    },
+                    gui_blocks::TextArea {
+                        app_data: app_data,
+                        update_reg: callback( |register, value | register.description = value.clone()),
+                        gui_label: "Description",
+                        undo_label: "change register description",
+                        value: register.description.clone()
+                    },
+                    gui_blocks::AutoManuText {
+                        app_data: app_data,
+                        update_reg: callback( |register, value | register.address.value = *value),
+                        gui_label: "Address",
+                        field_class: "ext-vector-field",
+                        undo_label: "change register base address",
+                        value: register.address.value,
+                    },
+                    AddressStride {
+                        app_data: app_data,
+                        update_reg: callback( |register, value | register.address.stride = value.clone()),
+                        value : register.address.stride.clone()
+                    },
+                    gui_blocks::OptionEnumWidget {
+                        app_data: app_data,
+                        update_reg: callback( move |register, value| {
+                            register.signal = *value;
+                            default_fields(interface_data_width, register);
+                        }),
+                        gui_label: "Signal type",
+                        field_for_none: "(bitfield)",
+                        undo_label: "change register signal type",
+                        value: register.signal
+                    }
+                    if register.signal.is_some() {
+
+                        cx.render(rsx! {
+                            gui_blocks::TextGeneric {
+                                app_data: app_data,
+                                update_reg: callback( |register, value | register.width = Some(*value)),
+                                gui_label: "Width",
+                                field_class: "ext-vector-field",
+                                undo_label: "change register name",
+                                value: register.width.unwrap_or_default()             
+                            },
+                            gui_blocks::OptionEnumWidget {
+                                app_data: app_data,
+                                gui_label: "Access",
+                                value: register.access,
+                                undo_label: "change register access mode",
+                                update_reg : callback( |register, value | register.access = *value)
+                            },
+                            gui_blocks::TextGeneric {
+                                app_data: app_data,
+                                update_reg: callback( |register, value | register.reset = Some(*value)),
+                                gui_label: "Reset value",
+                                field_class: "ext-vector-field",
+                                undo_label: "change reset value",
+                                value: register.reset.unwrap_or_default()             
+                            },
+                            gui_blocks::OptionEnumWidget {
+                                app_data: app_data,
+                                gui_label: "Location",
+                                value: register.location,
+                                undo_label: "change register locatione",
+                                update_reg : callback( |register, value | register.location = *value)
+                            },
+                            gui_blocks::CheckBox {
+                                app_data: app_data,
+                                gui_label: "Core Properties",
+                                checkbox_label: "use read enable",
+                                value: register.core_signal_properties.use_read_enable.unwrap_or(false),
+                                undo_label: "change use read enable core property",
+                                update_reg : callback( |register, value | register.core_signal_properties.use_read_enable = Some(*value))
+                            },
+                            gui_blocks::CheckBox {
+                                app_data: app_data,
+                                gui_label: "",
+                                checkbox_label: "use write enable",
+                                value: register.core_signal_properties.use_write_enable.unwrap_or(false),
+                                undo_label: "change use write enable core property",
+                                update_reg : callback( |register, value | register.core_signal_properties.use_write_enable = Some(*value))
+                            },
+                        })
+                    }
+                }
+            })
+        } else {
+            cx.render(rsx! { p { "bad register number"} })
+        }
+    } else {
+        cx.render(rsx! { p { "bad interface number"} })
     }
 }
 
 /*
-pub fn panel(
-    register: &mut model_gui::Register,
-    interface_data_width: &gui_types::AutoManualU32,
-    ctx: &egui::CtxRef,
-    _frame: &epi::Frame,
-    undo: &mut undo::Undo,
-) {
-    egui::CentralPanel::default().show(ctx, |mut ui| {
-        ui.spacing_mut().item_spacing.y = 10.0;
 
-        ui.heading("Register");
+    undo_label : Option<&'a str>,
+    field_for_none : Option<&'a str>,
+    update_model: Option<RefCell<Box<dyn FnMut(&mut mdf::Mdf, &Option<F>) -> () + 'a>>>,
+    update_int: Option<RefCell<Box<dyn FnMut(&mut mdf::Interface, &Option<F>) -> () + 'a>>>,
+    update_reg: Option<RefCell<Box<dyn FnMut(&mut mdf::Register, &Option<F>) -> () + 'a>>>,
+ */
+/*
 
-        gui_blocks::widget_text(
-            &mut register.name,
-            &mut ui,
-            "Name",
-            gui_blocks::TextWidgetType::SingleLine,
-            undo,
-        );
-        gui_blocks::widget_text(
-            &mut register.summary,
-            &mut ui,
-            "Summary",
-            gui_blocks::TextWidgetType::MultiLine,
-            undo,
-        );
-        gui_blocks::widget_text(
-            &mut register.description,
-            &mut ui,
-            "Description",
-            gui_blocks::TextWidgetType::MultiLine,
-            undo,
-        );
-
-        ui.horizontal(|mut ui| {
-            gui_blocks::widget_auto_manual_vectorvalue_inline(
-                &mut register.address_value,
-                &mut ui,
-                "Address",
-                undo,
-            );
-        });
-        ui.horizontal(|ui| {
-            if ui
-                .checkbox(&mut register.address_stride, "Address stride:")
-                .changed()
-            {
-                undo.register_modification(
-                    match register.address_stride {
-                        true => "address stride enabled",
-                        false => "address stride disabled",
-                    },
-                    undo::ModificationType::Finished,
-                );
-            }
-
-            ui.add_enabled_ui(register.address_stride, |mut ui| {
-                gui_blocks::widget_vectorvalue(&mut register.address_count, &mut ui, "Count", undo);
-                gui_blocks::widget_auto_manual_vectorvalue_inline(
-                    &mut register.address_incr,
-                    &mut ui,
-                    "Increment",
-                    undo,
-                );
-            });
-        });
 
         ui.horizontal(|mut ui| {
             gui_blocks::widget_auto_manual_u32_inline(

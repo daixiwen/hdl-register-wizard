@@ -23,6 +23,12 @@ impl Validable for u32 {
     }
 }
 
+impl Validable for utils::VectorValue {
+    fn validate_pattern() -> &'static str {
+        "0x[0-9a-fA-F]+|0d\\d+|0b[01]+|\\d+"
+    }
+}
+
 /// egui doesn't have a way of controlling an integer value from a text edit
 /// so we have a type that regroups both a string and the integer value
 #[derive(Serialize, Deserialize, Clone)]
