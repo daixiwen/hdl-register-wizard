@@ -193,6 +193,60 @@ fn AddressStride<'a>(
     })
 }
 
+// widget for the core properties
+#[derive(Props)]
+struct GuiCoreProps<'a> {
+    app_data: &'a UseRef<HdlWizardApp>,
+    #[props(!optional)]
+    value : mdf::CoreSignalProperties,
+}
+
+fn CoreProperties<'a>(
+    cx: Scope<'a, GuiCoreProps<'a>>) -> Element<'a>
+{
+    let value = &cx.props.value;
+    let use_read_enable = value.use_read_enable.unwrap_or(false);
+    let use_write_enable = value.use_write_enable.unwrap_or(false);
+
+    cx.render(rsx!{
+        div { class:"field is-horizontal",
+            div { class:"field-label is-normal",
+                label { class:"label", "Core Properties" }
+            }
+            div { class:"field-body",
+                div { class:"field is-grouped is-align-items-center",
+                    div { class:"control",
+                        label { class:"checkbox",
+                            input { 
+                                r#type: "checkbox", 
+                                onclick : move | _ | {
+                                    gui_blocks::apply_function(&cx.props.app_data, !use_read_enable, "change read enable core property", &None, &None, &Some(callback(
+                                        | register, value | register.core_signal_properties.use_read_enable = Some(*value))))
+                                    },
+                                checked: "{use_read_enable}"
+                            },
+                            " Use read enable "
+                        },
+                    },
+                    div { class:"control",
+                        label { class:"checkbox",
+                            input { 
+                                r#type: "checkbox", 
+                                onclick : move | _ | {
+                                    gui_blocks::apply_function(&cx.props.app_data, !use_write_enable, "change write enable core property", &None, &None, &Some(callback(
+                                        | register, value | register.core_signal_properties.use_write_enable = Some(*value))))
+                                    },
+                                checked: "{use_write_enable}"
+                            },
+                            " Use write enable "
+                        },
+                    },
+                }
+            }
+        }      
+    })
+}
+
 #[inline_props]
 pub fn Content<'a>(
     cx: Scope<'a>,
@@ -256,7 +310,14 @@ pub fn Content<'a>(
                     }
                     if register.signal.is_some() {
 
-                        cx.render(rsx! {
+                        rsx! {
+                            gui_blocks::OptionEnumWidget {
+                                app_data: app_data,
+                                gui_label: "Location",
+                                value: register.location,
+                                undo_label: "change register locatione",
+                                update_reg : callback( |register, value | register.location = *value)
+                            },
                             gui_blocks::TextGeneric {
                                 app_data: app_data,
                                 update_reg: callback( |register, value | register.width = Some(*value)),
@@ -280,30 +341,39 @@ pub fn Content<'a>(
                                 undo_label: "change reset value",
                                 value: register.reset.unwrap_or_default()             
                             },
+                            CoreProperties {
+                                app_data: app_data,
+                                value: register.core_signal_properties.clone()
+                            },
+                        }
+                    } else { // signal is bitfield
+                        rsx! {
                             gui_blocks::OptionEnumWidget {
                                 app_data: app_data,
                                 gui_label: "Location",
+                                field_for_none : "define per field"
                                 value: register.location,
                                 undo_label: "change register locatione",
                                 update_reg : callback( |register, value | register.location = *value)
                             },
-                            gui_blocks::CheckBox {
-                                app_data: app_data,
-                                gui_label: "Core Properties",
-                                checkbox_label: "use read enable",
-                                value: register.core_signal_properties.use_read_enable.unwrap_or(false),
-                                undo_label: "change use read enable core property",
-                                update_reg : callback( |register, value | register.core_signal_properties.use_read_enable = Some(*value))
-                            },
-                            gui_blocks::CheckBox {
-                                app_data: app_data,
-                                gui_label: "",
-                                checkbox_label: "use write enable",
-                                value: register.core_signal_properties.use_write_enable.unwrap_or(false),
-                                undo_label: "change use write enable core property",
-                                update_reg : callback( |register, value | register.core_signal_properties.use_write_enable = Some(*value))
-                            },
-                        })
+                            h2 { class:"subtitle page-title", "Fields"},
+                            table {
+                                class:"table is-striped is-hoverable is-fullwidth",
+                                thead {
+                                    tr {
+                                        th { "Name"},
+                                        th { "Bits"},
+                                        th { "Access"},
+                                        th { "Type"},
+                                        th {}
+                                    }
+                                },
+                                tbody {
+                                    tr { td { } }
+                                }
+                            }
+                
+                        }
                     }
                 }
             })

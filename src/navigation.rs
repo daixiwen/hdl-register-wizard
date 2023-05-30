@@ -2,6 +2,7 @@
 #![allow(non_snake_case)]
 use crate::app::HdlWizardApp;
 use crate::page::PageType;
+use crate::file_formats::mdf;
 use dioxus::prelude::*;
 
 #[inline_props]
@@ -140,69 +141,96 @@ pub fn NavBar<'a>(
 }
 
 #[inline_props]
+pub fn RegistersList<'a>(
+    cx: Scope<'a>,
+    app_data: &'a UseRef<HdlWizardApp>,
+    list: Vec<(String, PageType)>
+) -> Element<'a> {
+    cx.render( rsx! {
+        list.iter().map( | (name, reg_page) | {
+            rsx! {
+                li {
+                    a { 
+                        onclick: move |_| app_data.with_mut(|app| {
+                            app.page_type = reg_page.clone();
+                            }),
+                        "{name}"
+                    }
+                }
+            }
+        })
+    })
+}
+
+#[inline_props]
 pub fn SideBar<'a>(
     cx: Scope<'a>,
     app_data: &'a UseRef<HdlWizardApp>
 ) -> Element<'a> {
+    // build a list of all registers, within a list of all interfaces
+    let registers = app_data.read().data.model.interfaces.iter().enumerate().map(
+        | (n_int, interface) | (interface.name.clone(), PageType::Interface(n_int), interface.registers.iter().enumerate().map(
+            | (n_reg, register) | (register.name.clone(), PageType::Register(n_int, n_reg))
+        ).collect::<Vec<_>>())).collect::<Vec<_>>();
+    
+    // build the menu from the last iterator. If there is only one interface, just put the registers in the list.
+    // If there are several interfaces, put a list of interfaces and the registers as a sublist
+    let menu = match registers.len() {
+        1 => {
+            let (_, _, registers_list) = &registers[0];
+
+            rsx! {
+
+                RegistersList {
+                    app_data : app_data,
+                    list : registers_list.clone()
+                },
+                li {
+                    a {
+                        onclick: move |_| app_data.with_mut(|app| {
+                            app.data.model.interfaces[0].registers.push(mdf::Register::new());
+                            app.page_type = PageType::Register(0, app.data.model.interfaces[0].registers.len()-1);
+                            app.register_undo("create register")
+                            }),
+                        class: "has-text-primary",
+                        "( new )"    
+                    }
+                }
+            }
+        },
+        _ => rsx! { 
+                registers.iter().map(
+                | (interface_name, interface_page, registers) | {
+                    let new_page = interface_page.clone();
+                    rsx! {
+                        li { 
+                            a { 
+                                onclick: move |_| app_data.with_mut(|app| {
+                                    app.page_type = new_page.clone();
+                                    }),        
+                                "{interface_name}"
+                            },
+                            ul {
+                                RegistersList {
+                                    app_data : app_data,
+                                    list: registers.clone()
+                                }
+                            }
+                        }
+                    }
+                })
+            }
+        };        
     cx.render(rsx! {
         aside { class: "panel ext-sticky m-5",
             p { class: "panel-heading", "Registers" }
             div { class: "panel-block",
                 nav { class: "menu",
                     ul { class: "menu-list",
+                        menu
                     }
                 }
             }
         }
     })
 }
-
-/*pub fn navigate(app: &mut HdlWizardApp, ctx: &egui::CtxRef, _frame: &epi::Frame) {
-    egui::SidePanel::left("side_panel").show(ctx, |ui| {
-        ui.add_space(5.0);
-        ui.heading("Navigation");
-
-        ui.add_space(10.0);
-
-        egui::ScrollArea::vertical()
-            .auto_shrink([false; 2])
-            .show(ui, |ui| {
-                ui.vertical(|ui| {
-                    if ui
-                        .selectable_label(app.page_type == page::PageType::Project, &app.model.name)
-                        .clicked()
-                    {
-                        app.page_type = page::PageType::Project;
-                    }
-                    for (n, interface) in app.model.interfaces.iter().enumerate() {
-                        let interface_page_type = page::PageType::Interface(n);
-
-                        if ui
-                            .selectable_label(
-                                app.page_type == interface_page_type,
-                                format!("  {}", &interface.name),
-                            )
-                            .clicked()
-                        {
-                            app.page_type = interface_page_type;
-                        }
-
-                        for (r, register) in interface.registers.iter().enumerate() {
-                            let register_page_type = page::PageType::Register(n, r);
-
-                            if ui
-                                .selectable_label(
-                                    app.page_type == register_page_type,
-                                    format!("    {}", &register.name),
-                                )
-                                .clicked()
-                            {
-                                app.page_type = register_page_type;
-                            }
-                        }
-                    }
-                });
-            });
-    });
-}
-*/
