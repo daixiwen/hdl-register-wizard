@@ -22,7 +22,8 @@ pub fn apply_function<'a, F>(
     undo_description : &str,
     update_model: &Option<RefCell<Box<dyn FnMut(&mut mdf::Mdf, &F) -> () + 'a>>>,
     update_int: &Option<RefCell<Box<dyn FnMut(&mut mdf::Interface, &F) -> () + 'a>>>,
-    update_reg: &Option<RefCell<Box<dyn FnMut(&mut mdf::Register, &F) -> () + 'a>>>) {
+    update_reg: &Option<RefCell<Box<dyn FnMut(&mut mdf::Register, &F) -> () + 'a>>>,
+    update_field : &Option<RefCell<Box<dyn FnMut(&mut mdf::Field, &F) -> () + 'a>>>) {
 
     let page_type = &app_data.read().page_type.clone();
     match page_type {
@@ -46,7 +47,7 @@ pub fn apply_function<'a, F>(
                 })
             }      
         },
-        PageType::Register(interface_number, register_number) => {
+        PageType::Register(interface_number, register_number, field_number) => {
             if let Some(updatefn_ref) = &update_reg {
                 let mut updatefn = updatefn_ref.borrow_mut();
                 app_data.with_mut(|app_data| {
@@ -57,10 +58,25 @@ pub fn apply_function<'a, F>(
                         } 
                     }
                 })
-            }      
+            } else {
+                if let Some(updatefn_ref) = &update_field {
+                    let mut updatefn = updatefn_ref.borrow_mut();
+                    app_data.with_mut(|app_data| {
+                        if let Some(interface) = app_data.data.model.interfaces.get_mut(*interface_number) {
+                            if let Some(register) = interface.registers.get_mut(*register_number) {
+                                if let Some(field_num) = field_number {
+                                    if let Some(mut field) = register.fields.get_mut(*field_num) {
+                                        updatefn(&mut field, &value);
+                                        app_data.register_undo(undo_description);            
+                                    }
+                                }
+                            } 
+                        }
+                    })
+                }
+            }   
         },
     }
-
 }
 
 // properties for a generic GUI widget
@@ -75,6 +91,7 @@ pub struct GuiGenericProps<'a, F> {
     update_model: Option<RefCell<Box<dyn FnMut(&mut mdf::Mdf, &F) -> () + 'a>>>,
     update_int: Option<RefCell<Box<dyn FnMut(&mut mdf::Interface, &F) -> () + 'a>>>,
     update_reg: Option<RefCell<Box<dyn FnMut(&mut mdf::Register, &F) -> () + 'a>>>,
+    update_field: Option<RefCell<Box<dyn FnMut(&mut mdf::Field, &F) -> () + 'a>>>,
 }
 
 // generic text widget component, using any type that can be converted to and from a string
@@ -97,7 +114,7 @@ pub fn TextGeneric<'a, F: gui_types::Validable + std::string::ToString + std::st
                         input { class:"input {cx.props.field_class.unwrap_or_default()}", r#type:"text", placeholder:"{gui_label}", pattern:"{validate_pattern}",
                             onchange: move | evt | {
                                 if let Ok(value) = F::from_str(&evt.value) {
-                                    apply_function(&cx.props.app_data, value, undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg);
+                                    apply_function(&cx.props.app_data, value, undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg, &cx.props.update_field);
                                 }
                             },
                             value: "{value}"
@@ -129,7 +146,7 @@ pub fn TextArea<'a>(
                             rows: "{cx.props.rows.unwrap_or(4)}",
                             onchange: move | evt | {
                                 let value = utils::textarea_to_opt_vec_str(&evt.value);
-                                apply_function(&cx.props.app_data, value, undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg);
+                                apply_function(&cx.props.app_data, value, undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg, &cx.props.update_field);
                             },
                             "{value}"
                         }
@@ -168,7 +185,7 @@ pub fn EnumWidget<'a, F: PartialEq + strum::IntoEnumIterator + std::string::ToSt
                         select {
                             onchange: move | evt | {
                                 if let Ok(value) = F::from_str(&evt.value) {
-                                    apply_function(&cx.props.app_data, value, undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg);
+                                    apply_function(&cx.props.app_data, value, undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg, &cx.props.update_field);
                                 }
                             },
                             options
@@ -182,7 +199,7 @@ pub fn EnumWidget<'a, F: PartialEq + strum::IntoEnumIterator + std::string::ToSt
 
 // properties for a GUI widget with an optional value (Auto/Manual)
 #[derive(Props)]
-pub struct GuiAutoManuProps<'a, F :'a> {
+pub struct GuiAutoManuProps<'a, F : 'a> {
     app_data: &'a UseRef<HdlWizardApp>,
     gui_label : &'a str,
     field_class : Option<&'a str>,
@@ -193,6 +210,7 @@ pub struct GuiAutoManuProps<'a, F :'a> {
     update_model: Option<RefCell<Box<dyn FnMut(&mut mdf::Mdf, &Option<F>) -> () + 'a>>>,
     update_int: Option<RefCell<Box<dyn FnMut(&mut mdf::Interface, &Option<F>) -> () + 'a>>>,
     update_reg: Option<RefCell<Box<dyn FnMut(&mut mdf::Register, &Option<F>) -> () + 'a>>>,
+    update_field: Option<RefCell<Box<dyn FnMut(&mut mdf::Field, &Option<F>) -> () + 'a>>>,
 }
 
 // text widget component with an Auto option
@@ -224,7 +242,7 @@ pub fn AutoManuText<'a, F: Default + gui_types::Validable + std::string::ToStrin
                             input { 
                                 r#type: "radio", 
                                 name: "{gui_label}",
-                                onclick : move | _ | {apply_function(&cx.props.app_data, None, undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg);},
+                                onclick : move | _ | {apply_function(&cx.props.app_data, None, undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg, &cx.props.update_field);},
                                 checked: "{is_auto}"
                             },
                             " Auto "
@@ -235,7 +253,7 @@ pub fn AutoManuText<'a, F: Default + gui_types::Validable + std::string::ToStrin
                                 name: "{gui_label}",
                                 onclick : move | _ | {
                                     if is_auto {
-                                        apply_function(&cx.props.app_data, Some(default.clone()), undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg);
+                                        apply_function(&cx.props.app_data, Some(default.clone()), undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg, &cx.props.update_field);
                                     }
                                 },
                                 checked: "{!is_auto}",
@@ -247,7 +265,7 @@ pub fn AutoManuText<'a, F: Default + gui_types::Validable + std::string::ToStrin
                         input { class:"input {cx.props.field_class.unwrap_or_default()}", r#type:"text", placeholder:"{gui_label}", pattern:"{validate_pattern}",
                             onchange: move | evt | {
                                 if let Ok(value) = F::from_str(&evt.value) {
-                                    apply_function(&cx.props.app_data, Some(value), undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg);
+                                    apply_function(&cx.props.app_data, Some(value), undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg, &cx.props.update_field);
                                 }
                             },
                             value: "{value}",
@@ -269,9 +287,11 @@ pub struct OptionEnumWidgetProps<'a, F> {
     value : Option<F>,
     undo_label : Option<&'a str>,
     field_for_none : Option<&'a str>,
+    disabled : Option<bool>,
     update_model: Option<RefCell<Box<dyn FnMut(&mut mdf::Mdf, &Option<F>) -> () + 'a>>>,
     update_int: Option<RefCell<Box<dyn FnMut(&mut mdf::Interface, &Option<F>) -> () + 'a>>>,
     update_reg: Option<RefCell<Box<dyn FnMut(&mut mdf::Register, &Option<F>) -> () + 'a>>>,
+    update_field: Option<RefCell<Box<dyn FnMut(&mut mdf::Field, &Option<F>) -> () + 'a>>>,
 }
 
 // combobox widget using an option of an enum type that uses the strum derives for conversion to and from a string
@@ -302,11 +322,12 @@ pub fn OptionEnumWidget<'a, F: PartialEq + strum::IntoEnumIterator + std::string
                         select {
                             onchange: move | evt | {
                                 if let Ok(value) = F::from_str(&evt.value) {
-                                    apply_function(&cx.props.app_data, Some(value), undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg);
+                                    apply_function(&cx.props.app_data, Some(value), undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg, &cx.props.update_field);
                                 } else {
-                                    apply_function(&cx.props.app_data, None, undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg);
+                                    apply_function(&cx.props.app_data, None, undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg, &cx.props.update_field);
                                 }
                             },
+                            disabled: "{cx.props.disabled.unwrap_or(false)}",
                             if cx.props.field_for_none.is_none() && value.is_none() {
                                 cx.render(rsx!{
                                     option {
@@ -343,6 +364,7 @@ pub struct CheckBoxProps<'a> {
     update_model: Option<RefCell<Box<dyn FnMut(&mut mdf::Mdf, &bool) -> () + 'a>>>,
     update_int: Option<RefCell<Box<dyn FnMut(&mut mdf::Interface, &bool) -> () + 'a>>>,
     update_reg: Option<RefCell<Box<dyn FnMut(&mut mdf::Register, &bool) -> () + 'a>>>,
+    update_field: Option<RefCell<Box<dyn FnMut(&mut mdf::Field, &bool) -> () + 'a>>>,
 }
 
 pub fn CheckBox<'a>(
@@ -365,7 +387,7 @@ pub fn CheckBox<'a>(
                             input { 
                                 r#type: "checkbox", 
                                 onclick : move | _ | {
-                                    apply_function(&cx.props.app_data, !value, undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg);
+                                    apply_function(&cx.props.app_data, !value, undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg, &cx.props.update_field);
                                 },
                                 checked: "{value}"
                             },

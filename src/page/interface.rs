@@ -35,7 +35,7 @@ fn TableLine<'a>(
             tr {
                 td { 
                     a {
-                        onclick: move | _ | app_data.with_mut(|data| data.page_type = PageType::Register(interface_number, *register_number)),
+                        onclick: move | _ | app_data.with_mut(|data| data.page_type = PageType::Register(interface_number, *register_number, None)),
                         "{display_name}",
                     }
                 },
@@ -68,7 +68,7 @@ fn TableLine<'a>(
                             }
                         }
                         button { class:"button is-link",
-                            onclick: move | _ | app_data.with_mut(|data| data.page_type = PageType::Register(interface_number, *register_number)),
+                            onclick: move | _ | app_data.with_mut(|data| data.page_type = PageType::Register(interface_number, *register_number, None)),
                             span {
                                 class:"icon is_small",
                                 i { class:"fa-solid fa-pen"}
@@ -180,7 +180,7 @@ pub fn Content<'a>(
                 button { class:"button is-primary",
                     onclick: move |_| app_data.with_mut(|app| {
                         app.data.model.interfaces[*interface_num].registers.push(mdf::Register::new());
-                        app.page_type = PageType::Register(*interface_num, app.data.model.interfaces[*interface_num].registers.len()-1);
+                        app.page_type = PageType::Register(*interface_num, app.data.model.interfaces[*interface_num].registers.len()-1, None);
                         app.register_undo("create register")
                         }),
                     "New register"

@@ -7,7 +7,7 @@ use dioxus::prelude::*;
 pub enum PageType {
     Project,
     Interface(usize),
-    Register(usize, usize),
+    Register(usize, usize, Option<usize>),
 }
 
 pub mod interface;
@@ -33,12 +33,13 @@ pub fn Content<'a>(
                 }
             })
         },
-        PageType::Register(interface_num, register_num) => {
+        PageType::Register(interface_num, register_num, field_num) => {
             cx.render(rsx! {
                 register::Content { 
                     app_data: app_data,
                     interface_num: *interface_num,
-                    register_num: *register_num
+                    register_num: *register_num,
+                    field_num: *field_num
                 }
             })
         },        

@@ -170,7 +170,7 @@ pub fn SideBar<'a>(
     // build a list of all registers, within a list of all interfaces
     let registers = app_data.read().data.model.interfaces.iter().enumerate().map(
         | (n_int, interface) | (interface.name.clone(), PageType::Interface(n_int), interface.registers.iter().enumerate().map(
-            | (n_reg, register) | (register.name.clone(), PageType::Register(n_int, n_reg))
+            | (n_reg, register) | (register.name.clone(), PageType::Register(n_int, n_reg, None))
         ).collect::<Vec<_>>())).collect::<Vec<_>>();
     
     // build the menu from the last iterator. If there is only one interface, just put the registers in the list.
@@ -189,7 +189,7 @@ pub fn SideBar<'a>(
                     a {
                         onclick: move |_| app_data.with_mut(|app| {
                             app.data.model.interfaces[0].registers.push(mdf::Register::new());
-                            app.page_type = PageType::Register(0, app.data.model.interfaces[0].registers.len()-1);
+                            app.page_type = PageType::Register(0, app.data.model.interfaces[0].registers.len()-1, None);
                             app.register_undo("create register")
                             }),
                         class: "has-text-primary",
