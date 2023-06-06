@@ -1,10 +1,11 @@
 //! functions acting on mdf data
 
-use super::mdf_format::Mdf;
-use super::mdf_format::LocationType;
-use super::mdf_format::Interface;
-use super::mdf_format::Register;
-use super::mdf_format::Field;
+use super::file_formats::mdf;
+use mdf::Mdf;
+use mdf::LocationType;
+use mdf::Interface;
+use mdf::Register;
+use mdf::Field;
 
 impl Mdf {
     /// goes through the file and removes all extra options that are not
@@ -22,6 +23,26 @@ impl Interface {
     pub fn clean(&mut self) {
         for register in &mut self.registers {
             register.clean();
+        }
+    }
+
+    /// returns the interface data width. None if the width can't be determined
+    pub fn get_data_width(&self) -> Option<u32>{
+        match self.data_width {
+            Some(width) => Some(width),
+            None => {
+                // goes through all registers to find the biggest size
+                self.registers.iter().fold(None, | width, reg | {
+                    // with two Somes, find the maximum. With one None and one Some, return the Some
+                    match reg.get_data_width() {
+                        None => width,
+                        Some(reg_width) => match width {
+                            None => Some(reg_width),
+                            Some(previous_width) => Some(u32::max(previous_width, reg_width))
+                        }
+                    }
+                })
+            }
         }
     }
 }
@@ -53,6 +74,23 @@ impl Register {
 
         for field in &mut self.fields {
             field.clean(register_location);
+        }
+    }
+
+    /// returns the register data size. None means it will use the size of the interface
+    pub fn get_data_width(&self) -> Option<u32>{
+        match self.signal {
+            None => {
+                // this is a bitfield. Find the msb within all the fields
+                let msb = self.fields.iter().fold(0, | width, field | {
+                    u32::max(width, match field.position {
+                        mdf::FieldPosition::Single(bitpos) => bitpos,
+                        mdf::FieldPosition::Field(msb, _) => msb
+                    })
+                });
+                Some(msb+1)
+            }
+            Some(_) => self.width
         }
     }
 }

@@ -205,6 +205,7 @@ pub struct GuiAutoManuProps<'a, F : 'a> {
     field_class : Option<&'a str>,
     #[props(!optional)]
     value : Option<F>,
+    placeholder : Option<String>,
     default : Option<F>,
     undo_label : Option<&'a str>,
     update_model: Option<RefCell<Box<dyn FnMut(&mut mdf::Mdf, &Option<F>) -> () + 'a>>>,
@@ -229,6 +230,11 @@ pub fn AutoManuText<'a, F: Default + gui_types::Validable + std::string::ToStrin
     let undo_description = cx.props.undo_label.unwrap_or_default();
     let is_auto = cx.props.value.is_none();
     let validate_pattern = F::validate_pattern();
+
+    let placeholder = match &cx.props.placeholder {
+        None => gui_label,
+        Some(placeholder) => placeholder
+    };
 
     cx.render(rsx!{
         div { class:"field is-horizontal",
@@ -262,7 +268,7 @@ pub fn AutoManuText<'a, F: Default + gui_types::Validable + std::string::ToStrin
                         }
                     },
                     div { class:"control",
-                        input { class:"input {cx.props.field_class.unwrap_or_default()}", r#type:"text", placeholder:"{gui_label}", pattern:"{validate_pattern}",
+                        input { class:"input {cx.props.field_class.unwrap_or_default()}", r#type:"text", placeholder:"{placeholder}", pattern:"{validate_pattern}",
                             onchange: move | evt | {
                                 if let Ok(value) = F::from_str(&evt.value) {
                                     apply_function(&cx.props.app_data, Some(value), undo_description, &cx.props.update_model, &cx.props.update_int, &cx.props.update_reg, &cx.props.update_field);

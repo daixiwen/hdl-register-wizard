@@ -35,7 +35,7 @@ fn TableLine<'a>(
             td { "{interface_type.to_string()}"},
             td { 
                 div { class:"buttons are-small ext-buttons-in-table",
-                    button { class:"button is-primary", disabled:"{up_disabled}",
+                    button { class:"button is-link", disabled:"{up_disabled}",
                         onclick: move | _ | if !up_disabled {
                             app_data.with_mut(|data| {
                                 data.data.model.interfaces.swap(*interface_number-1, *interface_number);
@@ -47,7 +47,7 @@ fn TableLine<'a>(
                             i { class:"fa-solid fa-caret-up"}
                         }
                     }
-                    button { class:"button is-primary", disabled:"{down_disabled}",
+                    button { class:"button is-link", disabled:"{down_disabled}",
                         onclick: move | _ | if !down_disabled {
                             app_data.with_mut(|data| {
                                 data.data.model.interfaces.swap(*interface_number, *interface_number+1);

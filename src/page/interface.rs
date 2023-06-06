@@ -43,7 +43,7 @@ fn TableLine<'a>(
                 td { "{display_type}"},
                 td { 
                     div { class:"buttons are-small ext-buttons-in-table",
-                        button { class:"button is-primary", disabled:"{up_disabled}",
+                        button { class:"button is-link", disabled:"{up_disabled}",
                             onclick: move | _ | if !up_disabled {
                                 app_data.with_mut(|data| {
                                     data.data.model.interfaces[interface_number].registers.swap(*register_number-1, *register_number);
@@ -55,7 +55,7 @@ fn TableLine<'a>(
                                 i { class:"fa-solid fa-caret-up"}
                             }
                         }
-                        button { class:"button is-primary", disabled:"{down_disabled}",
+                        button { class:"button is-link", disabled:"{down_disabled}",
                             onclick: move | _ | if !down_disabled {
                                 app_data.with_mut(|data| {
                                     data.data.model.interfaces[interface_number].registers.swap(*register_number, *register_number+1);
@@ -101,24 +101,26 @@ pub fn Content<'a>(
 ) -> Element<'a> {
     if let Some(interface) = app_data.read().data.model.interfaces.get(*interface_num) {
 
-    // extract a list of registers, addresses and types
-    let int_list = interface.registers.iter().enumerate().map(
-        |(n, reg)| (n, reg.name.clone(), reg.address.clone(), reg.signal.clone())).collect::<Vec<_>>();
+        // extract a list of registers, addresses and types
+        let int_list = interface.registers.iter().enumerate().map(
+            |(n, reg)| (n, reg.name.clone(), reg.address.clone(), reg.signal.clone())).collect::<Vec<_>>();
 
-    // now build some items from that list
-    let int_items = int_list.iter().map( |(n, int_name, int_address, int_type) | {
-                rsx!(
-                    TableLine {
-                        app_data: app_data,
-                        register_number: *n,
-                        register_name: int_name.clone(),
-                        register_type: *int_type,
-                        register_address: int_address.clone()
-                        key: "{int_name}{n}"
-                    }
-                )
-            }
-        );
+        // now build some items from that list
+        let int_items = int_list.iter().map( |(n, int_name, int_address, int_type) | {
+                    rsx!(
+                        TableLine {
+                            app_data: app_data,
+                            register_number: *n,
+                            register_name: int_name.clone(),
+                            register_type: *int_type,
+                            register_address: int_address.clone()
+                            key: "{int_name}{n}"
+                        }
+                    )
+                }
+            );
+
+        let interface_width = interface.get_data_width();
 
         cx.render(rsx! {
             h1 { class:"title page-title", "Interface" },
@@ -158,7 +160,11 @@ pub fn Content<'a>(
                     gui_label: "Data width",
                     undo_label: "change interface data width",
                     value: interface.data_width,
-                    default: 32
+                    placeholder : match interface_width {
+                        None => "Data witdh".to_owned(),
+                        Some(width) => width.to_string()
+                    },
+                    default: interface_width.unwrap_or(32)
                 },
             },
             h2 { class:"subtitle page-title", "Registers"},

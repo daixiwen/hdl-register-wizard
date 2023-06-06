@@ -283,7 +283,8 @@ fn TableLine<'a>(
     field_name: String,
     field_position: mdf::FieldPosition,
     field_access: mdf::AccessType,
-    field_type: utils::SignalType
+    field_type: utils::SignalType,
+    is_selected: bool
 ) -> Element<'a> {
     if let PageType::Register(interface_number, register_number, _) = app_data.read().page_type {
         let num_of_fields = app_data.read().data.model.interfaces[interface_number].registers[register_number].fields.len();
@@ -292,8 +293,11 @@ fn TableLine<'a>(
     
         let display_name = if field_name.is_empty() {"(empty)" } else  {field_name};
     
+        let tr_class = if *is_selected { "is-selected" } else {""};
+
         cx.render(rsx! {
             tr {
+                class: "{tr_class}",
                 td { 
                     a {
                         onclick: move | _ | app_data.with_mut(|data| data.page_type = PageType::Register(interface_number, register_number, Some(*field_number))),
@@ -305,7 +309,7 @@ fn TableLine<'a>(
                 td { "{field_type.to_string()}"},
                 td { 
                     div { class:"buttons are-small ext-buttons-in-table",
-                        button { class:"button is-primary", disabled:"{up_disabled}",
+                        button { class:"button is-link", disabled:"{up_disabled}",
                             onclick: move | _ | if !up_disabled {
                                 app_data.with_mut(|data| {
                                     data.data.model.interfaces[interface_number].registers[register_number].fields.swap(*field_number-1, *field_number);
@@ -317,7 +321,7 @@ fn TableLine<'a>(
                                 i { class:"fa-solid fa-caret-up"}
                             }
                         }
-                        button { class:"button is-primary", disabled:"{down_disabled}",
+                        button { class:"button is-link", disabled:"{down_disabled}",
                             onclick: move | _ | if !down_disabled {
                                 app_data.with_mut(|data| {
                                     data.data.model.interfaces[interface_number].registers[register_number].fields.swap(*field_number, *field_number+1);
@@ -434,6 +438,32 @@ fn FieldPosition<'a>(
     })
 }
 
+#[derive(Clone)]
+enum FieldBitStatus {
+    Unused,
+    Used,
+    Selected,
+    Error
+}
+
+fn update_status(previous: &FieldBitStatus, field_num : usize, selected_field: Option<usize>) -> FieldBitStatus {
+    match previous {
+        FieldBitStatus::Unused => {
+            if let Some(select) = selected_field {
+                if select == field_num {
+                    FieldBitStatus::Selected
+                } else {
+                    FieldBitStatus::Used
+                }
+            } else {
+                FieldBitStatus::Used
+            }
+        },
+
+        _ => FieldBitStatus::Error
+    }
+}
+
 // page contents
 #[derive(Props)]
 pub struct ContentProps<'a> {
@@ -466,11 +496,77 @@ pub fn Content<'a>(
                                 field_position: fld_pos.clone(),
                                 field_access: fld_access.clone(),
                                 field_type: fld_signal.clone(),
+                                is_selected: cx.props.field_num == Some(*n), 
                                 key: "{fld_name}{n}"
                             }
                         )
                     }
                 );
+
+            // build a vector with statuses for each bit in the field to display the bitmap
+            let field_width = interface.get_data_width().unwrap_or(32) as usize;
+            let mut bit_statuses = vec![FieldBitStatus::Unused; field_width];
+
+            for (i,field) in register.fields.iter().enumerate() {
+                match field.position {
+                    mdf::FieldPosition::Single(bit) => {
+                        if (bit as usize) < field_width {
+                            bit_statuses[bit as usize] = update_status(&bit_statuses[bit as usize], i, cx.props.field_num);
+                        }
+                    },
+                    mdf::FieldPosition::Field(msb, lsb) => {
+                        for bit in lsb..=msb {
+                            if (bit as usize) < field_width {
+                                bit_statuses[bit as usize] = update_status(&bit_statuses[bit as usize], i, cx.props.field_num);
+                            }
+                        }
+                    }
+
+                };
+            }
+
+            // build the table header. We'll have only 16 bits with displayed bit number
+            let regular_colspan = (field_width + 8) / 16;
+            let num_headers = field_width / regular_colspan;
+            let first_colspan = field_width - regular_colspan * (num_headers-1);
+            let table_header = (0..num_headers).map( |i| {
+                let colspan = if i == 0 {
+                    first_colspan
+                } else {
+                    regular_colspan
+                };
+                let display = (num_headers-1-i)*regular_colspan;
+                rsx! {
+                    th {
+                        colspan: "{colspan}",
+                        div {
+                            class: "ext-bitfield-header",
+                            "{display.clone()}"    
+                        }
+                    }
+                }
+            });
+
+            // build the table content. empty cells with different background color depending on the status
+            bit_statuses.reverse();
+            let table_content = bit_statuses.iter().map(|element| {
+                let class = match element {
+                    FieldBitStatus::Unused => "has-background-dark",
+                    FieldBitStatus::Used => "has-background-link",
+                    FieldBitStatus::Selected => "has-background-primary",
+                    FieldBitStatus::Error => "has-background-danger"
+                };
+
+                rsx! {
+                    td {
+                        class: "ext-bitfield-cell",
+                        div {
+                            class: "{class} ext-bitfield-contents",
+                            "\u{00A0}" // non-breaking space
+                        }
+                    }
+                }
+            });
 
             cx.render(rsx! {
                 h1 { class:"title page-title", "Register" },
@@ -561,6 +657,7 @@ pub fn Content<'a>(
                             },
                         }
                     } else { // signal is bitfield
+
                         rsx! {
                             gui_blocks::OptionEnumWidget {
                                 app_data: app_data,
@@ -578,6 +675,21 @@ pub fn Content<'a>(
                                 })
                             },
                             h2 { class:"subtitle page-title", "Fields"},
+                            table {
+                                class: "ext-bitfield-table",
+                                style: "min-width: 100%;",
+                                thead {
+                                    tr {
+                                        table_header
+                                    }
+                                }
+                                tbody {
+                                    tr {
+                                        table_content
+                                    }
+                                }
+                            }
+
                             table {
                                 class:"table is-striped is-hoverable is-fullwidth",
                                 thead {

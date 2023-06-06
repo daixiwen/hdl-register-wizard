@@ -23,3 +23,21 @@ input:invalid {
 .ext-vector-field {
   max-width: 8em;
 }
+
+.ext-bitfield-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.ext-bitfield-header {
+  text-align: right;
+  margin-right: 2px;
+}
+
+.ext-bitfield-cell {
+  width: 100%;
+}
+
+.ext-bitfield-contents {
+  margin: 1px;
+}
