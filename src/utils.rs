@@ -36,6 +36,15 @@ impl VectorValue {
     }
 }
 
+impl From<u128> for VectorValue {
+    fn from(value: u128) -> Self {
+        VectorValue {
+            value,
+            radix: RadixType::Hexadecimal,
+        }
+    }
+}
+
 impl Default for VectorValue {
     fn default() -> Self {
         VectorValue::new()

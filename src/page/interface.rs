@@ -123,7 +123,19 @@ pub fn Content<'a>(
         let interface_width = interface.get_data_width();
 
         cx.render(rsx! {
-            h1 { class:"title page-title", "Interface" },
+            div {
+                a {
+                    class: "button is-link is-outlined ext-return-button",
+                    onclick: move |_| app_data.with_mut(|app| {
+                        app.page_type = PageType::Project;
+                        }),
+                    span {
+                        class:"icon ",
+                        i { class:"fa-solid fa-caret-left"}
+                    }
+                },
+                h1 { class:"title page-title", "Interface" },
+            },
             div { class:"m-4",
                 gui_blocks::TextGeneric {
                     app_data: app_data,
@@ -190,6 +202,22 @@ pub fn Content<'a>(
                         app.register_undo("create register")
                         }),
                     "New register"
+                }
+                button { class:"button is-primary",
+                    onclick: move |_| app_data.with_mut(|app| {
+                        let result = app.data.model.interfaces[*interface_num].assign_addresses();
+                        app.test_result(result);
+                        app.register_undo("assign addresses")
+                        }),
+                    "Assign addresses"
+                },
+                button { class:"button is-danger",
+                    onclick: move |_| app_data.with_mut(|app| {
+                        let result = app.data.model.interfaces[*interface_num].deassign_addresses();
+                        app.test_result(result);
+                        app.register_undo("unassign addresses")
+                        }),
+                    "Unassign addresses"
                 }
             }
 

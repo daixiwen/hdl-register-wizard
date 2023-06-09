@@ -38,6 +38,7 @@ pub struct HdlWizardApp {
     pub burger_menu: bool,
     pub live_help: bool,
     pub page_type: page::PageType,
+    pub error_message: Option<String>
 }
 
 impl Default for HdlWizardAppSaveData {
@@ -59,6 +60,7 @@ impl Default for HdlWizardApp {
             live_help: false,
             page_type: page::PageType::Project,
             undo: Default::default(),
+            error_message: None
         }
     }
 }
@@ -129,7 +131,8 @@ impl HdlWizardApp {
             burger_menu : false,
             live_help: false,
             undo: Default::default(),
-            page_type: page::PageType::Project
+            page_type: page::PageType::Project,
+            error_message: None
         }
     }
 
@@ -149,6 +152,16 @@ impl HdlWizardApp {
             self.data.model = new_state.model;
             self.page_type = new_state.page_type;
         }
+    }
+
+    pub fn test_result(&mut self, result: Result<(),String>) {
+        if let Err(message) = result {
+            self.error_message = Some(message);
+        }
+    }
+
+    pub fn clear_error(&mut self) {
+        self.error_message = None;
     }
 }
 

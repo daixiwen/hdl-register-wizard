@@ -41,3 +41,7 @@ input:invalid {
 .ext-bitfield-contents {
   margin: 1px;
 }
+
+.ext-return-button {
+  float: left;
+}
