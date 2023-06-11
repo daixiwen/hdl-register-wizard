@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+#[cfg(not(target_arch = "wasm32"))]
 use dioxus_desktop::tao;
 
 use crate::file_formats;
@@ -6,12 +7,20 @@ use crate::navigation;
 use crate::page;
 use crate::settings;
 use crate::undo;
-//use crate::utils;
+#[cfg(not(target_arch = "wasm32"))]
 use dioxus_desktop::use_window;
+#[cfg(not(target_arch = "wasm32"))]
 use directories_next::ProjectDirs;
+#[cfg(not(target_arch = "wasm32"))]
 use std::path::PathBuf;
+#[cfg(not(target_arch = "wasm32"))]
 use std::fs::File;
+#[cfg(not(target_arch = "wasm32"))]
 use std::io::{BufReader, BufWriter};
+
+#[cfg(target_arch = "wasm32")]
+// name of the storage key for app configuration
+const STORAGE_NAME : &str = "hdl_register_wizard_storage";
 
 // import the prelude to get access to the `rsx!` macro and the `Scope` and `Element` types
 use dioxus::prelude::*;
@@ -23,10 +32,26 @@ pub struct HdlWizardAppSaveData {
     pub model: file_formats::mdf::Mdf,
     pub settings: settings::Settings,
 
+    pub target : HdlWizardAppSaveTarget
+}
+
+/// target specific save data for desktop
+#[cfg(not(target_arch = "wasm32"))]
+#[derive(serde::Deserialize, serde::Serialize)]
+#[serde(default)] // if we add new fields, give them default values when deserializing old state
+pub struct HdlWizardAppSaveTarget {
     // window size and position
     pub window_pos : tao::dpi::PhysicalPosition<i32>,
     pub window_size : tao::dpi::PhysicalSize<u32>,
 }
+
+/// target specific save data for wasm
+#[cfg(target_arch = "wasm32")]
+#[derive(serde::Deserialize, serde::Serialize)]
+#[serde(default)] // if we add new fields, give them default values when deserializing old state
+pub struct HdlWizardAppSaveTarget {
+}
+
 // Application state data, including what will be saved in data, and volatile data in the other fields
 pub struct HdlWizardApp {
 
@@ -46,8 +71,25 @@ impl Default for HdlWizardAppSaveData {
         Self {
             model: Default::default(),
             settings: Default::default(),
+            target: Default::default(),
+        }
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl Default for HdlWizardAppSaveTarget {
+    fn default() -> Self {
+        Self {
             window_pos : tao::dpi::PhysicalPosition::new(0,100),
             window_size : tao::dpi::PhysicalSize::new(1024,800),
+        }
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+impl Default for HdlWizardAppSaveTarget {
+    fn default() -> Self {
+        Self {
         }
     }
 }
@@ -66,6 +108,7 @@ impl Default for HdlWizardApp {
 }
 
 // fin the path for the save file
+#[cfg(not(target_arch = "wasm32"))]
 fn data_file_path() -> Option<PathBuf> {
     match ProjectDirs::from("", "Sylvain Tertois",  "HDL Register Wizard") {
         Some(proj) => Some(proj.config_dir().to_path_buf()),
@@ -73,6 +116,7 @@ fn data_file_path() -> Option<PathBuf> {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 fn load_app_data() -> Result<HdlWizardAppSaveData, std::io::Error> {
     if let Some(path) = data_file_path() {
         // read the settings
@@ -88,6 +132,25 @@ fn load_app_data() -> Result<HdlWizardAppSaveData, std::io::Error> {
     }
 }
 
+#[cfg(target_arch = "wasm32")]
+fn load_app_data() -> Result<HdlWizardAppSaveData, std::io::Error> {
+    let err_code = Err(std::io::Error::from(std::io::ErrorKind::AddrNotAvailable));
+    if let Some(window) = web_sys::window() {
+        if let Ok(Some(storage)) = window.local_storage() {
+            if let Ok(Some(data)) = storage.get_item(STORAGE_NAME) {
+                Ok(serde_json::from_str(&data)?)
+            } else {
+                err_code
+            }
+        } else {
+            err_code
+        }
+    } else {
+        err_code
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 fn save_app_data(data: &HdlWizardAppSaveData) -> Result<(), std::io::Error>{
     if let Some(path) = data_file_path() {
         // check that the parent dir exists
@@ -111,6 +174,29 @@ fn save_app_data(data: &HdlWizardAppSaveData) -> Result<(), std::io::Error>{
     }
 }
 
+#[cfg(target_arch = "wasm32")]
+fn save_app_data(data: &HdlWizardAppSaveData) -> Result<(), std::io::Error> {
+    let err_code = Err(std::io::Error::from(std::io::ErrorKind::AddrNotAvailable));
+    if let Some(window) = web_sys::window() {
+        if let Ok(Some(storage)) = window.local_storage() {
+            if let Ok(data_string) = serde_json::to_string(data) {
+                if storage.set_item(STORAGE_NAME, &data_string).is_ok() {
+                    Ok(())
+                } else {
+                    err_code
+                }
+            } else {
+                err_code
+            }
+        } else {
+            err_code
+        }
+    } else {
+        err_code
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 impl Drop for HdlWizardApp {
     fn drop(&mut self) {
         if let Err(error) = save_app_data(&self.data) {
@@ -174,13 +260,22 @@ pub fn App<'a>(cx: Scope<'a>) -> Element<'a> {
 
     // I didn't find a clean way to get an event when the window size is changed yet, so for now I just update the position
     // and size at each re-render
-    let window = use_window(cx).webview.as_ref().window();
-    let size = window.inner_size();
-    let pos = window.inner_position();
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let window = use_window(cx).webview.as_ref().window();
+        let size = window.inner_size();
+        let pos = window.inner_position();
 
-    if let Ok(pos) = pos {
-        app_data.write_silent().data.window_pos = pos;
-        app_data.write_silent().data.window_size = size;
+        if let Ok(pos) = pos {
+            app_data.write_silent().data.target.window_pos = pos;
+            app_data.write_silent().data.target.window_size = size;
+        }
+    }
+
+    // when a webapp, update storage at each change
+    #[cfg(target_arch = "wasm32")]
+    if let Err(error) = save_app_data(&app_data.read().data) {
+        println!("Error while writing application configuration: {}", error);
     }
 
     cx.render(rsx! {

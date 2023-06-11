@@ -526,7 +526,7 @@ pub fn Content<'a>(
             }
 
             // build the table header. We'll have only 16 bits with displayed bit number
-            let regular_colspan = (field_width + 8) / 16;
+            let regular_colspan = usize::max((field_width + 8) / 16, 1);
             let num_headers = field_width / regular_colspan;
             let first_colspan = field_width - regular_colspan * (num_headers-1);
             let table_header = (0..num_headers).map( |i| {

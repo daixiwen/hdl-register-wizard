@@ -9,17 +9,26 @@ license = "MIT"
 readme = "./README.md"
 edition = "2018"
 
-[lib]
-crate-type = ["cdylib", "rlib"]
+#[lib]
+#crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 dioxus = "0.3.2"
-dioxus-desktop = "0.3.0"
-directories-next = "2.0.0"
 serde = { version = "1.0.116", features = ["derive"] }
 serde_json = "1.0.59"
 strum = "0.19.5"
 strum_macros = "0.19.4"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "0.2.86"
+getrandom = { version = "0.2.3", features = ["js"]}
+dioxus-web = "0.3.2"
+web-sys = { version = "0.3", features = [ "Storage", "Window" ] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+dioxus-desktop = "0.3.0"
+getrandom = "0.2.3"
+directories-next = "2.0.0"
 
 [profile.release]
 #lto = true
