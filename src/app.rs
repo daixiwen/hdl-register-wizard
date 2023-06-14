@@ -63,7 +63,9 @@ pub struct HdlWizardApp {
     pub burger_menu: bool,
     pub live_help: bool,
     pub page_type: page::PageType,
-    pub error_message: Option<String>
+    pub error_message: Option<String>,
+    pub notification: Option<String>,
+    pub web_file_save: Option<String>
 }
 
 impl Default for HdlWizardAppSaveData {
@@ -102,7 +104,9 @@ impl Default for HdlWizardApp {
             live_help: false,
             page_type: page::PageType::Project,
             undo: Default::default(),
-            error_message: None
+            error_message: None,
+            notification: Some("could not load settings".to_owned()),
+            web_file_save: None
         }
     }
 }
@@ -218,7 +222,9 @@ impl HdlWizardApp {
             live_help: false,
             undo: Default::default(),
             page_type: page::PageType::Project,
-            error_message: None
+            error_message: None,
+            notification: None,
+            web_file_save : None
         }
     }
 

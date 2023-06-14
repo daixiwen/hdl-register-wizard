@@ -3,6 +3,7 @@
 use crate::app::HdlWizardApp;
 use crate::page::PageType;
 use crate::file_formats::mdf;
+use crate::file_io;
 use dioxus::prelude::*;
 
 #[inline_props]
@@ -111,11 +112,23 @@ pub fn NavBar<'a>(
                     div { class: "navbar-item has-dropdown is-hoverable",
                         a { class: "navbar-link", "File" }
                         div { class: "navbar-dropdown",
-                            a { class: "navbar-item", i { class:"fa-solid fa-file mr-1"}, "New" }
-                            a { class: "navbar-item", i { class:"fa-solid fa-folder-open mr-1"}, "Open..." }
-                            a { class: "navbar-item", i { class:"fa-solid fa-floppy-disk mr-1"}, "Save" }
-                            a { class: "navbar-item", i { class:"fa-solid fa-file-export mr-1"}, "Save as..." }
-                            hr { class: "navbar-divider" }
+                            a { 
+                                class: "navbar-item", 
+                                onclick: move |_| app_data.with_mut(|data| {
+                                    data.data.model = Default::default();
+                                    data.register_undo("new project")
+                                }),
+                                i { class:"fa-solid fa-file mr-1"},
+                                "New"
+                            },
+                            file_io::Open {
+                                app_data : app_data
+                            },
+                            a { class: "navbar-item", i { class:"fa-solid fa-floppy-disk mr-1"}, "Save" },
+                            file_io::SaveAs {
+                                app_data : app_data
+                            },
+                            hr { class: "navbar-divider" },
                             a { class: "navbar-item", i { class:"fa-solid fa-person-walking-arrow-right mr-1"}, "Quit" }
                         }
                     }

@@ -2,6 +2,8 @@
 #![allow(non_snake_case)]
 use crate::app::HdlWizardApp;
 use dioxus::prelude::*;
+use futures_timer::Delay;
+use std::time::Duration;
 
 #[derive(PartialEq, Clone)]
 pub enum PageType {
@@ -19,7 +21,51 @@ pub fn Content<'a>(
     cx: Scope<'a>,
     app_data: &'a UseRef<HdlWizardApp>
 ) -> Element<'a> {
-    cx.render(rsx! {
+    let notification_timer = use_state(cx, || false);
+
+    if *notification_timer.get() {
+        println!("removing notification");
+        app_data.write().notification = None;
+        notification_timer.set(false);
+    }
+    let render = cx.render(rsx! {   
+        if let Some(notification_message) = &app_data.read().notification {
+            println!("showing notification");
+        
+            cx.spawn({
+                let notification_timer = notification_timer.to_owned();
+    
+                async move {
+                    println!("starting future");
+                    Delay::new(Duration::from_secs(3)).await;
+                    notification_timer.set(true);
+                    println!("future complete");                                
+                }
+            });
+            rsx! {
+                div {
+                    class: "ext-notification",
+                    article {
+                        class: "message is-warning",
+                        div {
+                            class:"message-header",
+                            p {
+                                "Note"
+                            },
+                            button { 
+                                class:"delete",
+                                onclick: move |_| app_data.with_mut(|app| {app.notification = None;})
+                            }
+                        }
+                        div {
+                            class: "message-body",
+                            "{notification_message}"
+                        }                
+                    }                
+                }
+            }
+        }
+        
         if let Some(error_message) = &app_data.read().error_message {
             rsx! {
                 div {
@@ -50,6 +96,19 @@ pub fn Content<'a>(
                 }
             }
         }
+
+        if let Some(download_uri) = &app_data.read().web_file_save {
+            rsx! {
+                div {
+                    a {
+                        href: "{download_uri}",
+                        download: "test.json",
+                        "click me to download"
+                    }
+                }
+            }
+        }
+
         match &app_data.read().page_type {
             PageType::Project => {
                 rsx! {
@@ -80,5 +139,7 @@ pub fn Content<'a>(
                 })
             }*/
         }
-    })
+    });
+
+    render
 }

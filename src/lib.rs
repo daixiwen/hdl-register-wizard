@@ -27,6 +27,7 @@ pub mod settings;
 pub mod undo;
 pub mod utils;
 pub mod mdf_process;
+pub mod file_io;
 
 #[cfg(test)]
 mod tests;
