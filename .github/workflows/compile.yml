@@ -1,0 +1,28 @@
+name: compile
+
+on: workflow_dispatch
+
+jobs:
+  build-win:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Install latest rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          default: true
+          override: true
+
+      - name: Build
+        run: cargo build --all --release
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: target/release/hdl_register_wizard.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
