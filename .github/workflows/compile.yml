@@ -23,6 +23,6 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: target/release/hdl_register_wizard.exe
+          files: target/x86_64-pc-windows-msvc/release/hdl_register_wizard.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
