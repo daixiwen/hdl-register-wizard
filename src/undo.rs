@@ -5,8 +5,8 @@ use crate::page;
 use std::default;
 
 pub struct Undo {
-//    current_focus: Option<egui::Id>,
-//    previous_focus: Option<egui::Id>,
+    //    current_focus: Option<egui::Id>,
+    //    previous_focus: Option<egui::Id>,
     undo_list: Vec<UndoState>,
     redo_list: Vec<UndoState>,
 }
@@ -39,31 +39,30 @@ impl default::Default for UndoState {
 }
 
 impl Undo {
-
     pub fn register_modification(
         &mut self,
         description: &str,
         model: &mdf::Mdf,
-        page_type: &page::PageType) {
-            self.undo_list.push(UndoState {
-                change_description: description.to_owned(),
-                model: model.clone(),
-                page_type: page_type.clone(),
-            });
+        page_type: &page::PageType,
+    ) {
+        self.undo_list.push(UndoState {
+            change_description: description.to_owned(),
+            model: model.clone(),
+            page_type: page_type.clone(),
+        });
 
-            self.redo_list.clear();
-        }
+        self.redo_list.clear();
+    }
 
     pub fn get_undo_description(&self) -> Option<String> {
         let num_elements = self.undo_list.len();
         if num_elements > 1 {
             Some(
-                self
-                    .undo_list
+                self.undo_list
                     .get(num_elements - 1)
                     .unwrap()
                     .change_description
-                    .to_owned()
+                    .to_owned(),
             )
         } else {
             None
@@ -74,12 +73,11 @@ impl Undo {
         let num_elements = self.redo_list.len();
         if num_elements > 0 {
             Some(
-                self
-                    .redo_list
+                self.redo_list
                     .get(num_elements - 1)
                     .unwrap()
                     .change_description
-                    .to_owned()
+                    .to_owned(),
             )
         } else {
             None

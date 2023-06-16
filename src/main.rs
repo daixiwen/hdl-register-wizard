@@ -16,8 +16,13 @@ fn main() {
 
     dioxus_desktop::launch_cfg(
         app::App,
-        Config::default().with_window(WindowBuilder::new().with_resizable(true)
-            .with_inner_size(window_size).with_position(window_pos).with_title("HDL Register Wizard")),
+        Config::default().with_window(
+            WindowBuilder::new()
+                .with_resizable(true)
+                .with_inner_size(window_size)
+                .with_position(window_pos)
+                .with_title("HDL Register Wizard"),
+        ),
     );
 }
 

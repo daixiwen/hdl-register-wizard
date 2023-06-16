@@ -1,12 +1,12 @@
 //! functions acting on mdf data
 
 use super::file_formats::mdf;
-use mdf::Mdf;
-use mdf::LocationType;
-use mdf::Interface;
-use mdf::Register;
-use mdf::Field;
 use crate::utils::VectorValue;
+use mdf::Field;
+use mdf::Interface;
+use mdf::LocationType;
+use mdf::Mdf;
+use mdf::Register;
 
 impl Mdf {
     /// goes through the file and removes all extra options that are not
@@ -18,26 +18,36 @@ impl Mdf {
     }
 }
 
-fn add_address(addresses: &mut std::collections::HashSet<u128>, register : &mdf::Register, interface_width_bytes: u32) -> Result<(), String> {
+fn add_address(
+    addresses: &mut std::collections::HashSet<u128>,
+    register: &mdf::Register,
+    interface_width_bytes: u32,
+) -> Result<(), String> {
     if let Some(address) = register.address.value {
         match &register.address.stride {
-            None => { 
+            None => {
                 if addresses.contains(&address.value) {
-                    return Err(format!("Register {}'s address already in use", register.name));
+                    return Err(format!(
+                        "Register {}'s address already in use",
+                        register.name
+                    ));
                 }
-                addresses.insert(address.value); 
-            },
+                addresses.insert(address.value);
+            }
             Some(stride) => {
                 let increment = match stride.increment {
                     Some(stride_increment) => stride_increment.value,
-                    None => interface_width_bytes as u128
+                    None => interface_width_bytes as u128,
                 };
                 // go for a complete run first to see if all addresses are available
                 for i in 0..stride.count.value {
                     let current_address = address.value + i * increment;
                     if addresses.contains(&current_address) {
-                        return Err(format!("Register {}'s address already in use", register.name));
-                    }                   
+                        return Err(format!(
+                            "Register {}'s address already in use",
+                            register.name
+                        ));
+                    }
                 }
                 // now add the addresses
                 for i in 0..stride.count.value {
@@ -61,19 +71,19 @@ impl Interface {
     }
 
     /// returns the interface data width. None if the width can't be determined
-    pub fn get_data_width(&self) -> Option<u32>{
+    pub fn get_data_width(&self) -> Option<u32> {
         match self.data_width {
             Some(width) => Some(width),
             None => {
                 // goes through all registers to find the biggest size
-                self.registers.iter().fold(None, | width, reg | {
+                self.registers.iter().fold(None, |width, reg| {
                     // with two Somes, find the maximum. With one None and one Some, return the Some
                     match reg.get_data_width() {
                         None => width,
                         Some(reg_width) => match width {
                             None => Some(reg_width),
-                            Some(previous_width) => Some(u32::max(previous_width, reg_width))
-                        }
+                            Some(previous_width) => Some(u32::max(previous_width, reg_width)),
+                        },
                     }
                 })
             }
@@ -83,8 +93,8 @@ impl Interface {
     /// automatically assign addresses to the registers
     /// this is not a very good algorithm. it is rather brute force, but it is simple and won't be called that often any way
     /// it should still be pretty fast in standard settings
-    pub fn assign_addresses(&mut self) -> Result<(),String> {
-        let mut addresses : std::collections::HashSet<u128> = Default::default();
+    pub fn assign_addresses(&mut self) -> Result<(), String> {
+        let mut addresses: std::collections::HashSet<u128> = Default::default();
         if let Some(width_bits) = self.get_data_width() {
             // convert width to bytes
             let width_bytes = (width_bits + 7) / 8;
@@ -101,7 +111,7 @@ impl Interface {
                     Some(addr) => {
                         // update current address to after this register's address
                         current_address = addr.value + width_bytes as u128;
-                        },
+                    }
                     None => {
                         // try to add the register at the current address
                         loop {
@@ -119,12 +129,15 @@ impl Interface {
 
             Ok(())
         } else {
-            Err(format!("Unable to determine the width of interface {}", self.name))
+            Err(format!(
+                "Unable to determine the width of interface {}",
+                self.name
+            ))
         }
     }
 
     /// remove all assigned addresses to the registers
-    pub fn deassign_addresses(&mut self) -> Result<(),String> {
+    pub fn deassign_addresses(&mut self) -> Result<(), String> {
         for register in self.registers.iter_mut() {
             register.address.value = None;
         }
@@ -142,20 +155,19 @@ impl Register {
         match register_location {
             Some(LocationType::Pif) => {
                 self.core_signal_properties.use_read_enable = None;
-                self.core_signal_properties.use_write_enable = None;                        
-            },
-            _ => ()
-
+                self.core_signal_properties.use_write_enable = None;
+            }
+            _ => (),
         }
 
         // remove register wide properties if fields are defined
-        if ! self.fields.is_empty() {
+        if !self.fields.is_empty() {
             self.width = None;
             self.access = None;
             self.signal = None;
             self.reset = None;
             self.core_signal_properties.use_read_enable = None;
-            self.core_signal_properties.use_write_enable = None;                        
+            self.core_signal_properties.use_write_enable = None;
         }
 
         for field in &mut self.fields {
@@ -164,19 +176,22 @@ impl Register {
     }
 
     /// returns the register data size. None means it will use the size of the interface
-    pub fn get_data_width(&self) -> Option<u32>{
+    pub fn get_data_width(&self) -> Option<u32> {
         match self.signal {
             None => {
                 // this is a bitfield. Find the msb within all the fields
-                let msb = self.fields.iter().fold(0, | width, field | {
-                    u32::max(width, match field.position {
-                        mdf::FieldPosition::Single(bitpos) => bitpos,
-                        mdf::FieldPosition::Field(msb, _) => msb
-                    })
+                let msb = self.fields.iter().fold(0, |width, field| {
+                    u32::max(
+                        width,
+                        match field.position {
+                            mdf::FieldPosition::Single(bitpos) => bitpos,
+                            mdf::FieldPosition::Field(msb, _) => msb,
+                        },
+                    )
                 });
-                Some(msb+1)
+                Some(msb + 1)
             }
-            Some(_) => self.width
+            Some(_) => self.width,
         }
     }
 
@@ -192,16 +207,16 @@ impl Register {
                     } else {
                         current_msb = bitnum + 1;
                     }
-                },
+                }
                 mdf::FieldPosition::Field(msb, lsb) => {
                     if lsb > msb {
                         return Err(format!("Field '{}' has lsb bigger than msb", field.name));
                     }
                     if lsb < current_msb {
-                        field.position = mdf::FieldPosition::Field(msb + current_msb - lsb, current_msb);
+                        field.position =
+                            mdf::FieldPosition::Field(msb + current_msb - lsb, current_msb);
                         current_msb += msb - lsb + 1;
-                    }
-                    else {
+                    } else {
                         current_msb = msb + 1;
                     }
                 }
@@ -213,12 +228,11 @@ impl Register {
 
     /// realign all the fields to lsb 0
     pub fn deassign_fields(&mut self) -> Result<(), String> {
-
         for field in self.fields.iter_mut() {
             match field.position {
                 mdf::FieldPosition::Single(_) => {
                     field.position = mdf::FieldPosition::Single(0);
-                },
+                }
                 mdf::FieldPosition::Field(msb, lsb) => {
                     if lsb > msb {
                         return Err(format!("Field '{}' has lsb bigger than msb", field.name));
@@ -231,31 +245,27 @@ impl Register {
 
         Ok(())
     }
-
 }
 
 impl Field {
     /// goes through the register and removes all extra options that are not
     /// allowed.
-    pub fn clean(&mut self, register_location : Option<LocationType>) {
+    pub fn clean(&mut self, register_location: Option<LocationType>) {
         // remove all core properties if register location is not in core
         match self.location {
             Some(LocationType::Pif) => {
                 self.core_signal_properties.use_read_enable = None;
-                self.core_signal_properties.use_write_enable = None;                        
-            },
-            None => { match register_location {
+                self.core_signal_properties.use_write_enable = None;
+            }
+            None => match register_location {
                 Some(LocationType::Pif) => {
                     self.core_signal_properties.use_read_enable = None;
-                    self.core_signal_properties.use_write_enable = None;                        
-                },
-
-                _ => ()
-            
+                    self.core_signal_properties.use_write_enable = None;
                 }
-            },
-            _ => ()
 
+                _ => (),
+            },
+            _ => (),
         }
     }
 }
