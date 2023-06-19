@@ -30,6 +30,8 @@ use dioxus::prelude::*;
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct HdlWizardAppSaveData {
     pub model: file_formats::mdf::Mdf,
+    pub current_file_name: Option<String>,
+    pub current_path: String,
     pub settings: settings::Settings,
 
     pub target: HdlWizardAppSaveTarget,
@@ -72,6 +74,8 @@ impl Default for HdlWizardAppSaveData {
             model: Default::default(),
             settings: Default::default(),
             target: Default::default(),
+            current_file_name: None,
+            current_path: Default::default()
         }
     }
 }
@@ -134,20 +138,14 @@ fn load_app_data() -> Result<HdlWizardAppSaveData, std::io::Error> {
 
 #[cfg(target_arch = "wasm32")]
 fn load_app_data() -> Result<HdlWizardAppSaveData, std::io::Error> {
-    let err_code = Err(std::io::Error::from(std::io::ErrorKind::AddrNotAvailable));
     if let Some(window) = web_sys::window() {
         if let Ok(Some(storage)) = window.local_storage() {
             if let Ok(Some(data)) = storage.get_item(STORAGE_NAME) {
-                Ok(serde_json::from_str(&data)?)
-            } else {
-                err_code
+                return Ok(serde_json::from_str(&data)?);
             }
-        } else {
-            err_code
         }
-    } else {
-        err_code
-    }
+    } 
+    Err(std::io::Error::from(std::io::ErrorKind::AddrNotAvailable))
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -175,24 +173,16 @@ fn save_app_data(data: &HdlWizardAppSaveData) -> Result<(), std::io::Error> {
 
 #[cfg(target_arch = "wasm32")]
 fn save_app_data(data: &HdlWizardAppSaveData) -> Result<(), std::io::Error> {
-    let err_code = Err(std::io::Error::from(std::io::ErrorKind::AddrNotAvailable));
     if let Some(window) = web_sys::window() {
         if let Ok(Some(storage)) = window.local_storage() {
             if let Ok(data_string) = serde_json::to_string(data) {
                 if storage.set_item(STORAGE_NAME, &data_string).is_ok() {
-                    Ok(())
-                } else {
-                    err_code
-                }
-            } else {
-                err_code
+                    return Ok(());
+                } 
             }
-        } else {
-            err_code
         }
-    } else {
-        err_code
-    }
+    } 
+    Err(std::io::Error::from(std::io::ErrorKind::AddrNotAvailable))
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -228,13 +218,14 @@ impl HdlWizardApp {
 
     pub fn register_undo(&mut self, description: &str) {
         self.undo
-            .register_modification(description, &self.data.model, &self.page_type)
+            .register_modification(description, &self.data.model, &self.data.current_file_name, &self.page_type)
     }
 
     pub fn apply_undo(&mut self) {
         if let Some(new_state) = self.undo.apply_undo() {
             self.data.model = new_state.model;
             self.page_type = new_state.page_type;
+            self.data.current_file_name = new_state.file_name;
         }
     }
 
@@ -242,6 +233,7 @@ impl HdlWizardApp {
         if let Some(new_state) = self.undo.apply_redo() {
             self.data.model = new_state.model;
             self.page_type = new_state.page_type;
+            self.data.current_file_name = new_state.file_name;
         }
     }
 
@@ -254,6 +246,31 @@ impl HdlWizardApp {
     pub fn clear_error(&mut self) {
         self.error_message = None;
     }
+}
+
+#[inline_props]
+pub fn LiveHelp(cx: Scope, page_type: page::PageType, live_help_setting: bool) -> Element<'_> {
+    cx.render(
+        if *live_help_setting {
+            let (title, contents) = match page_type {
+                page::PageType::Project => ("Project", include_str!(concat!(env!("OUT_DIR"), "/live_help/project.html"))),
+                _ => ("WIP","<p>Not written yet</p>") 
+            };
+            rsx!(
+                aside { class: "panel ext-sticky m-5 ext-livehelp",
+                    p { class: "panel-heading", "{title}" }
+                    div { 
+                        class: "panel-block",
+                        article {
+                            dangerous_inner_html : "{contents}"
+                        }
+                    }
+                }    
+            )
+        } else {
+            rsx!("")
+        }
+    )
 }
 
 pub fn App<'a>(cx: Scope<'a>) -> Element<'a> {
@@ -284,6 +301,9 @@ pub fn App<'a>(cx: Scope<'a>) -> Element<'a> {
         println!("Error while writing application configuration: {}", error);
     }
 
+    let page_type = app_data.read().page_type.to_owned();
+    let live_help_setting = app_data.read().live_help.to_owned();
+
     cx.render(rsx! {
         link {
             href: "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css",
@@ -294,8 +314,19 @@ pub fn App<'a>(cx: Scope<'a>) -> Element<'a> {
             style { include_str!("./style.css") }
             navigation::NavBar { app_data: app_data }
             div { class: "columns",
-                navigation::SideBar { app_data: app_data }
-                div { class: "column ext-sticky mr-4", page::Content { app_data: app_data } }
+                navigation::SideBar {
+                    app_data: app_data 
+                }
+                div { 
+                    class: "column ext-sticky mr-4", 
+                    page::Content { 
+                        app_data: app_data 
+                    } 
+                }
+                LiveHelp {
+                    page_type: page_type,
+                    live_help_setting: live_help_setting
+                }
             }
         }
     })

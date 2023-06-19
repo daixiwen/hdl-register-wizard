@@ -15,6 +15,7 @@ pub struct Undo {
 pub struct UndoState {
     pub change_description: String,
     pub model: mdf::Mdf,
+    pub file_name: Option<String>,
     pub page_type: page::PageType,
 }
 
@@ -33,6 +34,7 @@ impl default::Default for UndoState {
         UndoState {
             change_description: Default::default(),
             model: Default::default(),
+            file_name: None,
             page_type: page::PageType::Project,
         }
     }
@@ -43,11 +45,13 @@ impl Undo {
         &mut self,
         description: &str,
         model: &mdf::Mdf,
+        file_name: &Option<String>,
         page_type: &page::PageType,
     ) {
         self.undo_list.push(UndoState {
             change_description: description.to_owned(),
             model: model.clone(),
+            file_name: file_name.clone(),
             page_type: page_type.clone(),
         });
 
@@ -93,11 +97,13 @@ impl Undo {
             self.redo_list.push(latest);
 
             let previous_model = self.undo_list.get(num_elements - 2).unwrap().model.clone();
+            let previous_file_name = self.undo_list.get(num_elements - 2).unwrap().file_name.clone();
             //let previous_page = self.undo_list.get(num_elements - 2).unwrap().page_type.clone();
 
             Some(UndoState {
                 change_description: Default::default(),
                 model: previous_model,
+                file_name: previous_file_name,
                 page_type: latest_page,
             })
         } else {

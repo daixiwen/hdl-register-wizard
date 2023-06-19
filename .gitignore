@@ -2,3 +2,4 @@
 /pkg
 Cargo.lock
 /dist
+/live_help/translated

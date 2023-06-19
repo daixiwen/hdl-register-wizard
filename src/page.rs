@@ -16,16 +16,85 @@ pub mod interface;
 pub mod project;
 pub mod register;
 
+#[cfg(target_arch = "wasm32")]
+#[inline_props]
+pub fn FileSave<'a>(
+    cx: Scope<'a>, 
+    app_data: &'a UseRef<HdlWizardApp>, 
+) -> Element<'a> {
+    cx.render(rsx! {
+        if let Some(download_uri) = &app_data.read().web_file_save {
+            let file_name = match &app_data.read().data.current_file_name {
+                None => format!("{}.regwiz",&app_data.read().data.model.name),
+                Some(name) => name.clone(),
+            };
+
+            rsx! {
+                div {
+                    class: "modal is-active",
+                    div {
+                        class:"modal-background"
+                    },
+                    div {
+                        class:"modal-content",
+                        article {
+                            class: "message is-link",
+                            div {
+                                class:"message-header",
+                                p {
+                                    "Download"
+                                },
+                                button {
+                                    class:"delete",
+                                    onclick: move |_| app_data.with_mut(|app| {app.web_file_save = None;})
+                                }
+                            }
+                            div {
+                                class: "message-body",
+                                span {
+                                    "Click here to download the file: "
+                                },
+                                a {
+                                    href: "{download_uri}",
+                                    download: "{file_name}",
+                                    onclick: move |_| app_data.with_mut(|app| {app.web_file_save = None;}),
+                                    "{file_name}"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            rsx!{
+                ""
+            }
+        }
+    })
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[inline_props]
+#[allow(unused)]
+pub fn FileSave<'a>(
+    cx: Scope<'a>, 
+    app_data: &'a UseRef<HdlWizardApp>
+) -> Element<'a> {
+    None
+}
+
 #[inline_props]
 pub fn Content<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a> {
     let notification_timer = use_state(cx, || false);
-
+    let page_type = app_data.read().page_type.to_owned();
+    
     if *notification_timer.get() {
         println!("removing notification");
         app_data.write().notification = None;
         notification_timer.set(false);
     }
-    let render = cx.render(rsx! {
+
+    cx.render(rsx! {
         if let Some(notification_message) = &app_data.read().notification {
             println!("showing notification");
 
@@ -92,52 +161,15 @@ pub fn Content<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element
                 }
             }
         }
-
-        #[cfg(target_arch = "wasm32")]
-        if let Some(download_uri) = &app_data.read().web_file_save {
-            rsx! {
-                div {
-                    class: "modal is-active",
-                    div {
-                        class:"modal-background"
-                    },
-                    div {
-                        class:"modal-content",
-                        article {
-                            class: "message is-link",
-                            div {
-                                class:"message-header",
-                                p {
-                                    "Download"
-                                },
-                                button {
-                                    class:"delete",
-                                    onclick: move |_| app_data.with_mut(|app| {app.web_file_save = None;})
-                                }
-                            }
-                            div {
-                                class: "message-body",
-                                span {
-                                    "Click here to download the file: "
-                                },
-                                a {
-                                    href: "{download_uri}",
-                                    download: "test.json",
-                                    onclick: move |_| app_data.with_mut(|app| {app.web_file_save = None;}),
-                                    "test.json"
-                                }
-                            }
-                        }
-                    }
-                }
+        rsx! {
+            FileSave {
+                app_data: app_data
             }
-        } else {
-            rsx!{
-                ""
-            }
-        },
+        }
+        
 
-        match &app_data.read().page_type {
+        
+        match page_type {
             PageType::Project => {
                 rsx! {
                     project::Content { app_data: app_data}
@@ -147,7 +179,7 @@ pub fn Content<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element
                 rsx! {
                     interface::Content {
                         app_data: app_data,
-                        interface_num: *interface_num
+                        interface_num: interface_num
                     }
                 }
             },
@@ -155,19 +187,12 @@ pub fn Content<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element
                 rsx! {
                     register::Content {
                         app_data: app_data,
-                        interface_num: *interface_num,
-                        register_num: *register_num,
-                        field_num: *field_num
+                        interface_num: interface_num,
+                        register_num: register_num,
+                        field_num: field_num
                     }
                 }
             },
-    /*        _ =>{
-                cx.render(rsx! {
-                    p { "Not implemented yet"}
-                })
-            }*/
-        }
-    });
-
-    render
+        },
+    })
 }

@@ -6,6 +6,31 @@ use crate::file_io;
 use crate::page::PageType;
 use dioxus::prelude::*;
 
+#[cfg(not(target_arch = "wasm32"))]
+#[inline_props]
+pub fn Quit(cx: Scope) -> Element<'_> {
+    let desktop = cx.consume_context::<dioxus_desktop::DesktopContext>().unwrap();
+
+    cx.render(rsx! {
+        hr { class: "navbar-divider" }
+        a { 
+            class: "navbar-item",
+            onclick: move |_| desktop.close(),
+            i { class: "fa-solid fa-person-walking-arrow-right mr-1" },
+            "Quit"
+        }
+    })
+}
+
+#[cfg(target_arch = "wasm32")]
+#[inline_props]
+pub fn Quit(cx: Scope) -> Element<'_> {
+
+    cx.render(rsx! {
+        ""
+    })
+}
+
 #[inline_props]
 pub fn NavBar<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a> {
     let burger_menu = app_data.read().burger_menu;
@@ -119,6 +144,7 @@ pub fn NavBar<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<
                                     app_data
                                         .with_mut(|data| {
                                             data.data.model = Default::default();
+                                            data.data.current_file_name = None;
                                             data.register_undo("new project")
                                         })
                                 },
@@ -126,16 +152,9 @@ pub fn NavBar<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<
                                 "New"
                             }
                             file_io::Open { app_data: app_data }
-                            a { class: "navbar-item",
-                                i { class: "fa-solid fa-floppy-disk mr-1" }
-                                "Save"
-                            }
+                            file_io::Save { app_data: app_data }
                             file_io::SaveAs { app_data: app_data }
-                            hr { class: "navbar-divider" }
-                            a { class: "navbar-item",
-                                i { class: "fa-solid fa-person-walking-arrow-right mr-1" }
-                                "Quit"
-                            }
+                            Quit {}
                         }
                     }
                     a { class: "navbar-item", "Settings" }

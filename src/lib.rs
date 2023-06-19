@@ -22,7 +22,6 @@ pub mod file_io;
 pub mod gui_blocks;
 pub mod gui_types;
 pub mod mdf_process;
-pub mod model_gui;
 pub mod navigation;
 pub mod page;
 pub mod settings;
