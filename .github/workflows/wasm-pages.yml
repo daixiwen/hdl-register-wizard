@@ -1,0 +1,32 @@
+name: wasm-pages
+
+on: workflow_dispatch
+
+jobs:
+  build-win:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install latest rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          targets: wasm32-unknown-unknown
+          default: true
+          override: true
+
+      - name: INstall trunk
+        run: cargo install --locked trunk
+
+      - name: Build
+        run: trunk build --release --public-url https://daixiwen.github.io/hdl-register-wizard/
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+
