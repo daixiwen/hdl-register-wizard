@@ -3,7 +3,7 @@ name: wasm-pages
 on: workflow_dispatch
 
 jobs:
-  build-win:
+  build-wasm:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,7 +22,7 @@ jobs:
         run: cargo install --locked trunk
 
       - name: Build
-        run: trunk build --release --public-url https://daixiwen.github.io/hdl-register-wizard/
+        run: trunk build --release --public-url hdl-register-wizard
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
