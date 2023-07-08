@@ -15,10 +15,8 @@ jobs:
         with:
           toolchain: stable
           targets: wasm32-unknown-unknown
-          default: true
-          override: true
 
-      - name: INstall trunk
+      - name: Install trunk
         run: cargo install --locked trunk
 
       - name: Build
