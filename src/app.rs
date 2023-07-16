@@ -1,3 +1,5 @@
+//! The App structure holds all the current state for the application
+
 #![allow(non_snake_case)]
 #[cfg(not(target_arch = "wasm32"))]
 use dioxus_desktop::tao;
@@ -25,15 +27,23 @@ const STORAGE_NAME: &str = "hdl_register_wizard_storage";
 // import the prelude to get access to the `rsx!` macro and the `Scope` and `Element` types
 use dioxus::prelude::*;
 
-/// We derive Deserialize/Serialize so we can persist app state on shutdown.
+/// Structure holding all the data that will be saved at shutdown and reloaded at restart.
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct HdlWizardAppSaveData {
+    /// The model the application is currently working on
     pub model: file_formats::mdf::Mdf,
+
+    /// The file name that was last used, wither load or saved as. Cleared when using the 'new' command
     pub current_file_name: Option<String>,
+
+    /// last used path for the files
     pub current_path: String,
+
+    /// application settings
     pub settings: settings::Settings,
 
+    /// data specific to the host target (wasm or desktop)
     pub target: HdlWizardAppSaveTarget,
 }
 
@@ -42,32 +52,50 @@ pub struct HdlWizardAppSaveData {
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct HdlWizardAppSaveTarget {
-    // window size and position
+    /// window position
     pub window_pos: tao::dpi::PhysicalPosition<i32>,
+
+    /// window size
     pub window_size: tao::dpi::PhysicalSize<u32>,
 }
 
-/// target specific save data for wasm
+/// target specific save data for wasm, empty
 #[cfg(target_arch = "wasm32")]
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct HdlWizardAppSaveTarget {}
 
-// Application state data, including what will be saved in data, and volatile data in the other fields
+/// Application state, that will be passed to all GUI elements for rendering
 pub struct HdlWizardApp {
-    pub undo: undo::Undo,
 
+    /// saved part of the application state
     pub data: HdlWizardAppSaveData,
 
+    /// undo cache
+    pub undo: undo::Undo,
+
+
     // gui state
+    /// whether the burger menu is currently open
     pub burger_menu: bool,
+
+    /// whether the live help is currently active
     pub live_help: bool,
+
+    /// current page being displayed in the app
     pub page_type: page::PageType,
+
+    /// if some, contains an error message to be displayed at next render
     pub error_message: Option<String>,
+
+    /// if some, containts a notification message that should briefly appear
     pub notification: Option<String>,
+
+    /// if some and with the wasm target, contains a base64 endoded string with the saved file to give to the broaswe
     pub web_file_save: Option<String>,
 }
 
+/// reasonable defaults for the saved data structure
 impl Default for HdlWizardAppSaveData {
     fn default() -> Self {
         Self {
@@ -80,6 +108,7 @@ impl Default for HdlWizardAppSaveData {
     }
 }
 
+/// default window position and size for the desktop app
 #[cfg(not(target_arch = "wasm32"))]
 impl Default for HdlWizardAppSaveTarget {
     fn default() -> Self {
@@ -90,6 +119,7 @@ impl Default for HdlWizardAppSaveTarget {
     }
 }
 
+/// currently no data for the wasm specific structure
 #[cfg(target_arch = "wasm32")]
 impl Default for HdlWizardAppSaveTarget {
     fn default() -> Self {
@@ -97,6 +127,7 @@ impl Default for HdlWizardAppSaveTarget {
     }
 }
 
+/// default for the full application state
 impl Default for HdlWizardApp {
     fn default() -> Self {
         Self {
@@ -112,7 +143,7 @@ impl Default for HdlWizardApp {
     }
 }
 
-// fin the path for the save file
+/// path used for the settings and state save file
 #[cfg(not(target_arch = "wasm32"))]
 fn data_file_path() -> Option<PathBuf> {
     match ProjectDirs::from("", "Sylvain Tertois", "HDL Register Wizard") {
@@ -121,6 +152,7 @@ fn data_file_path() -> Option<PathBuf> {
     }
 }
 
+/// load the application state from the save file
 #[cfg(not(target_arch = "wasm32"))]
 fn load_app_data() -> Result<HdlWizardAppSaveData, std::io::Error> {
     if let Some(path) = data_file_path() {
@@ -136,6 +168,7 @@ fn load_app_data() -> Result<HdlWizardAppSaveData, std::io::Error> {
     }
 }
 
+/// fetch the application state from the local storage in the browser
 #[cfg(target_arch = "wasm32")]
 fn load_app_data() -> Result<HdlWizardAppSaveData, std::io::Error> {
     if let Some(window) = web_sys::window() {
@@ -148,6 +181,7 @@ fn load_app_data() -> Result<HdlWizardAppSaveData, std::io::Error> {
     Err(std::io::Error::from(std::io::ErrorKind::AddrNotAvailable))
 }
 
+/// save the application state to the save file
 #[cfg(not(target_arch = "wasm32"))]
 fn save_app_data(data: &HdlWizardAppSaveData) -> Result<(), std::io::Error> {
     if let Some(path) = data_file_path() {
@@ -171,6 +205,7 @@ fn save_app_data(data: &HdlWizardAppSaveData) -> Result<(), std::io::Error> {
     }
 }
 
+/// write the application state to the local storage in the browser
 #[cfg(target_arch = "wasm32")]
 fn save_app_data(data: &HdlWizardAppSaveData) -> Result<(), std::io::Error> {
     if let Some(window) = web_sys::window() {
@@ -185,6 +220,7 @@ fn save_app_data(data: &HdlWizardAppSaveData) -> Result<(), std::io::Error> {
     Err(std::io::Error::from(std::io::ErrorKind::AddrNotAvailable))
 }
 
+/// we use the destructor to save the application state before the application exits
 #[cfg(not(target_arch = "wasm32"))]
 impl Drop for HdlWizardApp {
     fn drop(&mut self) {
@@ -195,6 +231,7 @@ impl Drop for HdlWizardApp {
 }
 
 impl HdlWizardApp {
+    /// attempt to restore the state from a previous run and if not use a default state 
     pub fn try_load() -> Self {
         let data = match load_app_data() {
             Ok(data) => data,
@@ -216,11 +253,13 @@ impl HdlWizardApp {
         }
     }
 
+    /// register that a state change took place, so that it can be undone
     pub fn register_undo(&mut self, description: &str) {
         self.undo
             .register_modification(description, &self.data.model, &self.data.current_file_name, &self.page_type)
     }
 
+    /// undo the last change, registering it so that it can be redone if asked
     pub fn apply_undo(&mut self) {
         if let Some(new_state) = self.undo.apply_undo() {
             self.data.model = new_state.model;
@@ -229,6 +268,7 @@ impl HdlWizardApp {
         }
     }
 
+    /// redo the last change that was undone
     pub fn apply_redo(&mut self) {
         if let Some(new_state) = self.undo.apply_redo() {
             self.data.model = new_state.model;
@@ -237,21 +277,26 @@ impl HdlWizardApp {
         }
     }
 
+    /// if the given result is ok, do nothing. If it is an error, extract the error message so that it can be
+    /// displayed on the next round
     pub fn test_result(&mut self, result: Result<(), String>) {
         if let Err(message) = result {
             self.error_message = Some(message);
         }
     }
 
+    /// clear the displayed error message
     pub fn clear_error(&mut self) {
         self.error_message = None;
     }
 }
 
 #[inline_props]
+/// generate the live help column, depending on the displayed page
 pub fn LiveHelp(cx: Scope, page_type: page::PageType, live_help_setting: bool) -> Element<'_> {
     cx.render(
         if *live_help_setting {
+            // content is html generated from markdown, included in the application
             let (title, contents) = match page_type {
                 page::PageType::Project => ("Project", include_str!(concat!(env!("OUT_DIR"), "/live_help/project.html"))),
                 _ => ("WIP","<p>Not written yet</p>") 
@@ -273,6 +318,7 @@ pub fn LiveHelp(cx: Scope, page_type: page::PageType, live_help_setting: bool) -
     )
 }
 
+/// application main function, for both web and desktop
 pub fn App<'a>(cx: Scope<'a>) -> Element<'a> {
     // this structure holds all the application data and will be sent over all the GUI modules
     let app_data = use_ref(cx, || {
@@ -304,6 +350,7 @@ pub fn App<'a>(cx: Scope<'a>) -> Element<'a> {
     let page_type = app_data.read().page_type.to_owned();
     let live_help_setting = app_data.read().live_help.to_owned();
 
+    // page render
     cx.render(rsx! {
         link {
             href: "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css",

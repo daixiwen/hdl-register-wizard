@@ -1,6 +1,10 @@
 # HDL Register Wizard
 
-This is a webapp that can generate VHDL code and documentation to create hardware registers accessible on a memory mapped bus. It can load and save files in the Model Description Format developped by Bitvis for its [Register Wizard](https://bitvis.no/dev-tools/register-wizard/). Files saved by this webapp should be usable by Bitvis' tool.
+This is both a webapp and a desktop application that can generate VHDL code and documentation to create hardware registers accessible on a memory mapped bus. It can load and save files in the Model Description Format developped by Bitvis for its [Register Wizard](https://bitvis.no/dev-tools/register-wizard/). Files saved by this webapp should be usable by Bitvis' tool.
+
+## Trial
+
+The webapp compiled from the most current sources can be accessed [here](https://daixiwen.github.io/hdl-register-wizard/).
 
 ## Project Status
 

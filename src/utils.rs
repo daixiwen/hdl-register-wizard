@@ -207,7 +207,7 @@ pub fn textarea_to_opt_vec_str(value_str: &str) -> Option<Vec<String>> {
     }
 }
 
-/// convert from an Option<u32> to an AutoManualU32
+/// convert from an Option\<u32\> to an AutoManualU32
 pub fn opt_u32_to_automanual(entry: &Option<u32>) -> gui_types::AutoManualU32 {
     match entry {
         None => gui_types::AutoManualU32 {
@@ -225,7 +225,7 @@ pub fn opt_u32_to_automanual(entry: &Option<u32>) -> gui_types::AutoManualU32 {
     }
 }
 
-/// convert from a AutoManualU32 to an Option<u32>
+/// convert from a AutoManualU32 to an Option\<u32\>
 pub fn automanual_to_opt_u32(gui_field: &gui_types::AutoManualU32) -> Option<u32> {
     if gui_field.is_auto {
         None
