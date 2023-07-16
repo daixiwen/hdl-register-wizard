@@ -381,8 +381,7 @@ fn TableLine<'a>(
                                 if !up_disabled {
                                     app_data
                                         .with_mut(|data| {
-                                            data.data
-                                                .model
+                                            data.get_mut_model()
                                                 .interfaces[interface_number]
                                                 .registers[register_number]
                                                 .fields
@@ -400,8 +399,7 @@ fn TableLine<'a>(
                                 if !down_disabled {
                                     app_data
                                         .with_mut(|data| {
-                                            data.data
-                                                .model
+                                            data.get_mut_model()
                                                 .interfaces[interface_number]
                                                 .registers[register_number]
                                                 .fields
@@ -432,8 +430,7 @@ fn TableLine<'a>(
                             onclick: move |_| {
                                 app_data
                                     .with_mut(|data| {
-                                        data.data
-                                            .model
+                                        data.get_mut_model()
                                             .interfaces[interface_number]
                                             .registers[register_number]
                                             .fields
@@ -854,7 +851,7 @@ pub fn Content<'a>(cx: Scope<'a, ContentProps<'a>>) -> Element<'a> {
                             div { class:"buttons",
                                 button { class:"button is-primary",
                                     onclick: move |_| app_data.with_mut(|app| {
-                                        app.data.model.interfaces[cx.props.interface_num].registers[cx.props.register_num].fields.push(mdf::Field::new());
+                                        app.get_mut_model().interfaces[cx.props.interface_num].registers[cx.props.register_num].fields.push(mdf::Field::new());
                                         app.page_type = PageType::Register(cx.props.interface_num, cx.props.register_num, Some(app.data.model.interfaces[cx.props.interface_num].registers[cx.props.register_num].fields.len()-1));
                                         app.register_undo("create field")
                                         }),
@@ -868,7 +865,7 @@ pub fn Content<'a>(cx: Scope<'a, ContentProps<'a>>) -> Element<'a> {
                                 },
                                 button { class:"button is-primary",
                                     onclick: move |_| app_data.with_mut(|app| {
-                                        let result = app.data.model.interfaces[cx.props.interface_num].registers[cx.props.register_num].assign_fields();
+                                        let result = app.get_mut_model().interfaces[cx.props.interface_num].registers[cx.props.register_num].assign_fields();
                                         app.test_result(result);
                                         app.register_undo("assign bitfields")
                                     }),
@@ -876,7 +873,7 @@ pub fn Content<'a>(cx: Scope<'a, ContentProps<'a>>) -> Element<'a> {
                                 },
                                 button { class:"button is-danger",
                                     onclick: move |_| app_data.with_mut(|app| {
-                                        let result = app.data.model.interfaces[cx.props.interface_num].registers[cx.props.register_num].deassign_fields();
+                                        let result = app.get_mut_model().interfaces[cx.props.interface_num].registers[cx.props.register_num].deassign_fields();
                                         app.test_result(result);
                                         app.register_undo("unassign bitfields")
                                     }),

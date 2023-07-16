@@ -4,6 +4,7 @@
 #[cfg(not(target_arch = "wasm32"))]
 use dioxus_desktop::tao;
 
+use std::sync::Arc;
 use crate::file_formats;
 use crate::navigation;
 use crate::page;
@@ -32,7 +33,7 @@ use dioxus::prelude::*;
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct HdlWizardAppSaveData {
     /// The model the application is currently working on
-    pub model: file_formats::mdf::Mdf,
+    pub model: Arc<file_formats::mdf::Mdf>,
 
     /// The file name that was last used, wither load or saved as. Cleared when using the 'new' command
     pub current_file_name: Option<String>,
@@ -262,7 +263,7 @@ impl HdlWizardApp {
     /// undo the last change, registering it so that it can be redone if asked
     pub fn apply_undo(&mut self) {
         if let Some(new_state) = self.undo.apply_undo() {
-            self.data.model = new_state.model;
+            self.data.model = Arc::new(new_state.model);
             self.page_type = new_state.page_type;
             self.data.current_file_name = new_state.file_name;
         }
@@ -271,7 +272,7 @@ impl HdlWizardApp {
     /// redo the last change that was undone
     pub fn apply_redo(&mut self) {
         if let Some(new_state) = self.undo.apply_redo() {
-            self.data.model = new_state.model;
+            self.data.model = Arc::new(new_state.model);
             self.page_type = new_state.page_type;
             self.data.current_file_name = new_state.file_name;
         }
@@ -288,6 +289,11 @@ impl HdlWizardApp {
     /// clear the displayed error message
     pub fn clear_error(&mut self) {
         self.error_message = None;
+    }
+
+    /// return a mutable reference to the model
+    pub fn get_mut_model(&mut self) -> &mut file_formats::mdf::Mdf {
+        Arc::make_mut(&mut self.data.model)
     }
 }
 

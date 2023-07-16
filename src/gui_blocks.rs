@@ -31,7 +31,7 @@ pub fn apply_function<'a, F>(
             if let Some(updatefn_ref) = &update_model {
                 let mut updatefn = updatefn_ref.borrow_mut();
                 app_data.with_mut(|app_data| {
-                    updatefn(&mut app_data.data.model, &value);
+                    updatefn(app_data.get_mut_model(), &value);
                     app_data.register_undo(undo_description);
                 })
             }
@@ -41,7 +41,7 @@ pub fn apply_function<'a, F>(
                 let mut updatefn = updatefn_ref.borrow_mut();
                 app_data.with_mut(|app_data| {
                     if let Some(mut interface) =
-                        app_data.data.model.interfaces.get_mut(*interface_number)
+                        app_data.get_mut_model().interfaces.get_mut(*interface_number)
                     {
                         updatefn(&mut interface, &value);
                         app_data.register_undo(undo_description);
@@ -54,7 +54,7 @@ pub fn apply_function<'a, F>(
                 let mut updatefn = updatefn_ref.borrow_mut();
                 app_data.with_mut(|app_data| {
                     if let Some(interface) =
-                        app_data.data.model.interfaces.get_mut(*interface_number)
+                        app_data.get_mut_model().interfaces.get_mut(*interface_number)
                     {
                         if let Some(mut register) = interface.registers.get_mut(*register_number) {
                             updatefn(&mut register, &value);
@@ -67,7 +67,7 @@ pub fn apply_function<'a, F>(
                     let mut updatefn = updatefn_ref.borrow_mut();
                     app_data.with_mut(|app_data| {
                         if let Some(interface) =
-                            app_data.data.model.interfaces.get_mut(*interface_number)
+                            app_data.get_mut_model().interfaces.get_mut(*interface_number)
                         {
                             if let Some(register) = interface.registers.get_mut(*register_number) {
                                 if let Some(field_num) = field_number {

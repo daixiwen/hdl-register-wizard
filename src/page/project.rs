@@ -46,8 +46,7 @@ fn TableLine<'a>(
                             if !up_disabled {
                                 app_data
                                     .with_mut(|data| {
-                                        data.data
-                                            .model
+                                        data.get_mut_model()
                                             .interfaces
                                             .swap(*interface_number - 1, *interface_number);
                                         data.register_undo("move interface up")
@@ -63,8 +62,7 @@ fn TableLine<'a>(
                             if !down_disabled {
                                 app_data
                                     .with_mut(|data| {
-                                        data.data
-                                            .model
+                                        data.get_mut_model()
                                             .interfaces
                                             .swap(*interface_number, *interface_number + 1);
                                         data.register_undo("move interface down")
@@ -85,7 +83,7 @@ fn TableLine<'a>(
                         onclick: move |_| {
                             app_data
                                 .with_mut(|data| {
-                                    data.data.model.interfaces.remove(*interface_number);
+                                    data.get_mut_model().interfaces.remove(*interface_number);
                                     data.register_undo("remove interface")
                                 })
                         },
@@ -154,7 +152,7 @@ pub fn Content<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element
                     onclick: move |_| {
                         app_data
                             .with_mut(|app| {
-                                app.data.model.interfaces.push(mdf::Interface::new());
+                                app.get_mut_model().interfaces.push(mdf::Interface::new());
                                 app.page_type = PageType::Interface(app.data.model.interfaces.len() - 1);
                                 app.register_undo("create interface")
                             })

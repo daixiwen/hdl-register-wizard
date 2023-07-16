@@ -243,7 +243,7 @@ pub fn SideBar<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element
                         onclick: move |_| {
                             app_data
                                 .with_mut(|app| {
-                                    app.data.model.interfaces[0].registers.push(mdf::Register::new());
+                                    app.get_mut_model().interfaces[0].registers.push(mdf::Register::new());
                                     app
                                         .page_type = PageType::Register(
                                         0,

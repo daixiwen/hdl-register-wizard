@@ -35,7 +35,7 @@ pub fn Open<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a
         // for undo operation
         Some((file_name, file_folder, Ok(model))) => {
             app_data.with_mut(|data| {
-                data.data.model = model.to_owned();
+                data.data.model = std::sync::Arc::new(model.to_owned());
                 data.data.current_file_name = Some(file_name.to_owned());
                 data.data.current_path = file_folder.to_owned();
                 data.register_undo("load file");
@@ -126,7 +126,6 @@ pub fn Save<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a
         None => (),
     }
 
-    // this is not good, we are cloning the whole model at each render.... should we use an Arc instead?
     let model_to_save = app_data.read().data.model.clone();
     if let Some(current_file_name) = app_data.read().data.current_file_name.clone() {
 
@@ -218,7 +217,6 @@ pub fn SaveAs<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<
         None => (),
     }
 
-    // we are cloning the model again at each run. fix this....
     let model_to_save = app_data.read().data.model.clone();
     let current_path = app_data.read().data.current_path.clone();
 

@@ -89,23 +89,19 @@ pub fn Content<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element
     let page_type = app_data.read().page_type.to_owned();
     
     if *notification_timer.get() {
-        println!("removing notification");
         app_data.write().notification = None;
         notification_timer.set(false);
     }
 
     cx.render(rsx! {
         if let Some(notification_message) = &app_data.read().notification {
-            println!("showing notification");
 
             cx.spawn({
                 let notification_timer = notification_timer.to_owned();
 
                 async move {
-                    println!("starting future");
                     Delay::new(Duration::from_secs(3)).await;
                     notification_timer.set(true);
-                    println!("future complete");                                
                 }
             });
             rsx! {

@@ -64,8 +64,7 @@ fn TableLine<'a>(
                                 if !up_disabled {
                                     app_data
                                         .with_mut(|data| {
-                                            data.data
-                                                .model
+                                            data.get_mut_model()
                                                 .interfaces[interface_number]
                                                 .registers
                                                 .swap(*register_number - 1, *register_number);
@@ -82,8 +81,7 @@ fn TableLine<'a>(
                                 if !down_disabled {
                                     app_data
                                         .with_mut(|data| {
-                                            data.data
-                                                .model
+                                            data.get_mut_model()
                                                 .interfaces[interface_number]
                                                 .registers
                                                 .swap(*register_number, *register_number + 1);
@@ -113,8 +111,7 @@ fn TableLine<'a>(
                             onclick: move |_| {
                                 app_data
                                     .with_mut(|data| {
-                                        data.data
-                                            .model
+                                        data.get_mut_model()
                                             .interfaces[interface_number]
                                             .registers
                                             .remove(*register_number);
@@ -238,8 +235,7 @@ pub fn Content<'a>(
                     onclick: move |_| {
                         app_data
                             .with_mut(|app| {
-                                app.data
-                                    .model
+                                app.get_mut_model()
                                     .interfaces[*interface_num]
                                     .registers
                                     .push(mdf::Register::new());
@@ -259,7 +255,7 @@ pub fn Content<'a>(
                     onclick: move |_| {
                         app_data
                             .with_mut(|app| {
-                                let result = app.data.model.interfaces[*interface_num].assign_addresses();
+                                let result = app.get_mut_model().interfaces[*interface_num].assign_addresses();
                                 app.test_result(result);
                                 app.register_undo("assign addresses")
                             })
@@ -271,7 +267,7 @@ pub fn Content<'a>(
                     onclick: move |_| {
                         app_data
                             .with_mut(|app| {
-                                let result = app.data.model.interfaces[*interface_num].deassign_addresses();
+                                let result = app.get_mut_model().interfaces[*interface_num].deassign_addresses();
                                 app.test_result(result);
                                 app.register_undo("unassign addresses")
                             })
