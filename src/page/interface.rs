@@ -9,7 +9,7 @@ use crate::page::PageType;
 use crate::utils;
 use dioxus::prelude::*;
 
-// builds a line in the table with all the registers
+/// builds a single line in the table with all the registers
 #[inline_props]
 fn TableLine<'a>(
     cx: Scope<'a>,
@@ -20,6 +20,7 @@ fn TableLine<'a>(
     register_address: mdf::Address,
 ) -> Element<'a> {
     if let PageType::Interface(interface_number) = app_data.read().page_type {
+        // utility variables used when generating the html
         let num_of_registers = app_data.read().data.model.interfaces[interface_number]
             .registers
             .len();
@@ -36,6 +37,7 @@ fn TableLine<'a>(
             None => "bitfield".to_owned(),
         };
 
+        // render the line
         cx.render(rsx! {
             tr {
                 td {
@@ -129,6 +131,7 @@ fn TableLine<'a>(
     }
 }
 
+/// Whole page for an interface
 #[inline_props]
 pub fn Content<'a>(
     cx: Scope<'a>,
@@ -160,6 +163,7 @@ pub fn Content<'a>(
 
         let interface_width = interface.get_data_width();
 
+        // render the page
         cx.render(rsx! {
             div {
                 a {
@@ -211,9 +215,9 @@ pub fn Content<'a>(
                     undo_label: "change interface data width",
                     value: interface.data_width,
                     placeholder: match interface_width {
-    None => "Data witdh".to_owned(),
-    Some(width) => width.to_string(),
-},
+                        None => "Data witdh".to_owned(),
+                        Some(width) => width.to_string(),
+                    },
                     default: interface_width.unwrap_or(32)
                 }
             }

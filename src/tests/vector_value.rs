@@ -1,7 +1,9 @@
+//! Tests for the conversions to and from VectorValue
+
 use crate::utils;
 use std::str::FromStr;
 
-// test creating VectorValue with string
+/// test creating VectorValue with string
 #[test]
 fn from_str() {
     assert_eq!(
@@ -60,7 +62,7 @@ fn from_str() {
     }
 }
 
-// test converting VectorValue to string
+/// test converting VectorValue to string
 #[test]
 fn to_str() {
     assert_eq!(

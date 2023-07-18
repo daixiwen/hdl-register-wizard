@@ -18,6 +18,8 @@ impl Mdf {
     }
 }
 
+/// given a hashset that holds all the used addresses in a bus, add to this hashset
+/// the address(es) used by a give register
 fn add_address(
     addresses: &mut std::collections::HashSet<u128>,
     register: &mdf::Register,
@@ -92,7 +94,7 @@ impl Interface {
 
     /// automatically assign addresses to the registers
     /// this is not a very good algorithm. it is rather brute force, but it is simple and won't be called that often any way
-    /// it should still be pretty fast in standard settings
+    /// it should still be pretty fast in standard projects
     pub fn assign_addresses(&mut self) -> Result<(), String> {
         let mut addresses: std::collections::HashSet<u128> = Default::default();
         if let Some(width_bits) = self.get_data_width() {

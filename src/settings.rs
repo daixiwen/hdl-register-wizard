@@ -1,4 +1,4 @@
-//! Model description file structures module
+//! Application settings
 
 use serde::{Deserialize, Serialize};
 use std::default::Default;

@@ -7,7 +7,7 @@
 use dioxus_desktop::{Config, WindowBuilder};
 use hdl_register_wizard::app;
 
-// When compiling natively:
+/// When compiling natively, open a window and launch the application
 #[cfg(not(target_arch = "wasm32"))]
 fn main() {
     let app_settings = app::HdlWizardApp::try_load();
@@ -26,6 +26,7 @@ fn main() {
     );
 }
 
+/// When compiling for wasm, just launch the application from Dioxus
 #[cfg(target_arch = "wasm32")]
 fn main() {
     // launch the web app

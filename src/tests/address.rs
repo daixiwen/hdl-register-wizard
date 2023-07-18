@@ -1,8 +1,10 @@
+//! Tests for the address type
+
 use crate::file_formats::mdf;
 use crate::utils;
 use std::str::FromStr;
 
-// test creating Address with string
+/// test creating Address with string
 #[test]
 fn from_str() {
     assert_eq!(
@@ -118,7 +120,7 @@ fn from_str() {
     }
 }
 
-// test converting Address to string
+/// test converting Address to string
 #[test]
 fn to_str() {
     assert_eq!(

@@ -6,6 +6,7 @@ use crate::file_io;
 use crate::page::PageType;
 use dioxus::prelude::*;
 
+/// quit menu item for the desktop application
 #[cfg(not(target_arch = "wasm32"))]
 #[inline_props]
 pub fn Quit(cx: Scope) -> Element<'_> {
@@ -22,6 +23,7 @@ pub fn Quit(cx: Scope) -> Element<'_> {
     })
 }
 
+/// quit menu item, not used for the webapp
 #[cfg(target_arch = "wasm32")]
 #[inline_props]
 pub fn Quit(cx: Scope) -> Element<'_> {
@@ -31,6 +33,7 @@ pub fn Quit(cx: Scope) -> Element<'_> {
     })
 }
 
+/// Menu bar
 #[inline_props]
 pub fn NavBar<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a> {
     let burger_menu = app_data.read().burger_menu;
@@ -62,6 +65,8 @@ pub fn NavBar<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<
                     }
                     "{app_data.read().data.model.name}"
                 }
+
+                // undo button
                 if let Some(undo) = app_data.read().undo.get_undo_description() {
                     rsx!(
                         div { class:"navbar-item dropdown is-hoverable",
@@ -83,6 +88,7 @@ pub fn NavBar<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<
                         }
                     )
                 } else {
+                    // the undo list is empty, put a disabled icon
                     rsx!(
                         div { class:"navbar-item",
                             i {
@@ -91,6 +97,8 @@ pub fn NavBar<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<
                         }
                     )
                 }
+
+                // redo button
                 if let Some(redo) = app_data.read().undo.get_redo_description() {
                     rsx!(
                         div { class:"navbar-item dropdown is-hoverable",
@@ -112,6 +120,7 @@ pub fn NavBar<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<
                         }
                     )
                 } else {
+                    // the redo list is empty, put a disabled icon
                     rsx!(
                         div { class:"navbar-item",
                             i {
@@ -135,6 +144,7 @@ pub fn NavBar<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<
 
             div { id: "navbarBasicExample", class: "{navmenu_class}",
                 div { class: "navbar-start",
+                    // File menu
                     div { class: "navbar-item has-dropdown is-hoverable",
                         a { class: "navbar-link", "File" }
                         div { class: "navbar-dropdown",
@@ -157,10 +167,13 @@ pub fn NavBar<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<
                             Quit {}
                         }
                     }
+
+                    // Settings menu
                     a { class: "navbar-item", "Settings" }
                 }
                 div { class: "navbar-end",
                     div { class: "navbar-item",
+                        // box to enable live help
                         div { class: "field",
                             label { class: "checkbox",
                                 input {
@@ -178,6 +191,7 @@ pub fn NavBar<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<
     })
 }
 
+/// generates a register list from the given vector list
 #[inline_props]
 pub fn RegistersList<'a>(
     cx: Scope<'a>,
@@ -200,6 +214,7 @@ pub fn RegistersList<'a>(
     })
 }
 
+/// Left sidebar, listing all the registers
 #[inline_props]
 pub fn SideBar<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a> {
     // build a list of all registers, within a list of all interfaces

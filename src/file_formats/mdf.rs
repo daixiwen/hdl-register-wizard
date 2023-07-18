@@ -392,10 +392,6 @@ impl std::str::FromStr for Address {
 
     /// conversion from string to address, using the format described in the mdf specification for stride addresses
     fn from_str(s: &str) -> Result<Self, &'static str> {
-        /*        if s == "auto" {
-                    Ok(Address::Auto)
-                    Ok(Address::Single(utils::VectorValue::from_str(s)?))
-        */
         let elements: Vec<&str> = s.split(':').collect();
         let (value_str, stride) = match elements.len() {
             1 => (s, None),

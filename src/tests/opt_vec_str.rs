@@ -1,6 +1,8 @@
+//! Tests for the conversions from and to Option<Vec<String>>
+
 use super::super::utils;
 
-// test creating VectorValue with string
+/// test creating Vec<String> with string
 #[test]
 fn from_str() {
     let expected = vec!["first line", "second line", "third line"]
@@ -17,7 +19,7 @@ fn from_str() {
     assert_eq!(None, utils::textarea_to_opt_vec_str(&"".to_string()));
 }
 
-// test converting VectorValue to string
+/// test converting Vec<String> to string
 #[test]
 fn to_str() {
     let value: Vec<String> = vec!["line one", "line two", "line three"]

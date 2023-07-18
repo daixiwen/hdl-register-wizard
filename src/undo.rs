@@ -4,6 +4,7 @@ use crate::file_formats::mdf;
 use crate::page;
 use std::default;
 
+/// structure holding all the undo and redo states
 pub struct Undo {
     //    current_focus: Option<egui::Id>,
     //    previous_focus: Option<egui::Id>,
@@ -11,6 +12,7 @@ pub struct Undo {
     redo_list: Vec<UndoState>,
 }
 
+/// a single undo/redo state, with the model, a few other state variables, and a description of the change
 #[derive(Clone)]
 pub struct UndoState {
     pub change_description: String,
@@ -41,6 +43,7 @@ impl default::Default for UndoState {
 }
 
 impl Undo {
+    /// called each time a change to the model is made to register it in the correct structures
     pub fn register_modification(
         &mut self,
         description: &str,
@@ -58,6 +61,7 @@ impl Undo {
         self.redo_list.clear();
     }
 
+    /// return the description from the latest change (for the Undo GUI)
     pub fn get_undo_description(&self) -> Option<String> {
         let num_elements = self.undo_list.len();
         if num_elements > 1 {
@@ -73,6 +77,7 @@ impl Undo {
         }
     }
 
+    /// return the description from the laters undo action (for the Redo GUI)
     pub fn get_redo_description(&self) -> Option<String> {
         let num_elements = self.redo_list.len();
         if num_elements > 0 {
@@ -88,6 +93,7 @@ impl Undo {
         }
     }
 
+    /// undo the latest change and put it in the redo list. Returns the state to apply in the application
     pub fn apply_undo(&mut self) -> Option<UndoState> {
         let num_elements = self.undo_list.len();
 
@@ -98,7 +104,6 @@ impl Undo {
 
             let previous_model = self.undo_list.get(num_elements - 2).unwrap().model.clone();
             let previous_file_name = self.undo_list.get(num_elements - 2).unwrap().file_name.clone();
-            //let previous_page = self.undo_list.get(num_elements - 2).unwrap().page_type.clone();
 
             Some(UndoState {
                 change_description: Default::default(),
@@ -111,6 +116,7 @@ impl Undo {
         }
     }
 
+    /// redo the latest undone change and put it in the undo list. Returns the state to apply in the application
     pub fn apply_redo(&mut self) -> Option<UndoState> {
         let num_elements = self.undo_list.len();
 

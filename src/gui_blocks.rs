@@ -10,12 +10,12 @@ use crate::page::PageType;
 use crate::utils;
 use std::cell::RefCell;
 
-// wraps a closure into a box and a refcell. Used to make widget instantiations a bit simpler
+/// wraps a closure into a box and a refcell. Used to make widget instantiations a bit simpler
 pub fn callback<F>(f: F) -> RefCell<Box<F>> {
     RefCell::new(Box::new(f))
 }
 
-// call one of the update functions applying on one part of the model depending on the page type
+/// calls one of the update functions applying on one part of the model depending on the page type
 pub fn apply_function<'a, F>(
     app_data: &'a UseRef<HdlWizardApp>,
     value: F,
@@ -27,6 +27,7 @@ pub fn apply_function<'a, F>(
 ) {
     let page_type = &app_data.read().page_type.clone();
     match page_type {
+        // for a Project page type, call update_model
         PageType::Project => {
             if let Some(updatefn_ref) = &update_model {
                 let mut updatefn = updatefn_ref.borrow_mut();
@@ -36,6 +37,8 @@ pub fn apply_function<'a, F>(
                 })
             }
         }
+
+        // for an Interface page type, find the interface and call update_int
         PageType::Interface(interface_number) => {
             if let Some(updatefn_ref) = &update_int {
                 let mut updatefn = updatefn_ref.borrow_mut();
@@ -49,6 +52,8 @@ pub fn apply_function<'a, F>(
                 })
             }
         }
+
+        // for a Register page type, find the interface, the register and call update_reg or find also the field and call update_field
         PageType::Register(interface_number, register_number, field_number) => {
             if let Some(updatefn_ref) = &update_reg {
                 let mut updatefn = updatefn_ref.borrow_mut();
@@ -85,7 +90,7 @@ pub fn apply_function<'a, F>(
     }
 }
 
-// properties for a generic GUI widget
+/// properties for a generic GUI widget
 #[derive(Props)]
 pub struct GuiGenericProps<'a, F> {
     app_data: &'a UseRef<HdlWizardApp>,
@@ -100,7 +105,7 @@ pub struct GuiGenericProps<'a, F> {
     update_field: Option<RefCell<Box<dyn FnMut(&mut mdf::Field, &F) -> () + 'a>>>,
 }
 
-// generic text widget component, using any type that can be converted to and from a string
+/// generic text widget component, using any type that can be converted to and from a string
 pub fn TextGeneric<'a, F: gui_types::Validable + std::string::ToString + std::str::FromStr>(
     cx: Scope<'a, GuiGenericProps<'a, F>>,
 ) -> Element<'a> {
@@ -142,7 +147,7 @@ pub fn TextGeneric<'a, F: gui_types::Validable + std::string::ToString + std::st
     })
 }
 
-// textarea widget component, using an optional vector of strings for the value type
+/// textarea widget component, using an optional vector of strings for the value type
 pub fn TextArea<'a>(cx: Scope<'a, GuiGenericProps<'a, Option<Vec<String>>>>) -> Element<'a> {
     let gui_label = cx.props.gui_label;
     let value = utils::opt_vec_str_to_textarea(&cx.props.value);
@@ -179,7 +184,7 @@ pub fn TextArea<'a>(cx: Scope<'a, GuiGenericProps<'a, Option<Vec<String>>>>) -> 
     })
 }
 
-// combobox widget using an enum type that uses the strum derives for conversion to and from a string
+/// combobox widget using an enum type that uses the strum derives for conversion to and from a string
 pub fn EnumWidget<
     'a,
     F: PartialEq + strum::IntoEnumIterator + std::string::ToString + std::str::FromStr,
@@ -222,7 +227,7 @@ pub fn EnumWidget<
     })
 }
 
-// properties for a GUI widget with an optional value (Auto/Manual)
+/// properties for a GUI widget with an optional value (Auto/Manual)
 #[derive(Props)]
 pub struct GuiAutoManuProps<'a, F: 'a> {
     app_data: &'a UseRef<HdlWizardApp>,
@@ -239,7 +244,7 @@ pub struct GuiAutoManuProps<'a, F: 'a> {
     update_field: Option<RefCell<Box<dyn FnMut(&mut mdf::Field, &Option<F>) -> () + 'a>>>,
 }
 
-// text widget component with an Auto option
+/// text widget component with an Auto option
 pub fn AutoManuText<
     'a,
     F: Default + gui_types::Validable + std::string::ToString + std::str::FromStr + Clone,
@@ -340,7 +345,7 @@ pub fn AutoManuText<
     })
 }
 
-// properties for a combobox widget with an optional value
+/// properties for a combobox widget with an optional value
 #[derive(Props)]
 pub struct OptionEnumWidgetProps<'a, F> {
     app_data: &'a UseRef<HdlWizardApp>,
@@ -356,7 +361,8 @@ pub struct OptionEnumWidgetProps<'a, F> {
     update_field: Option<RefCell<Box<dyn FnMut(&mut mdf::Field, &Option<F>) -> () + 'a>>>,
 }
 
-// combobox widget using an option of an enum type that uses the strum derives for conversion to and from a string
+/// combobox widget using an option of an enum type that uses the strum derives for conversion to and from a string.
+/// field_for_none can be used to indicate which label should be used for None
 pub fn OptionEnumWidget<
     'a,
     F: PartialEq + strum::IntoEnumIterator + std::string::ToString + std::str::FromStr,
@@ -427,7 +433,7 @@ pub fn OptionEnumWidget<
     })
 }
 
-// checkbox widget component, using a boolean for the value type
+// properties for a checkbox
 #[derive(Props)]
 pub struct CheckBoxProps<'a> {
     app_data: &'a UseRef<HdlWizardApp>,
@@ -441,6 +447,7 @@ pub struct CheckBoxProps<'a> {
     update_field: Option<RefCell<Box<dyn FnMut(&mut mdf::Field, &bool) -> () + 'a>>>,
 }
 
+/// checkbox widget component, using a boolean for the value type
 pub fn CheckBox<'a>(cx: Scope<'a, CheckBoxProps<'a>>) -> Element<'a> {
     let gui_label = cx.props.gui_label;
     let checkbox_label = cx.props.checkbox_label;

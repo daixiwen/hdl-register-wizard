@@ -1,6 +1,5 @@
 //! several utilities and types used in the project, both on the gui side
 //! and on the file I/O side
-use crate::gui_types;
 use serde::{de::Error, Deserialize, Serialize};
 use std::fmt;
 use std::str::FromStr;
@@ -50,6 +49,7 @@ impl Default for VectorValue {
         VectorValue::new()
     }
 }
+
 // methods for serializing and deserilizing a VectorValue
 impl fmt::Display for VectorValue {
     /// convert a VectorValue to a string, using the specified radix
@@ -176,7 +176,7 @@ impl<'de> Deserialize<'de> for VectorValue {
 )]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
-/// signal type used for the register
+/// signal type used for a register or a field
 pub enum SignalType {
     /// VHDL IEEE 1164 std_logic
     StdLogic,
@@ -204,32 +204,5 @@ pub fn textarea_to_opt_vec_str(value_str: &str) -> Option<Vec<String>> {
         None
     } else {
         Some(value_str.split('\n').map(|s| s.to_string()).collect())
-    }
-}
-
-/// convert from an Option\<u32\> to an AutoManualU32
-pub fn opt_u32_to_automanual(entry: &Option<u32>) -> gui_types::AutoManualU32 {
-    match entry {
-        None => gui_types::AutoManualU32 {
-            is_auto: true,
-            ..Default::default()
-        },
-        Some(value) => gui_types::AutoManualU32 {
-            is_auto: false,
-            manual: gui_types::GuiU32 {
-                value_str: value.to_string(),
-                str_valid: true,
-                value_int: *value,
-            },
-        },
-    }
-}
-
-/// convert from a AutoManualU32 to an Option\<u32\>
-pub fn automanual_to_opt_u32(gui_field: &gui_types::AutoManualU32) -> Option<u32> {
-    if gui_field.is_auto {
-        None
-    } else {
-        Some(gui_field.manual.value_int)
     }
 }

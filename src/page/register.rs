@@ -13,16 +13,9 @@ use std::cell::RefCell;
 use std::default::Default;
 use std::str::FromStr;
 
-//fn absdiff(a: u32, b: u32) -> u32 {
-//    if a > b {
-//        a - b
-//    } else {
-//        b - a
-//    }
-//}
-
-// default values for some fields when changing the signal type
+/// default values for some fields when changing the signal type
 fn default_fields(interface_width: u32, register: &mut mdf::Register) {
+    // default width from the type
     let default_width = match register.signal {
         Some(utils::SignalType::Boolean) | Some(utils::SignalType::StdLogic) => 1,
         Some(utils::SignalType::Signed)
@@ -50,7 +43,7 @@ fn default_fields(interface_width: u32, register: &mut mdf::Register) {
     }
 }
 
-// widget for the address stride
+/// properties for the address stride widget
 #[derive(Props)]
 struct GuiAddressStrideProps<'a> {
     app_data: &'a UseRef<HdlWizardApp>,
@@ -60,7 +53,9 @@ struct GuiAddressStrideProps<'a> {
         Option<RefCell<Box<dyn FnMut(&mut mdf::Register, &Option<mdf::AddressStride>) -> () + 'a>>>,
 }
 
+/// widget for the address stride
 fn AddressStride<'a>(cx: Scope<'a, GuiAddressStrideProps<'a>>) -> Element<'a> {
+    // variables to help generate the html
     let validate_pattern = utils::VectorValue::validate_pattern();
     let value = &cx.props.value;
     let is_stride = value.is_some();
@@ -89,6 +84,7 @@ fn AddressStride<'a>(cx: Scope<'a, GuiAddressStrideProps<'a>>) -> Element<'a> {
     };
     let label_class = if is_stride { "" } else { "has-text-grey-light" };
 
+    // render widget
     cx.render(rsx!{
         div { class: "field is-horizontal",
             div { class: "field-label is-normal", label { class: "label", " " } }
@@ -222,7 +218,7 @@ fn AddressStride<'a>(cx: Scope<'a, GuiAddressStrideProps<'a>>) -> Element<'a> {
     })
 }
 
-// widget for the core properties
+// props for the core properties widget
 #[derive(Props)]
 struct GuiCoreProps<'a> {
     app_data: &'a UseRef<HdlWizardApp>,
@@ -231,7 +227,9 @@ struct GuiCoreProps<'a> {
     is_register: bool,
 }
 
+// widget for the core properties
 fn CoreProperties<'a>(cx: Scope<'a, GuiCoreProps<'a>>) -> Element<'a> {
+    // variables to help generate the html
     let value = &cx.props.value;
     let use_read_enable = value.use_read_enable.unwrap_or(false);
     let use_write_enable = value.use_write_enable.unwrap_or(false);
@@ -273,6 +271,7 @@ fn CoreProperties<'a>(cx: Scope<'a, GuiCoreProps<'a>>) -> Element<'a> {
         None
     };
 
+    // render the html
     cx.render(rsx! {
         div { class: "field is-horizontal",
             div { class: "field-label is-normal", label { class: "label", "Core Properties" } }
@@ -324,7 +323,7 @@ fn CoreProperties<'a>(cx: Scope<'a, GuiCoreProps<'a>>) -> Element<'a> {
     })
 }
 
-// builds a line in the table with all the fields
+/// builds a line in the table with all the fields
 #[inline_props]
 fn TableLine<'a>(
     cx: Scope<'a>,
@@ -337,6 +336,7 @@ fn TableLine<'a>(
     is_selected: bool,
 ) -> Element<'a> {
     if let PageType::Register(interface_number, register_number, _) = app_data.read().page_type {
+        // variables to help generate the html
         let num_of_fields = app_data.read().data.model.interfaces[interface_number].registers
             [register_number]
             .fields
@@ -352,6 +352,7 @@ fn TableLine<'a>(
 
         let tr_class = if *is_selected { "is-selected" } else { "" };
 
+        // rneder html
         cx.render(rsx! {
             tr { class: "{tr_class}",
                 td {
@@ -449,7 +450,7 @@ fn TableLine<'a>(
     }
 }
 
-// widget for the bitfield position
+// props for the bitfield position widget
 #[derive(Props)]
 struct GuiBitFieldPositionProps<'a> {
     app_data: &'a UseRef<HdlWizardApp>,
@@ -457,6 +458,7 @@ struct GuiBitFieldPositionProps<'a> {
     update_field: Option<RefCell<Box<dyn FnMut(&mut mdf::Field, &mdf::FieldPosition) -> () + 'a>>>,
 }
 
+// widget for the bitfield position
 fn FieldPosition<'a>(cx: Scope<'a, GuiBitFieldPositionProps<'a>>) -> Element<'a> {
     let validate_pattern = u32::validate_pattern();
     let value = &cx.props.value;
@@ -555,6 +557,7 @@ fn FieldPosition<'a>(cx: Scope<'a, GuiBitFieldPositionProps<'a>>) -> Element<'a>
     })
 }
 
+/// status of a single bit within the displayed bitmap
 #[derive(Clone)]
 enum FieldBitStatus {
     Unused,
@@ -563,6 +566,7 @@ enum FieldBitStatus {
     Error,
 }
 
+/// update a single bit status when building the bitmap
 fn update_status(
     previous: &FieldBitStatus,
     field_num: usize,
@@ -585,7 +589,7 @@ fn update_status(
     }
 }
 
-// page contents
+/// props for page contents
 #[derive(Props)]
 pub struct ContentProps<'a> {
     app_data: &'a UseRef<HdlWizardApp>,
@@ -595,6 +599,7 @@ pub struct ContentProps<'a> {
     field_num: Option<usize>,
 }
 
+/// page contents
 pub fn Content<'a>(cx: Scope<'a, ContentProps<'a>>) -> Element<'a> {
     let app_data = &cx.props.app_data;
     if let Some(interface) = app_data
@@ -752,9 +757,9 @@ pub fn Content<'a>(cx: Scope<'a, ContentProps<'a>>) -> Element<'a> {
                     gui_blocks::OptionEnumWidget {
                         app_data: app_data,
                         update_reg: callback(move |register, value| {
-    register.signal = *value;
-    default_fields(interface_data_width, register);
-}),
+                            register.signal = *value;
+                            default_fields(interface_data_width, register);
+                        }),
                         gui_label: "Signal type",
                         field_for_none: "(bitfield)",
                         undo_label: "change register signal type",

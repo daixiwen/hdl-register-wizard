@@ -8,7 +8,7 @@ use crate::gui_blocks::callback;
 use crate::page::PageType;
 use dioxus::prelude::*;
 
-// builds a line in the table with all the interfaces
+/// builds a line in the table with all the interfaces
 #[inline_props]
 fn TableLine<'a>(
     cx: Scope<'a>,
@@ -95,6 +95,7 @@ fn TableLine<'a>(
     })
 }
 
+/// Whole page for the project top level
 #[inline_props]
 pub fn Content<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a> {
     let project_name = app_data.read().data.model.name.clone();
