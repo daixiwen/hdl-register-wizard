@@ -20,9 +20,7 @@ fn main() {
 
             let path = path.path();
             let markdown = fs::read_to_string(path.clone()).expect("unable to read file");
-            let (_rest, parsed) = markdown_to_html::parser::parse_markdown(&markdown).expect("unable to parse markdown");
-
-            let html =  markdown_to_html::translator::translate(parsed);
+            let html = mini_markdown::render(&markdown);
 
             let dest_file = dest_dir.clone().join(path.file_name().unwrap()).with_extension("html");
 

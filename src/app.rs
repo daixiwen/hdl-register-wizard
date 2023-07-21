@@ -299,19 +299,51 @@ impl HdlWizardApp {
 
 #[inline_props]
 /// generate the live help column, depending on the displayed page
-pub fn LiveHelp(cx: Scope, page_type: page::PageType, live_help_setting: bool) -> Element<'_> {
+pub fn LiveHelp<'a>(cx: Scope, app_data: &'a UseRef<HdlWizardApp>, page_type: page::PageType, live_help_setting: bool) -> Element<'a> {
     cx.render(
         if *live_help_setting {
             // content is html generated from markdown, included in the application
             let (title, contents) = match page_type {
-                page::PageType::Project => ("Project", include_str!(concat!(env!("OUT_DIR"), "/live_help/project.html"))),
-                _ => ("WIP","<p>Not written yet</p>") 
+                page::PageType::Project => ("Project", include_str!(concat!(env!("OUT_DIR"), "/live_help/project.html")).to_owned()),
+                page::PageType::Interface(_) => ("Interface", include_str!(concat!(env!("OUT_DIR"), "/live_help/interface.html")).to_owned()),
+                page::PageType::Register(int, reg, field) => {
+                    // we need to determine if this register is a bitfield, and if it has a bitfield selected, as
+                    // this will change which documentation will be shown
+                    let is_bitfield = {
+                        if let Some(interface) = app_data.read().data.model.interfaces.get(*int) {
+                            if let Some(register) = interface.registers.get(*reg) {
+                                register.signal.is_none()
+                            } else { false}
+                        } else {false}
+                    };
+
+                    let has_bitfield_selected = field.is_some();
+
+                    // load the different parts
+                    let register_top = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-top.html"));
+                    let register_med_bitfield = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-med-bitfield.html"));
+                    let register_med_normal = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-med-normal.html"));
+                    let register_access = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-access.html"));
+                    let register_bottom_normal = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-bottom-normal.html"));
+                    let bitfield_top = include_str!(concat!(env!("OUT_DIR"), "/live_help/bitfield-top.html"));
+                    let bitfield_bottom = include_str!(concat!(env!("OUT_DIR"), "/live_help/bitfield-bottom.html"));
+
+                    // and combine them depending on the context
+                    let text = match (is_bitfield, has_bitfield_selected) {
+                        (false, _) => [register_top, register_med_normal, register_access, register_bottom_normal].concat(),
+                        (true, false) => [register_top, register_med_bitfield].concat(),
+                        (true, true) => [register_top, register_med_bitfield, bitfield_top, register_access, bitfield_bottom].concat()
+                    };
+
+                    ("Register", text)
+                },
+//                _ => ("WIP","<p>Not written yet</p>".to_owned()) 
             };
             rsx!(
                 aside { class: "panel ext-sticky m-5 ext-livehelp",
                     p { class: "panel-heading", "{title}" }
                     div { 
-                        class: "panel-block",
+                        class: "panel-block content",
                         article {
                             dangerous_inner_html : "{contents}"
                         }
@@ -377,6 +409,7 @@ pub fn App<'a>(cx: Scope<'a>) -> Element<'a> {
                     } 
                 }
                 LiveHelp {
+                    app_data: app_data,
                     page_type: page_type,
                     live_help_setting: live_help_setting
                 }
