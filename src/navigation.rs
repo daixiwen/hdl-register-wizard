@@ -5,6 +5,7 @@ use crate::file_formats::mdf;
 use crate::file_io;
 use crate::page::PageType;
 use dioxus::prelude::*;
+use crate::generate;
 
 /// quit menu item for the desktop application
 #[cfg(not(target_arch = "wasm32"))]
@@ -170,6 +171,11 @@ pub fn NavBar<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<
 
                     // Settings menu
                     a { class: "navbar-item", "Settings" }
+
+                    // Generate menu
+                    generate::output::Menu {
+                        app_data : app_data
+                    }
                 }
                 div { class: "navbar-end",
                     div { class: "navbar-item",

@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 use std::default::Default;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 /// model description file. This structure hold all the model, and can be
 /// imported or exported as JSON
 pub struct Settings {

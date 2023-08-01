@@ -36,6 +36,7 @@ pub mod page;
 pub mod settings;
 pub mod undo;
 pub mod utils;
+pub mod generate;
 
 #[cfg(test)]
 mod tests;
