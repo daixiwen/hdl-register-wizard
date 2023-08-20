@@ -124,11 +124,11 @@ impl TokenList {
     /// which will either be removed or replaced by an underscore and a number to provide uniqueness.
     /// panics if pattern is not present
     pub fn generate_token(&mut self, pattern : &str) -> String {
-        assert!(pattern.contains("{}"));
+        assert!(pattern.contains("*"));
 
         let mut sequence = 1;
         loop {
-            let token = pattern.replace("{}", &match sequence {
+            let token = pattern.replace("*", &match sequence {
                 1 => "".to_owned(),
                 _ => format!("_{}",sequence)
             });

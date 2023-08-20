@@ -27,8 +27,8 @@ fn generate_vhdl_wrong_pattern() {
 fn generate_vhdl_token() {
     let mut list : tokenlist::TokenList = Default::default();
 
-    assert_eq!(list.generate_token("abcd{}"), "abcd");
-    assert_eq!(list.generate_token("abcd{}"), "abcd_2");
-    assert_eq!(list.generate_token("_abcd_{}"), "abcd_3");
-    assert_eq!(list.generate_token("{}signal"), "x2signal");
+    assert_eq!(list.generate_token("abcd*"), "abcd");
+    assert_eq!(list.generate_token("abcd*"), "abcd_2");
+    assert_eq!(list.generate_token("_abcd_*"), "abcd_3");
+    assert_eq!(list.generate_token("*signal"), "x2signal");
 }

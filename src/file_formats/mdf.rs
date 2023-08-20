@@ -48,6 +48,8 @@ pub enum InterfaceType {
     APB3,
     /// Avalon Memory mapped interface, used in Altera/Intel FPGA designs
     AvalonMm,
+    /// AXI4 light Memory mapped interface,  used in ARM systems among others
+    AXI4Light,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

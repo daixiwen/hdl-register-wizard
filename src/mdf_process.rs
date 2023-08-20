@@ -92,6 +92,39 @@ impl Interface {
         }
     }
 
+    /// returns the interface address width. If automatic, only works if all addresses have been assigned. Otherwise
+    /// returns None
+    pub fn get_address_width(&self) -> Option<u32> {
+        match self.address_width {
+            Some(width) => Some(width),
+            None => {
+                match self.get_data_width() {
+                    None => None, // can't determine stire addresses without the interface data width
+                    Some(interface_width) => {
+
+                    // goes through all registers to find the highest address
+                    let high_address = self.registers.iter().fold(Some(0 as u128), |high_address, reg | {
+                        match high_address {
+                            None => None,
+                            Some(current_max) => {
+                                match reg.high_address(interface_width) {
+                                    None => None,
+                                    Some(address) => {
+                                        Some(u128::max(current_max, address))
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    // convert the highest address into number of bits
+                    high_address.map( |address| u128::BITS - address.leading_zeros())
+                    }
+                }
+            }
+        }
+    }
+
     /// automatically assign addresses to the registers
     /// this is not a very good algorithm. it is rather brute force, but it is simple and won't be called that often any way
     /// it should still be pretty fast in standard projects
@@ -246,6 +279,22 @@ impl Register {
         }
 
         Ok(())
+    }
+
+    /// returns the registers highest address (None if couldn't be determined)
+    pub fn high_address(&self, interface_width : u32) -> Option<u128> {
+        match &self.address.value {
+            None => None,
+            Some(address) => match &self.address.stride {
+                None => Some(address.value), // single register
+                Some(stride) => 
+                    // multiple registers. Need to find the count (easy) and increment (can be None -> auto)
+                    Some(address.value + (stride.count.value-1) * match stride.increment {
+                        None => (interface_width/8) as u128,
+                        Some(increment) => increment.value
+                    })
+            }
+        }
     }
 }
 
