@@ -8,9 +8,11 @@ use std::sync::Arc;
 use crate::settings::Settings;
 use rfd::AsyncFileDialog;
 
+use super::genmodel::GenModel;
+
 #[cfg(not(target_arch = "wasm32"))]
 /// Called from the menu to generate the files
-async fn gen_all(_model: Arc<Mdf>, _settings: Settings, status: UseState<Option<Result<(), String>>>, _gen_doc : bool, _gen_code : bool) {
+async fn gen_all(model: Arc<Mdf>, settings: Settings, status: UseState<Option<Result<(), String>>>, _gen_doc : bool, _gen_code : bool) {
     // open file dialog to choose file name
     let file = AsyncFileDialog::new()
         .add_filter("word document", &["docx"])
@@ -23,9 +25,20 @@ async fn gen_all(_model: Arc<Mdf>, _settings: Settings, status: UseState<Option<
     if let Some(file) = file {
         let file_path = file.path();
         match std::fs::File::create(file_path) {
-            Ok(_file) => {
+            Ok(file) => {
 
-                status.set(Some(Ok(())));
+                // create the generation model and write it directly for now
+                match GenModel::from_model(&model, &settings) {
+                    Ok(model) => {
+                        match serde_json::to_writer_pretty(file, &model) {
+                            Ok(_) => status.set(Some(Ok(()))),
+                            Err(error) => status.set(Some(Err(error.to_string())))
+                        }         
+                    },
+                    Err(error) => {
+                        status.set(Some(Err(error.to_string())));
+                    }
+                }
             }
             Err(errormsg) => {
                 status.set(Some(Err(format!(

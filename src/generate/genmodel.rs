@@ -10,7 +10,7 @@ use crate::file_formats::mdf;
 use crate::settings::Settings;
 use std::collections::HashMap;
 use std::error::Error;
-use tinytemplate;
+use tinytemplate::{self, TinyTemplate};
 use super::tokenlist::{TokenList, to_vhdl_token};
 use crate::utils;
 use crate::page::PageType;  
@@ -35,7 +35,7 @@ pub struct GenModel {
     /// if true, only has one interface
     pub single_interface : bool,
     /// list of interfaces
-    #[serde(skip)]
+//    #[serde(skip)]
     pub interfaces : Vec<GenInterface>,
 }
 
@@ -137,7 +137,6 @@ pub struct GenInterface {
     // list of signals for interface as a map (with function as index and name as value)
     pub ports_names: HashMap<String, String>,
     /// list of registers
-    #[serde(skip)]
     pub registers : Vec<GenRegister>,
 }
 
@@ -158,6 +157,7 @@ pub struct GenIntPort {
     pub xilinx_attr: String
 }
 
+/// context for interface tokens generation
 #[derive(Serialize)]
 struct GenInterfaceContext<'a> {
     project: &'a str,
@@ -166,7 +166,7 @@ struct GenInterfaceContext<'a> {
 
 impl GenInterface {
     /// take a Mdf interface and convert it to a GenInterface
-    pub fn from_interface(interface: &mdf::Interface, page: PageType, _settings: &Settings, project_token_name : &String, single_interface : &bool, general_token_list : &mut TokenList) -> Result<Self, Box<dyn Error>> {
+    pub fn from_interface(interface: &mdf::Interface, page: PageType, settings: &Settings, project_token_name : &String, single_interface : &bool, general_token_list : &mut TokenList) -> Result<Self, Box<dyn Error>> {
 
         let mut tt = tinytemplate::TinyTemplate::new();
         tt.set_default_formatter(&tinytemplate::format_unescaped);
@@ -216,7 +216,7 @@ impl GenInterface {
             interface: &token_name
         };
 
-        let pif_name = general_token_list.generate_token(&tt.render("pif_interface", &context)?);
+        let pif_name = general_token_list.generate_token(&tt.render("pif_name", &context)?);
         let pif_instance = general_token_list.generate_token(&tt.render("pif_instance", &context)?); 
         let core2pif_name = general_token_list.generate_token(&tt.render("core2pif_name", &context)?);
         let pif2core_name = general_token_list.generate_token(&tt.render("pif2core_name", &context)?); 
@@ -243,6 +243,20 @@ impl GenInterface {
         let ports_names : HashMap<String, String> = ports.iter().map(
             | signal | (signal.function.clone(), signal.name.clone())).collect();
 
+        // go through all the registers and add them to the list
+        let registers =  match page {
+            PageType::Interface(int_num) => {
+                let mut corfe2pif_token_list = TokenList::new();
+                let mut pif2core_token_list = TokenList::new();
+
+                interface.registers.iter().enumerate().map(|(n, register)| GenRegister::from_register(
+                    register, PageType::Register(int_num,n, None),
+                    settings, project_token_name, &token_name, data_width,
+                    general_token_list, &mut corfe2pif_token_list, &mut pif2core_token_list))
+                    .collect::<Result<Vec<GenRegister>,  Box<dyn Error>>>()?},
+            _ => Err(GenError::new(&page, "wrong value for the page parameter in register call"))?
+        };
+
         Ok(GenInterface { 
             name, 
             token_name: token_name.clone(), 
@@ -264,11 +278,15 @@ impl GenInterface {
             use_not_stride,
             ports,
             ports_names,
-            registers : Default::default()})
+            registers})
 
     }
 }
 
+/// register model for generation
+/// 
+/// field is always used. If the register is not a bitfield, details about
+/// the register type and value will be in a unique GenField element
 #[derive(Serialize)]
 pub struct GenRegister {
     /// register name
@@ -287,28 +305,6 @@ pub struct GenRegister {
     pub description : String,
     /// if true, is a bitfield
     pub is_bitfield : bool,
-    /// register width (only valid if not a bitfield)
-    pub width : u32,
-    /// read-write mode (only valid if not a bitfield)
-    pub rw_mode : String,
-    /// read access (only valid if not a bitfield)
-    pub is_read : bool,
-    /// write access (only valid if not a bitfield)
-    pub is_write : bool,
-    /// register type (only valid if not a bitfield)
-    pub reg_type : String,
-    /// true if type is bit (only valid if not a bitfield)
-    pub reg_type_is_bit : bool,
-    /// true if type is bool (only valid if not a bitfield)
-    pub reg_type_is_bool : bool,
-    /// register reset value, including quotes if required (only valid if not a bitfield)
-    pub reset : String,
-    /// register location (only valid if not a bitfield)
-    pub is_in_core : bool,
-    /// read enable (only valid if not a bitfield)
-    pub core_read_enable : bool,
-    /// write enable (only valid if not a bitfield)
-    pub core_write_enable : bool,
     /// name used for the constant with the array length (only valid if is_stride = true)    
     pub stride_count_const_name : String,
     /// name used for the constant with the address offset between array elements (only valid if is_stride = true)    
@@ -318,9 +314,58 @@ pub struct GenRegister {
     /// array length (only valid if is_stride = true)
     pub stride_count : u32,
     /// address offset between array elements (only valid if is_stride = true)
-    pub stride_offset : u32,
+    pub stride_increment : u32,
     /// if true, array addresses are continuous (only valid if is_stride = true)
     pub stride_continuous : bool,
+    /// fields (if the register is not a bitfield, holds a single element with the register description)
+    pub fields : Vec<GenField>
+}
+
+/// field model for generation
+#[derive(Serialize)]
+pub struct GenField {
+    /// field name
+    pub name : String,
+    /// field description
+    pub description : String,
+    /// field width
+    pub width : u32,
+    /// if true, the field is the same size than the interface data width
+    pub width_matches_interface : bool,
+    /// field least significant bit (offset)
+    pub offset : u32,
+    /// name of the constant for the field width
+    pub width_const_name : String,
+    /// name of the constant for the field lsb (offset)
+    pub offset_const_name : String,
+    /// read-write mode
+    pub rw_mode : String,
+    /// read access
+    pub is_read : bool,
+    /// write access
+    pub is_write : bool,
+    /// field type (only valid if not a bitfield)
+    pub sig_type : String,
+    /// complete type, including vector downto size
+    pub sig_type_complete : String,
+    /// true if type is bit
+    pub sig_type_is_bit : bool,
+    /// true if type is bool
+    pub sig_type_is_bool : bool,
+    /// true if type is a vector
+    pub sig_type_is_vector : bool,
+    /// field reset value, including quotes if required
+    pub reset : String,
+    /// field location
+    pub is_in_core : bool,
+    /// read enable
+    pub core_read_enable : bool,
+    /// write enable
+    pub core_write_enable : bool,    
+    /// if true, there is a data signal in core2pif
+    pub core2pif_has_data : bool,
+    /// if true, there is a data signal in pif2core
+    pub pif2core_has_data : bool,
     /// signals from this register in the core2pif record
     pub core2pif: Vec<GenStructSignal>,
     // list of signals for core2pif as a map (with function as index and name as value)
@@ -331,6 +376,7 @@ pub struct GenRegister {
     pub pif2core_names: HashMap<String, String>,
 }
 
+/// signal element in the core2pif and pif2core records
 #[derive(Serialize)]
 pub struct GenStructSignal {
     /// signal function
@@ -341,4 +387,394 @@ pub struct GenStructSignal {
     pub signal_type: String,
     /// signal description 
     pub description: String,
+}
+
+/// context for register tokens generation
+#[derive(Serialize)]
+struct GenRegisterContext<'a> {
+        // project token name
+    project: &'a str,
+        // interface token name (empty if only interface)
+    interface: &'a str,
+        // register token name
+    register: &'a str,
+        // register full name
+    full_name: &'a str,
+        // register width
+    data_width: u32,
+        // register width minus 1
+    data_width_m1: u32
+}
+
+/// create a GenStructSignal using the given templates
+pub fn gen_registersignal<C>(function: &str, template_engine : &TinyTemplate<'_>, name_template : &str, full_type : &str, description_template : &str, context: &C, token_list: &mut TokenList) -> Result<GenStructSignal, Box<dyn Error>>
+    where C : Serialize
+{
+    let name = token_list.generate_token(&template_engine.render(name_template, context)?);
+    let description = template_engine.render(description_template, context)?; 
+
+    Ok(GenStructSignal { 
+        function: function.to_owned(), 
+        name, 
+        signal_type : full_type.to_owned(), 
+        description})
+}
+
+/// convert a list of GenStructSignal to a map of names
+pub fn gen_names_map(signals: &[GenStructSignal]) -> HashMap<String, String> {
+    signals.iter().map(|signal| (signal.function.clone(), signal.name.clone())).collect()
+}
+
+impl GenRegister {
+    /// take a Mdf register and convert it to a GenRegister
+    pub fn from_register(register: &mdf::Register, page: PageType, settings: &Settings, project_token_name : &String, interface_token_name : &String, interface_data_width: u32, general_token_list : &mut TokenList, corfe2pif_token_list : &mut TokenList, pif2core_token_list : &mut TokenList) -> Result<Self, Box<dyn Error>> {
+
+        let mut tt = tinytemplate::TinyTemplate::new();
+        tt.set_default_formatter(&tinytemplate::format_unescaped);
+
+        tt.add_template("address_const_name", "c_{project}_{interface}_{register}*_addr")?;
+        tt.add_template("stride_count_const_name", "c_{project}_{interface}_{register}*_count")?;
+        tt.add_template("stride_offset_const_name", "c_{project}_{interface}_{register}*_offset")?;
+        tt.add_template("stride_array_type", "{project}_{interface}_{register}*_array_t")?;
+        tt.add_template("width_const_name", "c_{project}_{interface}_{register}*_width")?;
+
+
+        tt.add_template("data_name", "{register}*")?;
+        tt.add_template("data_description", "data for {full_name}")?;
+        tt.add_template("read_enable_name", "{register}_re*")?;
+        tt.add_template("read_enable_description", "signals that {full_name} is being read")?;
+        tt.add_template("write_enable_name", "{register}_we*")?;
+        tt.add_template("write_enable_description", "signals that {full_name} is being written")?;
+
+        let name = register.name.clone();
+        let token_name = to_vhdl_token(&name);
+        let address_hex = format!("{:x}", register.address.value.ok_or("address not defined")?.value);
+        let is_stride = register.address.stride.is_some();
+        let summary = utils::opt_vec_str_to_textarea(&register.summary);
+        let description = utils::opt_vec_str_to_textarea(&register.description);
+        let is_bitfield = register.signal.is_none();
+
+        // the fields: either a single field with the register, or a bunch of fields
+        let fields = if !is_bitfield {
+            let width = register.width.unwrap_or(interface_data_width);
+            let width_matches_interface = width == interface_data_width;
+
+            // use templates for names and tokens
+            let context = GenRegisterContext {
+                project: project_token_name,
+                interface: &interface_token_name,
+                register: &token_name,
+                full_name: &name,
+                data_width : width,
+                data_width_m1 : width-1
+            };
+
+            let width_const_name = general_token_list.generate_token(&tt.render("width_const_name", &context)?);
+
+            let rw_mode = register.access.ok_or(GenError::new(&page,"access type needed for register"))?;
+            let is_read = rw_mode != mdf::AccessType::WO;
+            let is_write = rw_mode != mdf::AccessType::RO;
+                // rw_mode should be a string
+            let rw_mode = rw_mode.to_string();
+            let sig_type = register.signal.unwrap().to_string();
+            let sig_type_complete = match register.signal {
+                Some(utils::SignalType::Boolean) | Some(utils::SignalType::StdLogic) => sig_type.clone(),
+                _ => format!("{}({} downto 0)", &sig_type, width-1)
+            };
+    
+            let sig_type_is_bit = register.signal == Some(utils::SignalType::StdLogic);
+            let sig_type_is_bool = register.signal == Some(utils::SignalType::Boolean);
+            let sig_type_is_vector = (!sig_type_is_bit) && (!sig_type_is_bool);
+    
+            let reset = match register.reset {
+                None => Err(GenError::new(&page,"reset value not specified"))?,      // non bitfield, we must have a value
+                Some(reset_value) => match register.signal.unwrap() {
+                    // the way we format the value depends on the type
+                    utils::SignalType::Boolean => match reset_value.value {
+                            0 => "false".to_owned(),
+                            _ => "true".to_owned()
+                        },
+
+                    utils::SignalType::StdLogic => match reset_value.value {
+                            0 => "'0'".to_owned(),
+                            _ => "'1'".to_owned()
+                        },
+                        
+                    _ => format!("{}x\"{:x}\"",width,reset_value.value)
+                }
+            };
+    
+            let is_in_core = register.location.ok_or(GenError::new(&page,"location for register {} needs to be specified"))? == mdf::LocationType::Core;
+    
+            let core_read_enable = register.core_signal_properties.use_read_enable.unwrap_or(false);
+            let core_write_enable = register.core_signal_properties.use_write_enable.unwrap_or(false);
+
+            let core2pif_has_data = is_in_core && is_read;
+            let pif2core_has_data = is_write;
+
+            // build the core2pif and pif2core elements
+            let mut core2pif : Vec<GenStructSignal> = Default::default();
+            let mut pif2core : Vec<GenStructSignal> = Default::default();
+            
+            if core2pif_has_data {
+                core2pif.push(gen_registersignal("data", &tt, "data_name", &sig_type_complete, "data_description", &context, corfe2pif_token_list)?);
+            }
+            if pif2core_has_data {
+                pif2core.push(gen_registersignal("data", &tt, "data_name", &sig_type_complete, "data_description", &context, pif2core_token_list)?);
+            }
+            if core_read_enable {
+                pif2core.push(gen_registersignal("read_enable", &tt, "read_enable_name", "boolean", "read_enable_description", &context, pif2core_token_list)?);
+            }
+            if core_write_enable {
+                pif2core.push(gen_registersignal("write_enable", &tt, "write_enable_name", "boolean", "write_enable_description", &context, pif2core_token_list)?);
+            }
+
+            let core2pif_names = gen_names_map(&core2pif);
+            let pif2core_names = gen_names_map(&pif2core);
+
+            
+            let unique_field = GenField {
+                name : Default::default(),
+                description : Default::default(),
+                width,
+                width_matches_interface,
+                offset: 0,
+                width_const_name,
+                offset_const_name: Default::default(),
+                rw_mode,
+                is_read,
+                is_write,
+                sig_type,
+                sig_type_complete,
+                sig_type_is_bit,
+                sig_type_is_bool,
+                sig_type_is_vector,
+                reset,
+                is_in_core,
+                core_read_enable,
+                core_write_enable,
+                core2pif_has_data,
+                pif2core_has_data,
+                core2pif,
+                core2pif_names,
+                pif2core,
+                pif2core_names
+            };
+
+            vec![unique_field]
+        } else {
+            // this is a bitfield, we need to convert each field
+            match page {
+                PageType::Register(int_num, reg_num, None) => 
+                    register.fields.iter().enumerate().map(|(n, field)| GenField::from_field(
+                        register, field, PageType::Register(int_num,reg_num, Some(n)),
+                        settings, project_token_name, interface_token_name, interface_data_width,
+                        &token_name, general_token_list, corfe2pif_token_list,
+                        pif2core_token_list)).collect::<Result<Vec<GenField>,  Box<dyn Error>>>()?,
+                _ => Err(GenError::new(&page, "wrong value for the page parameter in register call"))?
+            }
+        };
+
+        // use templates for names and tokens
+        let context = GenRegisterContext {
+            project: project_token_name,
+            interface: &interface_token_name,
+            register: &token_name,
+            full_name: &name,
+            data_width : interface_data_width,
+            data_width_m1 : interface_data_width-1
+        };
+        
+        let stride_count = match &register.address.stride {
+            None => 1,
+            Some(stride) => stride.count.value
+        } as u32;
+
+        let stride_increment = match &register.address.stride {
+            None => interface_data_width,
+            Some(stride) => match stride.increment {
+                None => interface_data_width,
+                Some(increment_value) => increment_value.value as u32
+            }
+        };
+        let stride_continuous = stride_increment == (interface_data_width + 7)/8;
+
+        let address_const_name = general_token_list.generate_token(&tt.render("address_const_name", &context)?);
+        let stride_count_const_name = general_token_list.generate_token(&tt.render("stride_count_const_name", &context)?);
+        let stride_offset_const_name = general_token_list.generate_token(&tt.render("stride_offset_const_name", &context)?);
+        let stride_array_type = general_token_list.generate_token(&tt.render("stride_array_type", &context)?);
+
+        Ok(GenRegister { 
+            name, 
+            token_name, 
+            address_const_name,
+            address_hex,
+            is_stride,
+            summary,
+            description,
+            is_bitfield,
+            stride_count_const_name,
+            stride_offset_const_name,
+            stride_array_type,
+            stride_count,
+            stride_increment,
+            stride_continuous,
+            fields})
+    }
+
+}
+
+/// context for field tokens generation
+#[derive(Serialize)]
+struct GenFieldContext<'a> {
+        // project token name
+    project: &'a str,
+        // interface token name (empty if only interface)
+    interface: &'a str,
+        // register token name
+    register: &'a str,
+        // field token name
+    field: &'a str,
+        // field full name
+    full_name: &'a str,
+        // field width
+    data_width: u32,
+        // field width minus 1
+    data_width_m1: u32
+}
+
+impl GenField {
+    /// take a Mdf field and convert it to a GenField
+    pub fn from_field(register: &mdf::Register, field: &mdf::Field, page: PageType, _settings: &Settings, project_token_name : &String, interface_token_name : &String, interface_data_width: u32, register_token_name : &String, general_token_list : &mut TokenList, corfe2pif_token_list : &mut TokenList, pif2core_token_list : &mut TokenList) -> Result<Self, Box<dyn Error>> {
+
+        let mut tt = tinytemplate::TinyTemplate::new();
+        tt.set_default_formatter(&tinytemplate::format_unescaped);
+
+        tt.add_template("width_const_name", "c_{project}_{interface}_{register}_{field}*_width")?;
+        tt.add_template("offset_const_name", "c_{project}_{interface}_{register}_{field}*_offset")?;
+
+
+        tt.add_template("data_name", "{register}*")?;
+        tt.add_template("data_description", "data for {full_name}")?;
+        tt.add_template("read_enable_name", "{register}_re*")?;
+        tt.add_template("read_enable_description", "signals that {full_name} is being read")?;
+        tt.add_template("write_enable_name", "{register}_we*")?;
+        tt.add_template("write_enable_description", "signals that {full_name} is being written")?;
+
+        let name = field.name.clone();
+        let token_name = to_vhdl_token(&name);
+        let description = utils::opt_vec_str_to_textarea(&field.description);
+
+        let width = match field.position {
+            mdf::FieldPosition::Single(_) => 1,
+            mdf::FieldPosition::Field(msb, lsb) => if msb >= lsb { Ok(msb - lsb + 1 as u32)} else {Err(GenError::new(&page, "wrong bit order specified"))}?
+        };
+        let width_matches_interface = width == interface_data_width;
+        let offset = match field.position {
+            mdf::FieldPosition::Single(position) => position,
+            mdf::FieldPosition::Field(_, lsb) => lsb
+        };
+
+        // use templates for names and tokens
+        let context = GenFieldContext {
+            project: project_token_name,
+            interface: &interface_token_name,
+            register: &register_token_name,
+            field: &token_name,
+            full_name: &name,
+            data_width : interface_data_width,
+            data_width_m1 : interface_data_width-1
+        };
+
+        let width_const_name = general_token_list.generate_token(&tt.render("width_const_name", &context)?);
+        let offset_const_name = general_token_list.generate_token(&tt.render("offset_const_name", &context)?);
+
+        let rw_mode = field.access;
+        let is_read = rw_mode != mdf::AccessType::WO;
+        let is_write = rw_mode != mdf::AccessType::RO;
+            // rw_mode should be a string
+        let rw_mode = rw_mode.to_string();
+
+        let sig_type = field.signal.to_string();
+        let sig_type_complete = match field.signal {
+            utils::SignalType::Boolean | utils::SignalType::StdLogic => sig_type.clone(),
+            _ => format!("{}({} downto 0)", &sig_type, width-1)
+        };
+
+        let sig_type_is_bit = field.signal == utils::SignalType::StdLogic;
+        let sig_type_is_bool = field.signal == utils::SignalType::Boolean;
+        let sig_type_is_vector = (!sig_type_is_bit) && (!sig_type_is_bool);
+
+        let reset = match field.signal {
+            // the way we format the value depends on the type
+            utils::SignalType::Boolean => match field.reset.value {
+                    0 => "false".to_owned(),
+                    _ => "true".to_owned()
+                },
+
+            utils::SignalType::StdLogic => match field.reset.value {
+                    0 => "'0'".to_owned(),
+                    _ => "'1'".to_owned()
+                },
+                
+            _ => format!("{}x\"{:x}\"",width,field.reset.value)
+        };
+
+        let location = field.location.unwrap_or(register.location.ok_or(GenError::new(&page, "location needs to be defined for field or register"))?);
+        let is_in_core = location == mdf::LocationType::Core;
+
+        let core_read_enable = field.core_signal_properties.use_read_enable.unwrap_or(false);
+        let core_write_enable = field.core_signal_properties.use_write_enable.unwrap_or(false);
+
+        let core2pif_has_data = is_in_core && is_read;
+        let pif2core_has_data = is_write;
+
+        // build the core2pif and pif2core elements
+        let mut core2pif : Vec<GenStructSignal> = Default::default();
+        let mut pif2core : Vec<GenStructSignal> = Default::default();
+        
+        if core2pif_has_data {
+            core2pif.push(gen_registersignal("data", &tt, "data_name", &sig_type_complete, "data_description", &context, corfe2pif_token_list)?);
+        }
+        if pif2core_has_data {
+            pif2core.push(gen_registersignal("data", &tt, "data_name", &sig_type_complete, "data_description", &context, pif2core_token_list)?);
+        }
+        if core_read_enable {
+            pif2core.push(gen_registersignal("read_enable", &tt, "read_enable_name", "boolean", "read_enable_description", &context, pif2core_token_list)?);
+        }
+        if core_write_enable {
+            pif2core.push(gen_registersignal("write_enable", &tt, "write_enable_name", "boolean", "write_enable_description", &context, pif2core_token_list)?);
+        }
+
+        let core2pif_names = gen_names_map(&core2pif);
+        let pif2core_names = gen_names_map(&pif2core);
+
+        Ok(GenField {
+            name,
+            description,
+            width,
+            width_matches_interface,
+            offset,
+            width_const_name,
+            offset_const_name,
+            rw_mode,
+            is_read,
+            is_write,
+            sig_type,
+            sig_type_complete,
+            sig_type_is_bit,
+            sig_type_is_bool,
+            sig_type_is_vector,
+            reset,
+            is_in_core,
+            core_read_enable,
+            core_write_enable,
+            core2pif_has_data,
+            pif2core_has_data,
+            core2pif,
+            core2pif_names,
+            pif2core,
+            pif2core_names
+        })
+    }
 }
