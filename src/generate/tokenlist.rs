@@ -120,11 +120,12 @@ impl TokenList {
         }
     }
 
-    /// generate a unique token and add it to the list. The given token must include the pattern "{}"
+    /// generate a unique token and add it to the list. The given token must include the pattern "*"
     /// which will either be removed or replaced by an underscore and a number to provide uniqueness.
     /// panics if pattern is not present
     pub fn generate_token(&mut self, pattern : &str) -> String {
         assert!(pattern.contains("*"));
+        let pattern = pattern.to_lowercase();
 
         let mut sequence = 1;
         loop {

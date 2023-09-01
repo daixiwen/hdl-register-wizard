@@ -26,6 +26,7 @@ strum_macros = "0.19.4"
 #docx-rs = "0.2"
 tinytemplate = "1.2.1"
 unidecode = "0.3.0"
+mini_markdown = "0.3.5"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2.86"

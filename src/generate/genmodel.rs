@@ -136,6 +136,8 @@ pub struct GenInterface {
     pub ports: Vec<GenIntPort>,
     // list of signals for interface as a map (with function as index and name as value)
     pub ports_names: HashMap<String, String>,
+    /// if true, some registers have details for the documentation
+    pub regs_doc_details : bool,
     /// list of registers
     pub registers : Vec<GenRegister>,
 }
@@ -257,6 +259,9 @@ impl GenInterface {
             _ => Err(GenError::new(&page, "wrong value for the page parameter in register call"))?
         };
 
+        // go through all registers to see if some have some doc details
+        let regs_doc_details = registers.iter().fold(false, |prev, reg| { prev || reg.doc_details} );
+println!("regs_doc_details: {}", regs_doc_details);
         Ok(GenInterface { 
             name, 
             token_name: token_name.clone(), 
@@ -278,6 +283,7 @@ impl GenInterface {
             use_not_stride,
             ports,
             ports_names,
+            regs_doc_details,
             registers})
 
     }
@@ -297,6 +303,8 @@ pub struct GenRegister {
     pub address_const_name : String,
     /// address (hexadecimal) excluding quotes
     pub address_hex : String,
+    /// address for display in documentation
+    pub address_pretty : String,
     /// if true, register is an array
     pub is_stride : bool,
     /// quick description
@@ -305,6 +313,8 @@ pub struct GenRegister {
     pub description : String,
     /// if true, is a bitfield
     pub is_bitfield : bool,
+    /// if true, documentation has more details (either because it is a bitfield, or it has a description field)
+    pub doc_details : bool,
     /// name used for the constant with the array length (only valid if is_stride = true)    
     pub stride_count_const_name : String,
     /// name used for the constant with the address offset between array elements (only valid if is_stride = true)    
@@ -334,6 +344,8 @@ pub struct GenField {
     pub width_matches_interface : bool,
     /// field least significant bit (offset)
     pub offset : u32,
+    /// field position (msb..lsb) as a string
+    pub position : String,
     /// name of the constant for the field width
     pub width_const_name : String,
     /// name of the constant for the field lsb (offset)
@@ -449,10 +461,14 @@ impl GenRegister {
         let name = register.name.clone();
         let token_name = to_vhdl_token(&name);
         let address_hex = format!("{:x}", register.address.value.ok_or("address not defined")?.value);
+        let address_pretty = register.address.nice_str();
         let is_stride = register.address.stride.is_some();
         let summary = utils::opt_vec_str_to_textarea(&register.summary);
         let description = utils::opt_vec_str_to_textarea(&register.description);
         let is_bitfield = register.signal.is_none();
+        let doc_details = is_bitfield || !description.is_empty();
+
+        println!("doc_details: {}", doc_details);
 
         // the fields: either a single field with the register, or a bunch of fields
         let fields = if !is_bitfield {
@@ -468,6 +484,11 @@ impl GenRegister {
                 data_width : width,
                 data_width_m1 : width-1
             };
+
+            let position = if width == 1 {
+                "0".to_owned()
+            } else {
+                format!("{}..0", width-1)};
 
             let width_const_name = general_token_list.generate_token(&tt.render("width_const_name", &context)?);
 
@@ -539,6 +560,7 @@ impl GenRegister {
                 width,
                 width_matches_interface,
                 offset: 0,
+                position,
                 width_const_name,
                 offset_const_name: Default::default(),
                 rw_mode,
@@ -609,10 +631,12 @@ impl GenRegister {
             token_name, 
             address_const_name,
             address_hex,
+            address_pretty,
             is_stride,
             summary,
             description,
             is_bitfield,
+            doc_details,
             stride_count_const_name,
             stride_offset_const_name,
             stride_array_type,
@@ -673,6 +697,12 @@ impl GenField {
         let offset = match field.position {
             mdf::FieldPosition::Single(position) => position,
             mdf::FieldPosition::Field(_, lsb) => lsb
+        };
+
+        let position = if width == 1 {
+            (width-1).to_string()
+        } else {
+            format!("{}..{}", width + offset - 1, offset)
         };
 
         // use templates for names and tokens
@@ -755,6 +785,7 @@ impl GenField {
             width,
             width_matches_interface,
             offset,
+            position,
             width_const_name,
             offset_const_name,
             rw_mode,
