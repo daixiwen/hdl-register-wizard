@@ -10,11 +10,13 @@ pub enum PageType {
     Project,
     Interface(usize),
     Register(usize, usize, Option<usize>),
+    Preview
 }
 
 pub mod interface;
 pub mod project;
 pub mod register;
+pub mod preview;
 
 /// when saving a file on the webapp, create an URI that the user can click to download 
 #[cfg(target_arch = "wasm32")]
@@ -197,6 +199,11 @@ pub fn Content<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element
                         register_num: register_num,
                         field_num: field_num
                     }
+                }
+            },
+            PageType::Preview => {
+                rsx! {
+                    preview::Content { app_data: app_data}
                 }
             },
         },

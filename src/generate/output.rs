@@ -11,6 +11,7 @@ use rfd::AsyncFileDialog;
 use super::genmodel::GenModel;
 use super::documentation;
 use std::io::Write;
+use crate::page::PageType;
 
 #[cfg(not(target_arch = "wasm32"))]
 /// Called from the menu to generate the files
@@ -95,6 +96,18 @@ pub fn Menu<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a
         div { class: "navbar-item has-dropdown is-hoverable",
             a { class: "navbar-link", "Generate" }
             div { class: "navbar-dropdown",
+                a {
+                    class: "navbar-item",
+                    onclick: move |_| {
+                        app_data
+                            .with_mut(|app| {
+                                app.generate_preview = true;
+                                app.page_type = PageType::Preview;
+                            })
+                    },
+                    i { class: "fa-solid fa-book mr-1" }
+                    "Preview"
+                }
                 a {
                     class: "navbar-item",
                     onclick: move |_| {

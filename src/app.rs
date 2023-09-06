@@ -94,6 +94,9 @@ pub struct HdlWizardApp {
 
     /// if some and with the wasm target, contains a base64 endoded string with the saved file to give to the broaswe
     pub web_file_save: Option<String>,
+
+    /// indicate if a documentation preview generation is requested
+    pub generate_preview : bool
 }
 
 /// reasonable defaults for the saved data structure
@@ -140,6 +143,7 @@ impl Default for HdlWizardApp {
             error_message: None,
             notification: Some("could not load settings".to_owned()),
             web_file_save: None,
+            generate_preview : false
         }
     }
 }
@@ -251,6 +255,7 @@ impl HdlWizardApp {
             error_message: None,
             notification: None,
             web_file_save: None,
+            generate_preview: false
         }
     }
 
@@ -337,6 +342,7 @@ pub fn LiveHelp<'a>(cx: Scope, app_data: &'a UseRef<HdlWizardApp>, page_type: pa
 
                     ("Register", text)
                 },
+                page::PageType::Preview => ("Prreview", include_str!(concat!(env!("OUT_DIR"), "/live_help/preview.html")).to_owned()),
 //                _ => ("WIP","<p>Not written yet</p>".to_owned()) 
             };
             rsx!(

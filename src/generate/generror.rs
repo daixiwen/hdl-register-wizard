@@ -23,7 +23,8 @@ impl fmt::Debug for GenError {
             match self.page {
                 PageType::Project => "project".to_owned(),
                 PageType::Interface(int) => format!("interface({})", int),
-                PageType::Register(int,reg, field) => format!("interface({}), register({}), field({:?})", int, reg, field)
+                PageType::Register(int,reg, field) => format!("interface({}), register({}), field({:?})", int, reg, field),
+                PageType::Preview => "preview".to_owned()
             },
             self.message
         )

@@ -86,6 +86,10 @@ pub fn apply_function<'a, F>(
                     })
                 }
             }
+        },
+        // preview... should never happen
+        PageType::Preview => {
+
         }
     }
 }

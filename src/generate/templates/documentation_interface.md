@@ -9,7 +9,7 @@
 
 | Name | Direction | Type | Description |
 | :----: |  :----: | :----: | :----: |{{ for port in ports }}
-| ``{port.name}`` | {port.direction} | ``{port.port_type}`` | {port.description} |{{ endfor }}
+| {port.name} | {port.direction} | {port.port_type} | {port.description} |{{ endfor }}
 
 ## core to interface record
 
@@ -17,7 +17,7 @@
 
 | Name | Type | Description |
 | :----: | :----: | :----: |{{ for register in registers }}{{ for field in register.fields}}{{ for signal in field.core2pif}}
-| ``{signal.name}`` | ``{signal.signal_type}`` | {signal.description} |{{ endfor }}{{ endfor }}{{ endfor}}
+| {signal.name} | {signal.signal_type} | {signal.description} |{{ endfor }}{{ endfor }}{{ endfor}}
 
 ## interface to core record
 
@@ -25,7 +25,7 @@
 
 | Name | Type | Description |
 | :----: | :----: | :----: |{{ for register in registers }}{{ for field in register.fields}}{{ for signal in field.pif2core}}
-| ``{signal.name}`` | ``{signal.signal_type}`` | {signal.description} |{{ endfor }}{{ endfor }}{{ endfor}}
+| {signal.name} | {signal.signal_type} | {signal.description} |{{ endfor }}{{ endfor }}{{ endfor}}
 
 ## registers
 

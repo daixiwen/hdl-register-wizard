@@ -1,0 +1,1 @@
+This lets you examine the generated documentation before saving the file and verify that everything has been defined correctly in the project.
