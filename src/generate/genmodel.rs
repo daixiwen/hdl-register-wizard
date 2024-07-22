@@ -193,17 +193,13 @@ impl GenInterface {
         let data_width_const_name = general_token_list.generate_token(&TEMPLATES.render("gi_data_width_const_name", &context)?); 
 
 
-        let port_context = signal_list::PortTemplateContext {
-            project : &project_token_name,
-            interface : &token_name,
-            signal: "",
-            address_width,
-            address_width_m1 : address_width - 1,
-            data_width,
-            data_width_m1 : data_width - 1
-        };
+        let mut port_context = tera::Context::new();
+        port_context.insert("project", &project_token_name);
+        port_context.insert("interface", &token_name);
+        port_context.insert("address_width", &address_width);
+        port_context.insert("data_width", &data_width);
 
-        let ports = signal_list::to_port_list(interface_type, port_context, general_token_list)?;
+        let ports = signal_list::to_port_list(interface_type, &port_context, general_token_list)?;
 
         // make a second ports list, a hashmap from function to name
         let ports_names : HashMap<String, String> = ports.iter().map(
@@ -225,7 +221,7 @@ impl GenInterface {
 
         // go through all registers to see if some have some doc details
         let regs_doc_details = registers.iter().fold(false, |prev, reg| { prev || reg.doc_details} );
-println!("regs_doc_details: {}", regs_doc_details);
+
         Ok(GenInterface { 
             name, 
             token_name: token_name.clone(), 
@@ -397,8 +393,6 @@ impl GenRegister {
         let is_bitfield = register.signal.is_none();
         let doc_details = is_bitfield || !description.is_empty();
 
-        println!("doc_details: {}", doc_details);
-
         // the fields: either a single field with the register, or a bunch of fields
         let fields = if !is_bitfield {
             let width = register.width.unwrap_or(interface_data_width);
@@ -411,7 +405,6 @@ impl GenRegister {
             context.insert("register", &token_name);
             context.insert("full_name", &name);
             context.insert("data_width", &width);
-            context.insert("data_width_m1", &(width-1)); // TODO: remove that, should use maths in the template instead
 
             let position = if width == 1 {
                 "0".to_owned()
@@ -532,7 +525,6 @@ impl GenRegister {
         context.insert("register", &token_name);
         context.insert("full_name", &name);
         context.insert("data_width", &interface_data_width);
-        context.insert("data_width_m1", &(interface_data_width-1)); // TODO: remove that, should use maths in the template instead
         
         
         let stride_count = match &register.address.stride {
@@ -609,7 +601,6 @@ impl GenField {
         context.insert("field", &token_name);
         context.insert("full_name", &name);
         context.insert("data_width", &interface_data_width);
-        context.insert("data_width_m1", &(interface_data_width-1)); // TODO: remove that, should use maths in the template instead
 
         let width_const_name = general_token_list.generate_token(&TEMPLATES.render("gf_width_const_name", &context)?);
         let offset_const_name = general_token_list.generate_token(&TEMPLATES.render("gf_offset_const_name", &context)?);

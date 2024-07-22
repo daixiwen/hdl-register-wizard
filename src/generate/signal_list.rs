@@ -1,6 +1,5 @@
 
 use crate::generate::genmodel;
-use serde::Serialize;
 use crate::generate::tokenlist;
 use std::error::Error;
 use crate::file_formats::mdf;
@@ -45,7 +44,7 @@ const SBI_SIGNALS : [SignalDef<'static>;7] = [
     },
     SignalDef {
         token_name : "addr",
-        type_template : "unsigned({address_width_m1} downto 0)",
+        type_template : "unsigned({{ address_width - 1 }} downto 0)",
         direction : SignalDirection::In,
         description : "address",
         xilinx_attr : ""
@@ -66,14 +65,14 @@ const SBI_SIGNALS : [SignalDef<'static>;7] = [
     },
     SignalDef {
         token_name : "rdata",
-        type_template : "std_logic_vector({data_width_m1} downto 0)",
+        type_template : "std_logic_vector({{ data_width - 1 }} downto 0)",
         direction : SignalDirection::Out,
         description : "read back data",
         xilinx_attr : ""
     },
     SignalDef {
         token_name : "wdata",
-        type_template : "std_logic_vector({data_width_m1} downto 0)",
+        type_template : "std_logic_vector({{ data_width - 1 }} downto 0)",
         direction : SignalDirection::In,
         description : "data to write",
         xilinx_attr : ""
@@ -89,8 +88,8 @@ const SBI_SIGNALS : [SignalDef<'static>;7] = [
 
 /// template for SBI signal names
 const SBI_TEMPLATES : SignalTemplates<'static> = SignalTemplates {
-    template_in : "{interface}_{signal}*",
-    template_out : "{interface}_{signal}*",
+    template_in : "{{ interface }}_{{ signal }}*",
+    template_out : "{{ interface }}_{{ signal }}*",
 };
 
 /// table of signals for APB3
@@ -104,7 +103,7 @@ const APB3_SIGNALS : [SignalDef<'static>;8] = [
     },
     SignalDef {
         token_name : "paddr",
-        type_template : "std_logic_vector({address_width_m1} downto 0)",
+        type_template : "std_logic_vector({{ address_width - 1 }} downto 0)",
         direction : SignalDirection::In,
         description : "address",
         xilinx_attr : ""
@@ -125,14 +124,14 @@ const APB3_SIGNALS : [SignalDef<'static>;8] = [
     },
     SignalDef {
         token_name : "prdata",
-        type_template : "std_logic_vector({data_width_m1} downto 0)",
+        type_template : "std_logic_vector({{ data_width - 1 }} downto 0)",
         direction : SignalDirection::Out,
         description : "read back data",
         xilinx_attr : ""
     },
     SignalDef {
         token_name : "pwdata",
-        type_template : "std_logic_vector({data_width_m1} downto 0)",
+        type_template : "std_logic_vector({{ data_width - 1 }} downto 0)",
         direction : SignalDirection::In,
         description : "data to write",
         xilinx_attr : ""
@@ -155,15 +154,15 @@ const APB3_SIGNALS : [SignalDef<'static>;8] = [
 
 /// template for APB3d signal names
 const APB3_TEMPLATES : SignalTemplates<'static> = SignalTemplates {
-    template_in : "apbs_{interface}_{signal}*",
-    template_out : "apbs_{interface}_{signal}*",
+    template_in : "apbs_{{ interface }}_{{ signal }}*",
+    template_out : "apbs_{{ interface }}_{{ signal }}*",
 };
 
 /// table of signals for avalon memory mapped
 const AVALON_SIGNALS : [SignalDef<'static>;5] = [
     SignalDef {
         token_name : "address",
-        type_template : "std_logic_vector({address_width_m1} downto 0)",
+        type_template : "std_logic_vector({{ address_width - 1 }} downto 0)",
         direction : SignalDirection::In,
         description : "address",
         xilinx_attr : ""
@@ -184,14 +183,14 @@ const AVALON_SIGNALS : [SignalDef<'static>;5] = [
     },
     SignalDef {
         token_name : "readdata",
-        type_template : "std_logic_vector({data_width_m1} downto 0)",
+        type_template : "std_logic_vector({{ data_width - 1 }} downto 0)",
         direction : SignalDirection::Out,
         description : "read back data",
         xilinx_attr : ""
     },
     SignalDef {
         token_name : "writedata",
-        type_template : "std_logic_vector({data_width_m1} downto 0)",
+        type_template : "std_logic_vector({{ data_width - 1 }} downto 0)",
         direction : SignalDirection::In,
         description : "data to write",
         xilinx_attr : ""
@@ -200,15 +199,15 @@ const AVALON_SIGNALS : [SignalDef<'static>;5] = [
 
 /// template for Avalon memory mapped signal names
 const AVALON_TEMPLATES : SignalTemplates<'static> = SignalTemplates {
-    template_in : "avs_{interface}_{signal}*",
-    template_out : "avs_{interface}_{signal}*",
+    template_in : "avs_{{ interface }}_{{ signal }}*",
+    template_out : "avs_{{ interface }}_{{ signal }}*",
 };
 
 /// table of signals for AXI4 light
 const AXI4L_SIGNALS : [SignalDef<'static>;16] = [
     SignalDef {
         token_name : "awaddr",
-        type_template : "std_logic_vector({address_width_m1} downto 0)",
+        type_template : "std_logic_vector({{ address_width - 1 }} downto 0)",
         direction : SignalDirection::In,
         description : "write address channel address",
         xilinx_attr : ""
@@ -229,7 +228,7 @@ const AXI4L_SIGNALS : [SignalDef<'static>;16] = [
     },
     SignalDef {
         token_name : "wdata",
-        type_template : "std_logic_vector({data_width_m1} downto 0)",
+        type_template : "std_logic_vector({{ data_width - 1 }} downto 0)",
         direction : SignalDirection::In,
         description : "write data channel data",
         xilinx_attr : ""
@@ -271,7 +270,7 @@ const AXI4L_SIGNALS : [SignalDef<'static>;16] = [
     },
     SignalDef {
         token_name : "araddr",
-        type_template : "std_logic_vector({address_width_m1} downto 0)",
+        type_template : "std_logic_vector({{ address_width - 1 }} downto 0)",
         direction : SignalDirection::In,
         description : "read address channel address",
         xilinx_attr : ""
@@ -292,7 +291,7 @@ const AXI4L_SIGNALS : [SignalDef<'static>;16] = [
     },
     SignalDef {
         token_name : "rdata",
-        type_template : "std_logic_vector({data_width_m1} downto 0)",
+        type_template : "std_logic_vector({{ data_width - 1 }} downto 0)",
         direction : SignalDirection::Out,
         description : "read data channel data",
         xilinx_attr : ""
@@ -322,54 +321,26 @@ const AXI4L_SIGNALS : [SignalDef<'static>;16] = [
 
 /// template for Avalon memory mapped signal names
 const AXI4L_TEMPLATES : SignalTemplates<'static> = SignalTemplates {
-    template_in : "s_{interface}_{signal}*",
-    template_out : "s_{interface}_{signal}*",
+    template_in : "s_{{ interface }}_{{ signal }}*",
+    template_out : "s_{{ interface }}_{{ signal }}*",
 };
 
-/// context used to run the templates when generating ports
-#[derive(Serialize)]
-pub struct PortTemplateContext<'a> {
-        /// project name
-    pub project: &'a str,
-        /// interface name
-    pub interface: &'a str,
-        /// signal name
-    pub signal: &'a str,
-        /// address width
-    pub address_width : u32,
-        /// address width minus 1
-    pub address_width_m1 : u32,
-        /// data width
-    pub data_width : u32,
-        /// data width minus 1
-    pub data_width_m1 : u32,
-}
-
 /// generate a GenIntPort from a signal definition
-pub fn to_gen_int_port(definition: &SignalDef::<'_>, templates: &SignalTemplates::<'_>, context: &PortTemplateContext::<'_>, general_token_list : &mut tokenlist::TokenList) -> Result<genmodel::GenIntPort, Box<dyn Error>> {
-    let new_context = PortTemplateContext {
-        project: context.project,
-        interface: context.interface,
-        signal: definition.token_name,
-        address_width: context.address_width,
-        address_width_m1 : context.address_width_m1,
-        data_width : context.data_width,
-        data_width_m1 : context.data_width_m1
-    };
+pub fn to_gen_int_port(definition: &SignalDef::<'_>, templates: &SignalTemplates::<'_>, context: &tera::Context, general_token_list : &mut tokenlist::TokenList) -> Result<genmodel::GenIntPort, Box<dyn Error>> {
+    let mut new_context = context.clone();
+    new_context.insert("signal", definition.token_name);
 
     // template engine
-    let mut tt = tinytemplate::TinyTemplate::new();
-    tt.set_default_formatter(&tinytemplate::format_unescaped);
-    tt.add_template("name", match definition.direction {
+    let name_template = match definition.direction {
         SignalDirection::In => templates.template_in,
         SignalDirection::Out => templates.template_out
-    })?;
-    tt.add_template("type", definition.type_template)?;
+    };
+    //tt.add_template("type", definition.type_template)?;
 
     // build all the elements of the GenIntPort structure
     let function = definition.token_name.to_owned();
-    let name = general_token_list.generate_token(&tt.render("name", &new_context)?);
-    let port_type = tt.render("type", &new_context)?;
+    let name = general_token_list.generate_token(&tera::Tera::one_off(&name_template, &new_context, false)?);
+    let port_type = tera::Tera::one_off(definition.type_template, &new_context, false)?;
     let direction = match &definition.direction {
         SignalDirection::In => "in".to_owned(),
         SignalDirection::Out => "out".to_owned()
@@ -388,7 +359,7 @@ pub fn to_gen_int_port(definition: &SignalDef::<'_>, templates: &SignalTemplates
 }
 
 /// generate a port list for the given interface type
-pub fn to_port_list(interface_type : mdf::InterfaceType, context: PortTemplateContext<'_>, general_token_list : &mut tokenlist::TokenList) -> Result<Vec<genmodel::GenIntPort>, Box<dyn Error>> {
+pub fn to_port_list(interface_type : mdf::InterfaceType, context: &tera::Context, general_token_list : &mut tokenlist::TokenList) -> Result<Vec<genmodel::GenIntPort>, Box<dyn Error>> {
     // choose the right definitions list and name templates
     
     let (defs, templates) = match interface_type {
