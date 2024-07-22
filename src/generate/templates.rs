@@ -1,7 +1,18 @@
 use tera::{Tera,Result};
 use lazy_static::lazy_static;
+use std::collections::HashMap;
+
+fn escape_markdown(value : &tera::Value, _args : &HashMap<String, tera::Value>) -> tera::Result<tera::Value> {
+    let in_string : String = tera::from_value(value.clone())?;
+    let underscore_replaced = str::replace(&in_string, "_", r"\_");
+    let star_replaced = str::replace(&underscore_replaced, "*", r"\*");
+
+    Ok(tera::to_value(star_replaced)?)
+}
 
 fn fill_templates(tera: &mut Tera) -> Result<()> {
+    tera.register_filter("escape_markdown", escape_markdown);
+
     // documentation template
     tera.add_raw_template("documentation.md", include_str!("templates/documentation.md"))?;
 
@@ -41,6 +52,7 @@ fn fill_templates(tera: &mut Tera) -> Result<()> {
         ("gf_write_enable_name", "{register}_we*"),
         ("gf_write_enable_description", "signals that {full_name} is being written")
         ])?;
+    
     Ok(())
 }
 
