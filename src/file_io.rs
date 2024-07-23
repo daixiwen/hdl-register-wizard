@@ -20,24 +20,23 @@ fn file_name(handle : &rfd::FileHandle) -> (String, String) {
 }
 
 /// Open/Load file menu item
-#[inline_props]
-pub fn Open<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a> {
+#[component]
+pub fn Open(app_data: Signal<HdlWizardApp>) -> Element {
     // the load operation itself is done in a future, so we share the result through this state, holding:
     // - the file name (String)
     // - the file parent path (String)
     // - the result of the load operation (either a Mdf or a serde error)
-    let open_status: &UseState<Option<(String, String, Result<mdf::Mdf, serde_json::Error>)>> =
-        use_state(cx, || None);
+    let mut open_status: Signal<Option<(String, String, Result<mdf::Mdf, String>)>> = use_signal(|| None);
 
     // read back the result of the future, if any
-    match open_status.get() {
+    match open_status() {
         // load operation successful. we change the model in the application state and register the change
         // for undo operation
         Some((file_name, file_folder, Ok(model))) => {
             app_data.with_mut(|data| {
-                data.data.model = std::sync::Arc::new(model.to_owned());
-                data.data.current_file_name = Some(file_name.to_owned());
-                data.data.current_path = file_folder.to_owned();
+                data.data.model = std::sync::Arc::new(model);
+                data.data.current_file_name = Some(file_name);
+                data.data.current_path = file_folder;
                 data.register_undo("load file");
             });
             // clear the open status state so that we don't rerun this
@@ -61,8 +60,8 @@ pub fn Open<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a
 
     // spawn a future when the open menu item is activated
     let open_file = move |_| {
-        cx.spawn({
-            let open_status = open_status.to_owned();
+        spawn({
+            let mut open_status = open_status.to_owned();
             let current_path = current_path.to_owned();
 
             async move {
@@ -78,31 +77,31 @@ pub fn Open<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a
                     let (file_name, file_folder) = file_name(&file);
 
                     // load the file
-                    open_status.set(Some((file_name, file_folder, serde_json::from_slice::<mdf::Mdf>(&file.read().await))));
+                    open_status.set(Some((file_name, file_folder, serde_json::from_slice::<mdf::Mdf>(&file.read().await).map_err(|e| e.to_string()))));
                 }
             }
-        })
+        });
     };
 
     // render the menu item
-    cx.render(rsx! {
+    rsx! {
         a { class: "navbar-item", onclick: open_file,
             i { class: "fa-solid fa-folder-open mr-1" }
             "Open..."
         }
-    })
+    }
 }
 
 /// Save menu item
 #[cfg(not(target_arch = "wasm32"))]
-#[inline_props]
-pub fn Save<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a> {
+#[component]
+pub fn Save(app_data: Signal<HdlWizardApp>) -> Element {
     // the save operation itself is done in a future, so we share the result through this state, holding
     // just the result. Either an OK or an error message as a string
-    let save_status: &UseState<Option<Result<(), String>>> = use_state(cx, || None);
+    let mut save_status: Signal<Option<Result<(), String>>> = use_signal(|| None);
 
     // read back the result of the future, if any
-    match save_status.get() {
+    match save_status() {
         // save operation completed. send a notification
         Some(Ok(_)) => {
             let file_name = app_data.read().data.current_file_name.clone().unwrap_or_default();
@@ -116,7 +115,7 @@ pub fn Save<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a
         // error while saving. Display the error message
         Some(Err(message)) => {
             app_data.with_mut(|data| {
-                data.error_message = Some(message.clone());
+                data.error_message = Some(message);
             });
             // clear the open status state so that we don't rerun this
             save_status.set(None);
@@ -126,13 +125,14 @@ pub fn Save<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a
         None => (),
     }
 
-    let model_to_save = app_data.read().data.model.clone();
-    if let Some(current_file_name) = app_data.read().data.current_file_name.clone() {
+    let app_data = app_data.read();
+    let model_to_save = app_data.data.model.clone();
+    if let Some(current_file_name) = app_data.data.current_file_name.clone() {
 
         // spawn a future when the save menu item is selected
         let save_file = move |_| {
-            cx.spawn({
-                let save_status = save_status.to_owned();
+            spawn({
+                let mut save_status = save_status.to_owned();
                 let model_to_save = model_to_save.to_owned();
                 let current_file_name = current_file_name.to_owned();
     
@@ -156,49 +156,49 @@ pub fn Save<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a
                         }
                     }
                 }
-            })
+            });
         };
     
         // render the save menu item
-        cx.render(rsx! {
+        rsx! {
             a { class: "navbar-item", onclick: save_file,
                 i { class: "fa-solid fa-file-export mr-1" }
                 "Save"
             }
-        })    
+        } 
     } else {
         // we don't have a file name, so we don't even need to display the Save menu item
-        cx.render(rsx! { "" })
+        rsx! { "" }
     }
 }
 
 /// No save function in web application, only Save As
 #[cfg(target_arch = "wasm32")]
 #[allow(unused)]
-#[inline_props]
-pub fn Save<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a> {
-    cx.render(rsx! { "" })
+#[component]
+pub fn Save(app_data: Signal<HdlWizardApp>) -> Element {
+    rsx! { "" }
 }
 
 /// SaveAs menu item, desktop version
 #[cfg(not(target_arch = "wasm32"))]
-#[inline_props]
-pub fn SaveAs<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a> {
+#[component]
+pub fn SaveAs(app_data: Signal<HdlWizardApp>) -> Element {
 
     // the save as operation itself is done in a future, so we share the result through this state, holding
     // a result with the file name or an error message as a string
-    let save_status: &UseState<Option<Result<String, String>>> = use_state(cx, || None);
+    let mut save_status: Signal<Option<Result<String, String>>> = use_signal(|| None);
 
     // read back the result from the future, if any
-    match save_status.get() {
+    match save_status() {
         // save as operation completed. send a notification and remember the file name
         Some(Ok(file_name)) => {
             app_data.with_mut(|data| {
                 data.notification = Some("file saved".to_owned());
-                data.data.current_file_name = Some(file_name.to_owned());
-                if let Some(file_folder) = Path::new(file_name).parent() {
+                if let Some(file_folder) = Path::new(&file_name).parent() {
                     data.data.current_path = file_folder.to_str().unwrap_or_default().to_owned();
                 }
+                data.data.current_file_name = Some(file_name);
             });
             // clear the open status state so that we don't rerun this
             save_status.set(None);
@@ -217,14 +217,15 @@ pub fn SaveAs<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<
         None => (),
     }
 
-    let model_to_save = app_data.read().data.model.clone();
-    let current_path = app_data.read().data.current_path.clone();
+    let app_data = app_data.read();
+    let model_to_save = app_data.data.model.clone();
+    let current_path = app_data.data.current_path.clone();
 
 
     // spawn a future when the save menu item is selected
     let save_file = move |_| {
-        cx.spawn({
-            let save_status = save_status.to_owned();
+        spawn({
+            let mut save_status = save_status.to_owned();
             let model_to_save = model_to_save.to_owned();
             let current_path = current_path.to_owned();
 
@@ -260,22 +261,22 @@ pub fn SaveAs<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<
                     }
                 }
             }
-        })
+        });
     };
 
     // render the Save As menu item
-    cx.render(rsx! {
+    rsx! {
         a { class: "navbar-item", onclick: save_file,
             i { class: "fa-solid fa-file-export mr-1" }
             "Save as..."
         }
-    })
+    }
 }
 
 /// SaveAs menu item, web version
 #[cfg(target_arch = "wasm32")]
-#[inline_props]
-pub fn SaveAs<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a> {
+#[component]
+pub fn SaveAs(app_data: Signal<HdlWizardApp>) -> Element {
 
     // function that performs the actual save, as an uri embedded in the html. It will be "displayed" on the next round
     let save_file = move |_| {
@@ -298,10 +299,10 @@ pub fn SaveAs<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<
     };
 
     // render the Save As menu item
-    cx.render(rsx! {
+    rsx! {
         a { class: "navbar-item", onclick: save_file,
             i { class: "fa-solid fa-file-export mr-1" }
             "Save as..."
         }
-    })
+    }
 }

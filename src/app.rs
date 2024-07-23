@@ -302,80 +302,81 @@ impl HdlWizardApp {
     }
 }
 
-#[inline_props]
 /// generate the live help column, depending on the displayed page
-pub fn LiveHelp<'a>(cx: Scope, app_data: &'a UseRef<HdlWizardApp>, page_type: page::PageType, live_help_setting: bool) -> Element<'a> {
-    cx.render(
-        if *live_help_setting {
-            // content is html generated from markdown, included in the application
-            let (title, contents) = match page_type {
-                page::PageType::Project => ("Project", include_str!(concat!(env!("OUT_DIR"), "/live_help/project.html")).to_owned()),
-                page::PageType::Interface(_) => ("Interface", include_str!(concat!(env!("OUT_DIR"), "/live_help/interface.html")).to_owned()),
-                page::PageType::Register(int, reg, field) => {
-                    // we need to determine if this register is a bitfield, and if it has a bitfield selected, as
-                    // this will change which documentation will be shown
-                    let is_bitfield = {
-                        if let Some(interface) = app_data.read().data.model.interfaces.get(*int) {
-                            if let Some(register) = interface.registers.get(*reg) {
-                                register.signal.is_none()
-                            } else { false}
-                        } else {false}
-                    };
+#[component]
+pub fn LiveHelp(app_data: Signal<HdlWizardApp>, page_type: page::PageType, live_help_setting: bool) -> Element {
+    if live_help_setting {
+        // content is html generated from markdown, included in the application
+        let (title, contents) = match page_type {
+            page::PageType::Project => ("Project", include_str!(concat!(env!("OUT_DIR"), "/live_help/project.html")).to_owned()),
+            page::PageType::Interface(_) => ("Interface", include_str!(concat!(env!("OUT_DIR"), "/live_help/interface.html")).to_owned()),
+            page::PageType::Register(int, reg, field) => {
+                // we need to determine if this register is a bitfield, and if it has a bitfield selected, as
+                // this will change which documentation will be shown
+                let is_bitfield = {
+                    if let Some(interface) = app_data.read().data.model.interfaces.get(int) {
+                        if let Some(register) = interface.registers.get(reg) {
+                            register.signal.is_none()
+                        } else { false}
+                    } else {false}
+                };
 
-                    let has_bitfield_selected = field.is_some();
+                let has_bitfield_selected = field.is_some();
 
-                    // load the different parts
-                    let register_top = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-top.html"));
-                    let register_med_bitfield = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-med-bitfield.html"));
-                    let register_med_normal = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-med-normal.html"));
-                    let register_access = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-access.html"));
-                    let register_bottom_normal = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-bottom-normal.html"));
-                    let bitfield_top = include_str!(concat!(env!("OUT_DIR"), "/live_help/bitfield-top.html"));
-                    let bitfield_bottom = include_str!(concat!(env!("OUT_DIR"), "/live_help/bitfield-bottom.html"));
+                // load the different parts
+                let register_top = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-top.html"));
+                let register_med_bitfield = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-med-bitfield.html"));
+                let register_med_normal = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-med-normal.html"));
+                let register_access = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-access.html"));
+                let register_bottom_normal = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-bottom-normal.html"));
+                let bitfield_top = include_str!(concat!(env!("OUT_DIR"), "/live_help/bitfield-top.html"));
+                let bitfield_bottom = include_str!(concat!(env!("OUT_DIR"), "/live_help/bitfield-bottom.html"));
 
-                    // and combine them depending on the context
-                    let text = match (is_bitfield, has_bitfield_selected) {
-                        (false, _) => [register_top, register_med_normal, register_access, register_bottom_normal].concat(),
-                        (true, false) => [register_top, register_med_bitfield].concat(),
-                        (true, true) => [register_top, register_med_bitfield, bitfield_top, register_access, bitfield_bottom].concat()
-                    };
+                // and combine them depending on the context
+                let text = match (is_bitfield, has_bitfield_selected) {
+                    (false, _) => [register_top, register_med_normal, register_access, register_bottom_normal].concat(),
+                    (true, false) => [register_top, register_med_bitfield].concat(),
+                    (true, true) => [register_top, register_med_bitfield, bitfield_top, register_access, bitfield_bottom].concat()
+                };
 
-                    ("Register", text)
-                },
-                page::PageType::Preview => ("Prreview", include_str!(concat!(env!("OUT_DIR"), "/live_help/preview.html")).to_owned()),
+                ("Register", text)
+            },
+            page::PageType::Preview => ("Prreview", include_str!(concat!(env!("OUT_DIR"), "/live_help/preview.html")).to_owned()),
 //                _ => ("WIP","<p>Not written yet</p>".to_owned()) 
-            };
-            rsx!(
-                aside { class: "panel ext-sticky m-5 ext-livehelp",
-                    p { class: "panel-heading", "{title}" }
-                    div { 
-                        class: "panel-block content",
-                        article {
-                            dangerous_inner_html : "{contents}"
-                        }
+        };
+        rsx!(
+            aside { class: "panel ext-sticky m-5 ext-livehelp",
+                p { class: "panel-heading", "{title}" }
+                div { 
+                    class: "panel-block content",
+                    article {
+                        dangerous_inner_html : "{contents}"
                     }
-                }    
-            )
-        } else {
-            rsx!("")
-        }
-    )
+                }
+            }    
+        )
+    } else {
+        rsx!("")
+    }
 }
 
+const STYLE_CSS : &str = include_str!("./style.css");
+
 /// application main function, for both web and desktop
-pub fn App<'a>(cx: Scope<'a>) -> Element<'a> {
+pub fn App() -> Element {
     // this structure holds all the application data and will be sent over all the GUI modules
-    let app_data = use_ref(cx, || {
+    let app_data = use_signal( || {
         let mut app = HdlWizardApp::try_load();
         app.register_undo("initial load");
         app
     });
 
+    /*
     // I didn't find a clean way to get an event when the window size is changed yet, so for now I just update the position
     // and size at each re-render
     #[cfg(not(target_arch = "wasm32"))]
     {
-        let window = use_window(cx).webview.as_ref().window();
+        let window = use_window().webview.window();
         let size = window.inner_size();
         let pos = window.inner_position();
 
@@ -383,7 +384,7 @@ pub fn App<'a>(cx: Scope<'a>) -> Element<'a> {
             app_data.write_silent().data.target.window_pos = pos;
             app_data.write_silent().data.target.window_size = size;
         }
-    }
+    }*/
 
     // when a webapp, update storage at each change
     #[cfg(target_arch = "wasm32")]
@@ -395,14 +396,14 @@ pub fn App<'a>(cx: Scope<'a>) -> Element<'a> {
     let live_help_setting = app_data.read().live_help.to_owned();
 
     // page render
-    cx.render(rsx! {
+    rsx! {
         link {
             href: "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css",
             rel: "stylesheet"
         }
         script { src: "https://kit.fontawesome.com/e5a7832160.js", crossorigin: "anonymous" }
         div {
-            style { include_str!("./style.css") }
+            style { {STYLE_CSS} }
             navigation::NavBar { app_data: app_data }
             div { class: "columns",
                 navigation::SideBar {
@@ -421,5 +422,5 @@ pub fn App<'a>(cx: Scope<'a>) -> Element<'a> {
                 }
             }
         }
-    })
+    }
 }
