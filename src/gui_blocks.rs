@@ -4,7 +4,6 @@
 use crate::app::HdlWizardApp;
 use dioxus::prelude::*;
 
-use crate::file_formats::mdf;
 use crate::gui_types;
 use crate::page::PageType;
 use crate::utils;
@@ -428,21 +427,29 @@ pub fn OptionEnumWidget<F: PartialEq + Clone + strum::IntoEnumIterator + std::st
                                 }
                             },
                             disabled: "{disabled}",
-                            if field_for_none.is_none() && value.is_none() {
-                                rsx!{
-                                    option {
-                                        selected: "true",
-                                        "(select)"
-                                    },
-                                }
-                            }
-                            options,
-                            if let Some(field) = field_for_none {
-                                rsx!{
-                                    option {
-                                        selected: "{value == None}",
-                                        "{field}"
+                            {
+                                if field_for_none.is_none() && value.is_none() {
+                                    rsx!{
+                                        option {
+                                            selected: "true",
+                                            "(select)"
+                                        },
                                     }
+                                } else {
+                                    rsx!{}
+                                }
+                            },
+                            {options},
+                            {
+                                if let Some(field) = field_for_none {
+                                    rsx!{
+                                        option {
+                                            selected: "{value == None}",
+                                            "{field}"
+                                        }
+                                    }
+                                } else {
+                                    rsx!{}
                                 }
                             }
                         }
@@ -454,27 +461,33 @@ pub fn OptionEnumWidget<F: PartialEq + Clone + strum::IntoEnumIterator + std::st
 }
 
 // properties for a checkbox
-#[derive(Props)]
-pub struct CheckBoxProps<'a> {
-    app_data: &'a UseRef<HdlWizardApp>,
-    gui_label: &'a str,
-    checkbox_label: &'a str,
+#[derive(Props, Clone, PartialEq)]
+pub struct CheckBoxProps {
+    app_data: Signal<HdlWizardApp>,
+    gui_label: &'static str,
+    checkbox_label: &'static str,
     value: bool,
-    undo_label: Option<&'a str>,
-    update_model: Option<RefCell<Box<dyn FnMut(&mut mdf::Mdf, &bool) -> () + 'a>>>,
-    update_int: Option<RefCell<Box<dyn FnMut(&mut mdf::Interface, &bool) -> () + 'a>>>,
-    update_reg: Option<RefCell<Box<dyn FnMut(&mut mdf::Register, &bool) -> () + 'a>>>,
-    update_field: Option<RefCell<Box<dyn FnMut(&mut mdf::Field, &bool) -> () + 'a>>>,
+    undo_label: Option<&'static str>,
+    update_model: Option<EventHandler<bool>>,
+    update_int: Option<EventHandler<(usize,bool)>>,
+    update_reg: Option<EventHandler<(usize,usize,bool)>>,
+    update_field: Option<EventHandler<(usize,usize,usize,bool)>>,
 }
 
 /// checkbox widget component, using a boolean for the value type
-pub fn CheckBox<'a>(cx: Scope<'a, CheckBoxProps<'a>>) -> Element<'a> {
-    let gui_label = cx.props.gui_label;
-    let checkbox_label = cx.props.checkbox_label;
-    let value = cx.props.value;
-    let undo_description = cx.props.undo_label.unwrap_or_default();
+pub fn CheckBox(props: CheckBoxProps) -> Element {
+    let gui_label = props.gui_label;
+    let checkbox_label = props.checkbox_label;
+    let value = props.value;
+    let undo_description = props.undo_label.unwrap_or_default();
 
-    cx.render(rsx! {
+    let app_data = props.app_data;
+    let update_model = props.update_model;
+    let update_int = props.update_int;
+    let update_reg = props.update_reg;
+    let update_field = props.update_field;
+
+    rsx! {
         div { class: "field is-horizontal",
             div { class: "field-label is-normal", label { class: "label", "{gui_label}" } }
             div { class: "field-body",
@@ -485,13 +498,13 @@ pub fn CheckBox<'a>(cx: Scope<'a, CheckBoxProps<'a>>) -> Element<'a> {
                                 r#type: "checkbox",
                                 onclick: move |_| {
                                     apply_function(
-                                        &cx.props.app_data,
+                                        app_data,
                                         !value,
                                         undo_description,
-                                        &cx.props.update_model,
-                                        &cx.props.update_int,
-                                        &cx.props.update_reg,
-                                        &cx.props.update_field,
+                                        update_model,
+                                        update_int,
+                                        update_reg,
+                                        update_field,
                                     );
                                 },
                                 checked: "{value}"
@@ -502,5 +515,5 @@ pub fn CheckBox<'a>(cx: Scope<'a, CheckBoxProps<'a>>) -> Element<'a> {
                 }
             }
         }
-    })
+    }
 }
