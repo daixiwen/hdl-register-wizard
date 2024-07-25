@@ -20,12 +20,9 @@ pub mod preview;
 
 /// when saving a file on the webapp, create an URI that the user can click to download 
 #[cfg(target_arch = "wasm32")]
-#[inline_props]
-pub fn FileSave<'a>(
-    cx: Scope<'a>, 
-    app_data: &'a UseRef<HdlWizardApp>, 
-) -> Element<'a> {
-    cx.render(rsx! {
+#[component]
+pub fn FileSave(app_data: Signal<HdlWizardApp>) -> Element {
+    rsx! {
         if let Some(download_uri) = &app_data.read().web_file_save {
             let file_name = match &app_data.read().data.current_file_name {
                 None => format!("{}.regwiz",&app_data.read().data.model.name),
@@ -73,108 +70,107 @@ pub fn FileSave<'a>(
                 ""
             }
         }
-    })
+    }
 }
 
 /// the URI file save feature is not used on desktop
 #[cfg(not(target_arch = "wasm32"))]
-#[inline_props]
+#[component]
 #[allow(unused)]
-pub fn FileSave<'a>(
-    cx: Scope<'a>, 
-    app_data: &'a UseRef<HdlWizardApp>
-) -> Element<'a> {
+pub fn FileSave(app_data: Signal<HdlWizardApp>) -> Element {
     None
 }
 
 /// main contents
-#[inline_props]
-pub fn Content<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a> {
-    let notification_timer = use_state(cx, || false);
+#[component]
+pub fn Content(app_data: Signal<HdlWizardApp>) -> Element {
+    let mut notification_timer = use_signal(|| false);
     let page_type = app_data.read().page_type.to_owned();
     
     // notification system. We use a timer in a future to know when to remove it
-    if *notification_timer.get() {
+    if notification_timer() {
         app_data.write().notification = None;
         notification_timer.set(false);
     }
 
-    cx.render(rsx! {
-        if let Some(notification_message) = &app_data.read().notification {
+    rsx! {
+        {
+            if let Some(notification_message) = &app_data.read().notification {
 
-            // spwan the future with the timer
-            cx.spawn({
-                let notification_timer = notification_timer.to_owned();
+                // spwan the future with the timer
+                spawn({
+                    let mut notification_timer = notification_timer.to_owned();
 
-                async move {
-                    Delay::new(Duration::from_secs(3)).await;
-                    notification_timer.set(true);
-                }
-            });
-
-            // render a notification block
-            rsx! {
-                div {
-                    class: "ext-notification",
-                    article {
-                        class: "message is-warning",
-                        div {
-                            class:"message-header",
-                            p {
-                                "Note"
-                            },
-                            button {
-                                class:"delete",
-                                onclick: move |_| app_data.with_mut(|app| {app.notification = None;})
-                            }
-                        }
-                        div {
-                            class: "message-body",
-                            "{notification_message}"
-                        }
+                    async move {
+                        Delay::new(Duration::from_secs(3)).await;
+                        notification_timer.set(true);
                     }
-                }
-            }
-        }
-
-        // if there is an error message to display, put it in its box
-        if let Some(error_message) = &app_data.read().error_message {
-            rsx! {
-                div {
-                    class: "modal is-active",
+                });
+                // render a notification block
+                rsx! {
                     div {
-                        class:"modal-background"
-                    },
-                    div {
-                        class:"modal-content",
+                        class: "ext-notification",
                         article {
-                            class: "message is-danger",
+                            class: "message is-warning",
                             div {
                                 class:"message-header",
                                 p {
-                                    "Error"
+                                    "Note"
                                 },
                                 button {
                                     class:"delete",
-                                    onclick: move |_| app_data.with_mut(|app| {app.clear_error();})
+                                    onclick: move |_| app_data.with_mut(|app| {app.notification = None;})
                                 }
                             }
                             div {
                                 class: "message-body",
-                                "{error_message}"
+                                "{notification_message}"
                             }
                         }
                     }
                 }
+            } else { None }
+        },
+        {
+            // if there is an error message to display, put it in its box
+            if let Some(error_message) = &app_data.read().error_message {
+                rsx! {
+                    div {
+                        class: "modal is-active",
+                        div {
+                            class:"modal-background"
+                        },
+                        div {
+                            class:"modal-content",
+                            article {
+                                class: "message is-danger",
+                                div {
+                                    class:"message-header",
+                                    p {
+                                        "Error"
+                                    },
+                                    button {
+                                        class:"delete",
+                                        onclick: move |_| app_data.with_mut(|app| {app.clear_error();})
+                                    }
+                                }
+                                div {
+                                    class: "message-body",
+                                    "{error_message}"
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                None
             }
-        }
-
+        },
         // add the box for the file save when in the webapp
-        rsx! {
+
             FileSave {
                 app_data: app_data
             }
-        }
         
         // fill in the contents, calling the correct module depending on the page type
         match page_type {
@@ -207,5 +203,5 @@ pub fn Content<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element
                 }
             },
         },
-    })
+    }
 }

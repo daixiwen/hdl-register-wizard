@@ -14,8 +14,9 @@ fn main() {
     let window_pos = app_settings.data.target.window_pos;
     let window_size = app_settings.data.target.window_size;
 
-    dioxus_desktop::launch_cfg(
+    dioxus_desktop::launch::launch(
         app::App,
+        Vec::new(),
         Config::default().with_window(
             WindowBuilder::new()
                 .with_resizable(true)

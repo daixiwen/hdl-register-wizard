@@ -15,7 +15,7 @@ use crate::page::PageType;
 
 #[cfg(not(target_arch = "wasm32"))]
 /// Called from the menu to generate the files
-async fn gen_all(model: Arc<Mdf>, settings: Settings, status: UseState<Option<Result<(), String>>>, _gen_doc : bool, _gen_code : bool) {
+async fn gen_all(model: Arc<Mdf>, settings: Settings, mut status: Signal<Option<Result<(), String>>>, _gen_doc : bool, _gen_code : bool) {
     // open file dialog to choose file name
     let file = AsyncFileDialog::new()
         .add_filter("word document", &["html"])
@@ -62,14 +62,14 @@ async fn gen_all(_model: Arc<Mdf>, _settings: Settings, status: UseState<Option<
 }
 
 /// Generate menu
-#[inline_props]
-pub fn Menu<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a> {
+#[component]
+pub fn Menu(app_data: Signal<HdlWizardApp>) -> Element {
     // the save operation itself is done in a future, so we share the result through this state, holding
     // just the result. Either an OK or an error message as a string
-    let save_status: &UseState<Option<Result<(), String>>> = use_state(cx, || None);
+    let mut save_status: Signal<Option<Result<(), String>>> = use_signal(|| None);
 
     // read back the result of the future, if any
-    match save_status.get() {
+    match save_status() {
         // save operation completed. send a notification
         Some(Ok(_)) => {
             app_data.with_mut(|data| {
@@ -92,7 +92,7 @@ pub fn Menu<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a
         None => (),
     }
     
-    cx.render(rsx! {
+    rsx! {
         div { class: "navbar-item has-dropdown is-hoverable",
             a { class: "navbar-link", "Generate" }
             div { class: "navbar-dropdown",
@@ -115,9 +115,9 @@ pub fn Menu<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a
                         let model = app_data.read().data.model.clone();
                         let settings = app_data.read().data.settings.clone();
 
-                        cx.spawn({
+                        spawn({
                             gen_all(model, settings, save_status, true, false)
-                        })
+                        });
                     },
                     i { class: "fa-solid fa-industry mr-1" }
                     "Documentation"
@@ -129,9 +129,9 @@ pub fn Menu<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a
                         let model = app_data.read().data.model.clone();
                         let settings = app_data.read().data.settings.clone();
 
-                        cx.spawn({
+                        spawn({
                             gen_all(model, settings, save_status, false, true)
-                        })
+                        });
                     },
                     i { class: "fa-solid fa-industry mr-1" }
                     "Code"
@@ -143,14 +143,14 @@ pub fn Menu<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a
                         let model = app_data.read().data.model.clone();
                         let settings = app_data.read().data.settings.clone();
 
-                        cx.spawn({
+                        spawn({
                             gen_all(model, settings, save_status, true, true)
-                        })
+                        });
                     },
                     i { class: "fa-solid fa-industry mr-1" }
                     "All"
                 }
             }
         }
-    })
+    }
 }

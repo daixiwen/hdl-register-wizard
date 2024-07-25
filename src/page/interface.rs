@@ -4,31 +4,31 @@
 use crate::app::HdlWizardApp;
 use crate::file_formats::mdf;
 use crate::gui_blocks;
-use crate::gui_blocks::callback;
+use crate::gui_blocks::callback_interface;
 use crate::page::PageType;
 use crate::utils;
 use dioxus::prelude::*;
 
 /// builds a single line in the table with all the registers
-#[inline_props]
-fn TableLine<'a>(
-    cx: Scope<'a>,
-    app_data: &'a UseRef<HdlWizardApp>,
+#[component]
+fn TableLine(
+    app_data: Signal<HdlWizardApp>,
     register_number: usize,
     register_name: String,
     #[props(!optional)] register_type: Option<utils::SignalType>,
     register_address: mdf::Address,
-) -> Element<'a> {
-    if let PageType::Interface(interface_number) = app_data.read().page_type {
+) -> Element {
+    let page_type = app_data.read().page_type.clone();
+    if let PageType::Interface(interface_number) = page_type {
         // utility variables used when generating the html
         let num_of_registers = app_data.read().data.model.interfaces[interface_number]
             .registers
             .len();
-        let up_disabled = *register_number == 0;
-        let down_disabled = *register_number == num_of_registers - 1;
+        let up_disabled = register_number == 0;
+        let down_disabled = register_number == num_of_registers - 1;
 
         let display_name = if register_name.is_empty() {
-            "(empty)"
+            "(empty)".to_owned()
         } else {
             register_name
         };
@@ -38,7 +38,7 @@ fn TableLine<'a>(
         };
 
         // render the line
-        cx.render(rsx! {
+        rsx! {
             tr {
                 td {
                     a { onclick: move |_| {
@@ -47,7 +47,7 @@ fn TableLine<'a>(
                                     data
                                         .page_type = PageType::Register(
                                         interface_number,
-                                        *register_number,
+                                        register_number,
                                         None,
                                     );
                                 })
@@ -69,7 +69,7 @@ fn TableLine<'a>(
                                             data.get_mut_model()
                                                 .interfaces[interface_number]
                                                 .registers
-                                                .swap(*register_number - 1, *register_number);
+                                                .swap(register_number - 1, register_number);
                                             data.register_undo("move register up")
                                         })
                                 }
@@ -86,7 +86,7 @@ fn TableLine<'a>(
                                             data.get_mut_model()
                                                 .interfaces[interface_number]
                                                 .registers
-                                                .swap(*register_number, *register_number + 1);
+                                                .swap(register_number, register_number + 1);
                                             data.register_undo("move register down")
                                         })
                                 }
@@ -101,7 +101,7 @@ fn TableLine<'a>(
                                         data
                                             .page_type = PageType::Register(
                                             interface_number,
-                                            *register_number,
+                                            register_number,
                                             None,
                                         );
                                     })
@@ -116,7 +116,7 @@ fn TableLine<'a>(
                                         data.get_mut_model()
                                             .interfaces[interface_number]
                                             .registers
-                                            .remove(*register_number);
+                                            .remove(register_number);
                                         data.register_undo("remove register")
                                     })
                             },
@@ -125,20 +125,18 @@ fn TableLine<'a>(
                     }
                 }
             }
-        })
+        }
     } else {
-        cx.render(rsx!( p { "error.... not in a interface page" } ))
+        rsx!{ p { "error.... not in a interface page" } }
     }
 }
 
 /// Whole page for an interface
-#[inline_props]
-pub fn Content<'a>(
-    cx: Scope<'a>,
-    app_data: &'a UseRef<HdlWizardApp>,
-    interface_num: usize,
-) -> Element<'a> {
-    if let Some(interface) = app_data.read().data.model.interfaces.get(*interface_num) {
+#[component]
+pub fn Content(app_data: Signal<HdlWizardApp>, interface_num: usize) -> Element {
+    let data = app_data.read();
+    let get_interface = data.data.model.interfaces.get(interface_num);
+    if let Some(interface) = get_interface {
         // extract a list of registers, addresses and types
         let int_list = interface
             .registers
@@ -164,7 +162,7 @@ pub fn Content<'a>(
         let interface_width = interface.get_data_width();
 
         // render the page
-        cx.render(rsx! {
+        rsx! {
             div {
                 a {
                     class: "button is-link is-outlined ext-return-button",
@@ -181,28 +179,28 @@ pub fn Content<'a>(
             div { class: "m-4",
                 gui_blocks::TextGeneric {
                     app_data: app_data,
-                    update_int: callback(|interface, value: &String| interface.name = value.clone()),
+                    update_int: callback_interface(app_data, |interface, value| interface.name = value),
                     gui_label: "Name",
                     undo_label: "change interface name",
                     value: interface.name.clone()
                 }
                 gui_blocks::EnumWidget {
                     app_data: app_data,
-                    update_int: callback(|interface, value| interface.interface_type = *value),
+                    update_int: callback_interface(app_data, |interface, value| interface.interface_type = value),
                     gui_label: "Type",
                     undo_label: "change interface type",
                     value: interface.interface_type
                 }
                 gui_blocks::TextArea {
                     app_data: app_data,
-                    update_int: callback(|interface, value| interface.description = value.clone()),
+                    update_int: callback_interface(app_data, |interface, value| interface.description = value),
                     gui_label: "Description",
                     undo_label: "change interface description",
                     value: interface.description.clone()
                 }
                 gui_blocks::AutoManuText {
                     app_data: app_data,
-                    update_int: callback(|interface, value| interface.address_width = *value),
+                    update_int: callback_interface(app_data, |interface, value| interface.address_width = value),
                     gui_label: "Address width",
                     undo_label: "change interface address width",
                     value: interface.address_width,
@@ -210,7 +208,7 @@ pub fn Content<'a>(
                 }
                 gui_blocks::AutoManuText {
                     app_data: app_data,
-                    update_int: callback(|interface, value| interface.data_width = *value),
+                    update_int: callback_interface(app_data, |interface, value| interface.data_width = value),
                     gui_label: "Data width",
                     undo_label: "change interface data width",
                     value: interface.data_width,
@@ -231,7 +229,7 @@ pub fn Content<'a>(
                         th {}
                     }
                 }
-                tbody { int_items }
+                tbody { {int_items} }
             }
             div { class: "buttons",
                 button {
@@ -240,13 +238,13 @@ pub fn Content<'a>(
                         app_data
                             .with_mut(|app| {
                                 app.get_mut_model()
-                                    .interfaces[*interface_num]
+                                    .interfaces[interface_num]
                                     .registers
                                     .push(mdf::Register::new());
                                 app
                                     .page_type = PageType::Register(
-                                    *interface_num,
-                                    app.data.model.interfaces[*interface_num].registers.len() - 1,
+                                    interface_num,
+                                    app.data.model.interfaces[interface_num].registers.len() - 1,
                                     None,
                                 );
                                 app.register_undo("create register")
@@ -259,7 +257,7 @@ pub fn Content<'a>(
                     onclick: move |_| {
                         app_data
                             .with_mut(|app| {
-                                let result = app.get_mut_model().interfaces[*interface_num].assign_addresses();
+                                let result = app.get_mut_model().interfaces[interface_num].assign_addresses();
                                 app.test_result(result);
                                 app.register_undo("assign addresses")
                             })
@@ -271,7 +269,7 @@ pub fn Content<'a>(
                     onclick: move |_| {
                         app_data
                             .with_mut(|app| {
-                                let result = app.get_mut_model().interfaces[*interface_num].deassign_addresses();
+                                let result = app.get_mut_model().interfaces[interface_num].deassign_addresses();
                                 app.test_result(result);
                                 app.register_undo("unassign addresses")
                             })
@@ -279,8 +277,8 @@ pub fn Content<'a>(
                     "Unassign addresses"
                 }
             }
-        })
+        }
     } else {
-        cx.render(rsx! { p { "Wrong interface" } })
+        rsx! { p { "Wrong interface" } }
     }
 }

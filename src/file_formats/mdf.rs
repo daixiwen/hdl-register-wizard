@@ -251,7 +251,7 @@ pub enum LocationType {
     Core,
 }
 
-#[derive(Serialize, Deserialize, Default, Clone)]
+#[derive(Serialize, Deserialize, Default, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 /// extra properties for signals located in core
 pub struct CoreSignalProperties {

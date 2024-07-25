@@ -3,7 +3,7 @@
 #![allow(non_snake_case)]
 use crate::app::HdlWizardApp;
 use dioxus::prelude::*;
-
+use crate::file_formats::mdf;
 use crate::gui_types;
 use crate::page::PageType;
 use crate::utils;
@@ -12,6 +12,36 @@ use std::cell::RefCell;
 /// wraps a closure into a box and a refcell. Used to make widget instantiations a bit simpler
 pub fn callback<F>(f: F) -> RefCell<Box<F>> {
     RefCell::new(Box::new(f))
+}
+
+/// wraps a closure into an EventHandler that can be trnasmitted to Dioxus
+/// the closures work directly on the model or a part of it. It is safe to unwrap() here because apply_function() below already checks
+/// that the indexes are valid 
+pub fn callback_model<F : 'static>(mut app_data: Signal<HdlWizardApp>, updatefn : impl Fn(&mut mdf::Mdf, F) + 'static) -> EventHandler<F> {
+    EventHandler::new(move |f| 
+        app_data.with_mut(|data| updatefn(data.get_mut_model(), f)))
+}
+
+pub fn callback_interface<F : 'static>(mut app_data: Signal<HdlWizardApp>, updatefn : impl Fn(&mut mdf::Interface, F) + 'static) -> EventHandler<(usize, F)> {
+    EventHandler::new(move |(interface_num, f)| 
+        app_data.with_mut(|data| updatefn(data.get_mut_model().interfaces.get_mut(interface_num).unwrap(), f)))
+}
+
+pub fn callback_register<F : 'static>(mut app_data: Signal<HdlWizardApp>, updatefn : impl Fn(&mut mdf::Register, F) + 'static) -> EventHandler<(usize, usize, F)> {
+    EventHandler::new(move |(interface_num, register_num, f)| 
+        app_data.with_mut(|data| {
+            let interface: &mut mdf::Interface = data.get_mut_model().interfaces.get_mut(interface_num).unwrap();
+            updatefn(interface.registers.get_mut(register_num).unwrap(), f)
+        }))
+}
+
+pub fn callback_field<F : 'static>(mut app_data: Signal<HdlWizardApp>, updatefn : impl Fn(&mut mdf::Field, F) + 'static) -> EventHandler<(usize, usize, usize, F)> {
+    EventHandler::new(move |(interface_num, register_num, field_num, f)| 
+        app_data.with_mut(|data| {
+            let interface: &mut mdf::Interface = data.get_mut_model().interfaces.get_mut(interface_num).unwrap();
+            let register: &mut mdf::Register = interface.registers.get_mut(register_num).unwrap();
+            updatefn(register.fields.get_mut(field_num).unwrap(), f)
+        }))
 }
 
 /// calls one of the update functions applying on one part of the model depending on the page type
