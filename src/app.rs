@@ -5,6 +5,7 @@
 use dioxus_desktop::tao;
 
 use std::sync::Arc;
+use std::cell::RefCell;
 use crate::file_formats;
 use crate::navigation;
 use crate::page;
@@ -54,10 +55,10 @@ pub struct HdlWizardAppSaveData {
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct HdlWizardAppSaveTarget {
     /// window position
-    pub window_pos: tao::dpi::PhysicalPosition<i32>,
+    pub window_pos: RefCell<tao::dpi::PhysicalPosition<i32>>,
 
     /// window size
-    pub window_size: tao::dpi::PhysicalSize<u32>,
+    pub window_size: RefCell<tao::dpi::PhysicalSize<u32>>,
 }
 
 /// target specific save data for wasm, empty
@@ -117,8 +118,8 @@ impl Default for HdlWizardAppSaveData {
 impl Default for HdlWizardAppSaveTarget {
     fn default() -> Self {
         Self {
-            window_pos: tao::dpi::PhysicalPosition::new(0, 100),
-            window_size: tao::dpi::PhysicalSize::new(1024, 800),
+            window_pos: RefCell::new(tao::dpi::PhysicalPosition::new(0, 100)),
+            window_size: RefCell::new(tao::dpi::PhysicalSize::new(1024, 800)),
         }
     }
 }
@@ -370,21 +371,24 @@ pub fn App() -> Element {
         app.register_undo("initial load");
         app
     });
+  
+    // There is no clean way to get an event when the window size or position is changed. The tao WindowEvent is dropped
+    // in dioxus-desktop/launch.rs launch_virtual_dom_blocking(). So we just get the position and size at each re-render
+    // we a using Refcells to be able to change them without triggering a redraw
 
-    /*
-    // I didn't find a clean way to get an event when the window size is changed yet, so for now I just update the position
-    // and size at each re-render
     #[cfg(not(target_arch = "wasm32"))]
     {
-        let window = use_window().webview.window();
+        let window = &dioxus_desktop::use_window().window;
         let size = window.inner_size();
         let pos = window.inner_position();
 
         if let Ok(pos) = pos {
-            app_data.write_silent().data.target.window_pos = pos;
-            app_data.write_silent().data.target.window_size = size;
+            let app_data_peek = app_data.peek();
+
+            app_data_peek.data.target.window_pos.replace(pos.clone());
+            app_data_peek.data.target.window_size.replace(size.clone());
         }
-    }*/
+    }
 
     // when a webapp, update storage at each change
     #[cfg(target_arch = "wasm32")]
