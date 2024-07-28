@@ -158,6 +158,7 @@ pub fn NavBar(app_data: Signal<HdlWizardApp>) -> Element {
                                         .with_mut(|data| {
                                             data.data.model = Default::default();
                                             data.data.current_file_name = None;
+                                            data.page_type = PageType::Project;
                                             data.register_undo("new project")
                                         })
                                 },

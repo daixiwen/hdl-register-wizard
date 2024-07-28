@@ -37,6 +37,7 @@ pub fn Open(app_data: Signal<HdlWizardApp>) -> Element {
                 data.data.model = std::sync::Arc::new(model);
                 data.data.current_file_name = Some(file_name);
                 data.data.current_path = file_folder;
+                data.page_type = crate::page::PageType::Project;
                 data.register_undo("load file");
             });
             // clear the open status state so that we don't rerun this
