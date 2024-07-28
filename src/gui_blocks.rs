@@ -60,53 +60,53 @@ pub fn apply_function<F : 'static>(
         PageType::Project => {
             if let Some(updatefn_ref) = update_model {
                 updatefn_ref(value);
-                app_data.with_mut(|app_data| {
-                    app_data.register_undo(undo_description);
-                })
+                app_data.with_mut(|app_data| { app_data.register_undo(undo_description);});
             }
         }
 
         // for an Interface page type, find the interface and call update_int
         PageType::Interface(interface_number) => {
             if let Some(updatefn_ref) = &update_int {
-                app_data.with_mut(|app_data| {
-                    if *interface_number < app_data.data.model.interfaces.len() {
-                        updatefn_ref((*interface_number,value));
-                        app_data.register_undo(undo_description);
-                    }
-                })
+                if *interface_number < app_data.peek().data.model.interfaces.len() {
+                    updatefn_ref((*interface_number,value));
+                    app_data.with_mut(|app_data| { app_data.register_undo(undo_description);});
+                }
             }
         }
 
         // for a Register page type, find the interface, the register and call update_reg or find also the field and call update_field
         PageType::Register(interface_number, register_number, field_number) => {
             if let Some(updatefn_ref) = &update_reg {
-                app_data.with_mut(|app_data| {
-                    if let Some(interface) =
-                        app_data.data.model.interfaces.get(*interface_number)
-                    {
-                        if *register_number < interface.registers.len() {
-                            updatefn_ref((*interface_number, *register_number, value));
-                            app_data.register_undo(undo_description);
-                        }
+                let mut valid = false;
+                if let Some(interface) =
+                    app_data.peek().data.model.interfaces.get(*interface_number)
+                {
+                    if *register_number < interface.registers.len() {
+                        valid = true;
                     }
-                })
+                }
+                if valid {
+                    updatefn_ref((*interface_number, *register_number, value));
+                    app_data.with_mut(|app_data| { app_data.register_undo(undo_description); });
+                }
             } else {
                 if let Some(updatefn_ref) = &update_field {
-                    app_data.with_mut(|app_data| {
-                        if let Some(interface) =
-                            app_data.data.model.interfaces.get(*interface_number)
-                        {
-                            if let Some(register) = interface.registers.get(*register_number) {
-                                if let Some(field_num) = field_number {
-                                    if *field_num < register.fields.len() {
-                                        updatefn_ref((*interface_number, *register_number, *field_num,value));
-                                        app_data.register_undo(undo_description);
-                                    }
+                    let mut valid = false;
+                    if let Some(interface) =
+                        app_data.peek().data.model.interfaces.get(*interface_number)
+                    {
+                        if let Some(register) = interface.registers.get(*register_number) {
+                            if let Some(field_num) = field_number {
+                                if *field_num < register.fields.len() {
+                                    valid = true;
                                 }
                             }
                         }
-                    })
+                    }
+                    if valid {
+                        updatefn_ref((*interface_number, *register_number, field_number.unwrap(),value));
+                        app_data.with_mut(|app_data| { app_data.register_undo(undo_description); });
+                    }
                 }
             }
         },
