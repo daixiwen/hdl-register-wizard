@@ -33,14 +33,89 @@ hdl_register_wizard v0.1.0 (/home/sylvaint/Devel/hdl-register-wizard)
 │   │   └── lazy_static v1.5.0
 │   ├── serde_json feature "default"
 │   │   ├── serde_json v1.0.96
-│   │   │   ├── serde v1.0.204 (*)
+│   │   │   ├── serde v1.0.204
+│   │   │   │   └── serde_derive feature "default" (*)
 │   │   │   ├── itoa feature "default"
 │   │   │   │   └── itoa v1.0.1
 │   │   │   └── ryu feature "default"
 │   │   │       └── ryu v1.0.9
 │   │   └── serde_json feature "std"
 │   │       ├── serde_json v1.0.96 (*)
-│   │       └── serde feature "std" (*)
+│   │       └── serde feature "std"
+│   │           └── serde v1.0.204 (*)
+│   ├── regex feature "default"
+│   │   ├── regex v1.7.3
+│   │   │   ├── regex-syntax v0.6.29
+│   │   │   ├── memchr feature "default"
+│   │   │   │   ├── memchr v2.7.4
+│   │   │   │   └── memchr feature "std"
+│   │   │   │       ├── memchr v2.7.4
+│   │   │   │       └── memchr feature "alloc"
+│   │   │   │           └── memchr v2.7.4
+│   │   │   └── aho-corasick feature "default"
+│   │   │       ├── aho-corasick v0.7.20
+│   │   │       │   └── memchr v2.7.4
+│   │   │       └── aho-corasick feature "std"
+│   │   │           ├── aho-corasick v0.7.20 (*)
+│   │   │           └── memchr feature "std" (*)
+│   │   ├── regex feature "perf"
+│   │   │   ├── regex v1.7.3 (*)
+│   │   │   ├── regex feature "perf-cache"
+│   │   │   │   └── regex v1.7.3 (*)
+│   │   │   ├── regex feature "perf-dfa"
+│   │   │   │   └── regex v1.7.3 (*)
+│   │   │   ├── regex feature "perf-inline"
+│   │   │   │   └── regex v1.7.3 (*)
+│   │   │   └── regex feature "perf-literal"
+│   │   │       ├── regex v1.7.3 (*)
+│   │   │       ├── regex feature "aho-corasick"
+│   │   │       │   └── regex v1.7.3 (*)
+│   │   │       └── regex feature "memchr"
+│   │   │           └── regex v1.7.3 (*)
+│   │   ├── regex feature "std"
+│   │   │   └── regex v1.7.3 (*)
+│   │   ├── regex feature "unicode"
+│   │   │   ├── regex v1.7.3 (*)
+│   │   │   ├── regex feature "unicode-age"
+│   │   │   │   ├── regex v1.7.3 (*)
+│   │   │   │   └── regex-syntax feature "unicode-age"
+│   │   │   │       └── regex-syntax v0.6.29
+│   │   │   ├── regex feature "unicode-bool"
+│   │   │   │   ├── regex v1.7.3 (*)
+│   │   │   │   └── regex-syntax feature "unicode-bool"
+│   │   │   │       └── regex-syntax v0.6.29
+│   │   │   ├── regex feature "unicode-case"
+│   │   │   │   ├── regex v1.7.3 (*)
+│   │   │   │   └── regex-syntax feature "unicode-case"
+│   │   │   │       └── regex-syntax v0.6.29
+│   │   │   ├── regex feature "unicode-gencat"
+│   │   │   │   ├── regex v1.7.3 (*)
+│   │   │   │   └── regex-syntax feature "unicode-gencat"
+│   │   │   │       └── regex-syntax v0.6.29
+│   │   │   ├── regex feature "unicode-perl"
+│   │   │   │   ├── regex v1.7.3 (*)
+│   │   │   │   └── regex-syntax feature "unicode-perl"
+│   │   │   │       └── regex-syntax v0.6.29
+│   │   │   ├── regex feature "unicode-script"
+│   │   │   │   ├── regex v1.7.3 (*)
+│   │   │   │   └── regex-syntax feature "unicode-script"
+│   │   │   │       └── regex-syntax v0.6.29
+│   │   │   ├── regex feature "unicode-segment"
+│   │   │   │   ├── regex v1.7.3 (*)
+│   │   │   │   └── regex-syntax feature "unicode-segment"
+│   │   │   │       └── regex-syntax v0.6.29
+│   │   │   └── regex-syntax feature "unicode"
+│   │   │       ├── regex-syntax v0.6.29
+│   │   │       ├── regex-syntax feature "unicode-age" (*)
+│   │   │       ├── regex-syntax feature "unicode-bool" (*)
+│   │   │       ├── regex-syntax feature "unicode-case" (*)
+│   │   │       ├── regex-syntax feature "unicode-gencat" (*)
+│   │   │       ├── regex-syntax feature "unicode-perl" (*)
+│   │   │       ├── regex-syntax feature "unicode-script" (*)
+│   │   │       └── regex-syntax feature "unicode-segment" (*)
+│   │   └── regex-syntax feature "default"
+│   │       ├── regex-syntax v0.6.29
+│   │       └── regex-syntax feature "unicode" (*)
 │   ├── globwalk feature "default"
 │   │   └── globwalk v0.9.1
 │   │       ├── bitflags feature "default"
@@ -48,6 +123,7 @@ hdl_register_wizard v0.1.0 (/home/sylvaint/Devel/hdl-register-wizard)
 │   │       │       └── serde v1.0.204 (*)
 │   │       ├── ignore feature "default"
 │   │       │   └── ignore v0.4.20
+│   │       │       ├── memchr feature "default" (*)
 │   │       │       ├── lazy_static feature "default" (*)
 │   │       │       ├── thread_local feature "default"
 │   │       │       │   └── thread_local v1.1.7
@@ -64,126 +140,52 @@ hdl_register_wizard v0.1.0 (/home/sylvaint/Devel/hdl-register-wizard)
 │   │       │       ├── log feature "default"
 │   │       │       │   └── log v0.4.17
 │   │       │       │       └── cfg-if feature "default" (*)
+│   │       │       ├── regex feature "default" (*)
 │   │       │       ├── globset feature "default"
 │   │       │       │   ├── globset v0.4.10
 │   │       │       │   │   ├── log feature "default" (*)
-│   │       │       │   │   ├── aho-corasick feature "default"
-│   │       │       │   │   │   ├── aho-corasick v0.7.20
-│   │       │       │   │   │   │   └── memchr v2.7.4
-│   │       │       │   │   │   └── aho-corasick feature "std"
-│   │       │       │   │   │       ├── aho-corasick v0.7.20 (*)
-│   │       │       │   │   │       └── memchr feature "std"
-│   │       │       │   │   │           ├── memchr v2.7.4
-│   │       │       │   │   │           └── memchr feature "alloc"
-│   │       │       │   │   │               └── memchr v2.7.4
-│   │       │       │   │   ├── bstr feature "std"
-│   │       │       │   │   │   ├── bstr v1.4.0
-│   │       │       │   │   │   │   └── memchr v2.7.4
-│   │       │       │   │   │   ├── memchr feature "std" (*)
-│   │       │       │   │   │   └── bstr feature "alloc"
-│   │       │       │   │   │       └── bstr v1.4.0 (*)
 │   │       │       │   │   ├── fnv feature "default"
 │   │       │       │   │   │   ├── fnv v1.0.7
 │   │       │       │   │   │   └── fnv feature "std"
 │   │       │       │   │   │       └── fnv v1.0.7
-│   │       │       │   │   ├── regex feature "perf"
-│   │       │       │   │   │   ├── regex v1.7.3
-│   │       │       │   │   │   │   ├── regex-syntax v0.6.29
-│   │       │       │   │   │   │   ├── aho-corasick feature "default" (*)
-│   │       │       │   │   │   │   └── memchr feature "default"
-│   │       │       │   │   │   │       ├── memchr v2.7.4
-│   │       │       │   │   │   │       └── memchr feature "std" (*)
-│   │       │       │   │   │   ├── regex feature "perf-cache"
-│   │       │       │   │   │   │   └── regex v1.7.3 (*)
-│   │       │       │   │   │   ├── regex feature "perf-dfa"
-│   │       │       │   │   │   │   └── regex v1.7.3 (*)
-│   │       │       │   │   │   ├── regex feature "perf-inline"
-│   │       │       │   │   │   │   └── regex v1.7.3 (*)
-│   │       │       │   │   │   └── regex feature "perf-literal"
-│   │       │       │   │   │       ├── regex v1.7.3 (*)
-│   │       │       │   │   │       ├── regex feature "aho-corasick"
-│   │       │       │   │   │       │   └── regex v1.7.3 (*)
-│   │       │       │   │   │       └── regex feature "memchr"
-│   │       │       │   │   │           └── regex v1.7.3 (*)
-│   │       │       │   │   └── regex feature "std"
-│   │       │       │   │       └── regex v1.7.3 (*)
+│   │       │       │   │   ├── regex feature "perf" (*)
+│   │       │       │   │   ├── regex feature "std" (*)
+│   │       │       │   │   ├── aho-corasick feature "default" (*)
+│   │       │       │   │   └── bstr feature "std"
+│   │       │       │   │       ├── bstr v1.4.0
+│   │       │       │   │       │   └── memchr v2.7.4
+│   │       │       │   │       ├── memchr feature "std" (*)
+│   │       │       │   │       └── bstr feature "alloc"
+│   │       │       │   │           └── bstr v1.4.0 (*)
 │   │       │       │   └── globset feature "log"
 │   │       │       │       └── globset v0.4.10 (*)
-│   │       │       ├── memchr feature "default" (*)
-│   │       │       ├── regex feature "default"
-│   │       │       │   ├── regex v1.7.3 (*)
-│   │       │       │   ├── regex feature "perf" (*)
-│   │       │       │   ├── regex feature "std" (*)
-│   │       │       │   ├── regex feature "unicode"
-│   │       │       │   │   ├── regex v1.7.3 (*)
-│   │       │       │   │   ├── regex feature "unicode-age"
-│   │       │       │   │   │   ├── regex v1.7.3 (*)
-│   │       │       │   │   │   └── regex-syntax feature "unicode-age"
-│   │       │       │   │   │       └── regex-syntax v0.6.29
-│   │       │       │   │   ├── regex feature "unicode-bool"
-│   │       │       │   │   │   ├── regex v1.7.3 (*)
-│   │       │       │   │   │   └── regex-syntax feature "unicode-bool"
-│   │       │       │   │   │       └── regex-syntax v0.6.29
-│   │       │       │   │   ├── regex feature "unicode-case"
-│   │       │       │   │   │   ├── regex v1.7.3 (*)
-│   │       │       │   │   │   └── regex-syntax feature "unicode-case"
-│   │       │       │   │   │       └── regex-syntax v0.6.29
-│   │       │       │   │   ├── regex feature "unicode-gencat"
-│   │       │       │   │   │   ├── regex v1.7.3 (*)
-│   │       │       │   │   │   └── regex-syntax feature "unicode-gencat"
-│   │       │       │   │   │       └── regex-syntax v0.6.29
-│   │       │       │   │   ├── regex feature "unicode-perl"
-│   │       │       │   │   │   ├── regex v1.7.3 (*)
-│   │       │       │   │   │   └── regex-syntax feature "unicode-perl"
-│   │       │       │   │   │       └── regex-syntax v0.6.29
-│   │       │       │   │   ├── regex feature "unicode-script"
-│   │       │       │   │   │   ├── regex v1.7.3 (*)
-│   │       │       │   │   │   └── regex-syntax feature "unicode-script"
-│   │       │       │   │   │       └── regex-syntax v0.6.29
-│   │       │       │   │   ├── regex feature "unicode-segment"
-│   │       │       │   │   │   ├── regex v1.7.3 (*)
-│   │       │       │   │   │   └── regex-syntax feature "unicode-segment"
-│   │       │       │   │   │       └── regex-syntax v0.6.29
-│   │       │       │   │   └── regex-syntax feature "unicode"
-│   │       │       │   │       ├── regex-syntax v0.6.29
-│   │       │       │   │       ├── regex-syntax feature "unicode-age" (*)
-│   │       │       │   │       ├── regex-syntax feature "unicode-bool" (*)
-│   │       │       │   │       ├── regex-syntax feature "unicode-case" (*)
-│   │       │       │   │       ├── regex-syntax feature "unicode-gencat" (*)
-│   │       │       │   │       ├── regex-syntax feature "unicode-perl" (*)
-│   │       │       │   │       ├── regex-syntax feature "unicode-script" (*)
-│   │       │       │   │       └── regex-syntax feature "unicode-segment" (*)
-│   │       │       │   └── regex-syntax feature "default"
-│   │       │       │       ├── regex-syntax v0.6.29
-│   │       │       │       └── regex-syntax feature "unicode" (*)
 │   │       │       ├── same-file feature "default"
 │   │       │       │   └── same-file v1.0.6
 │   │       │       └── walkdir feature "default"
 │   │       │           └── walkdir v2.3.3
 │   │       │               └── same-file feature "default" (*)
 │   │       └── walkdir feature "default" (*)
-│   ├── regex feature "default" (*)
 │   ├── pest feature "default"
 │   │   ├── pest v2.7.11
 │   │   │   ├── ucd-trie v0.1.6
-│   │   │   ├── thiserror feature "default"
-│   │   │   │   └── thiserror v1.0.40
-│   │   │   │       └── thiserror-impl feature "default"
-│   │   │   │           └── thiserror-impl v1.0.40 (proc-macro)
-│   │   │   │               ├── proc-macro2 feature "default"
-│   │   │   │               │   ├── proc-macro2 v1.0.86 (*)
-│   │   │   │               │   └── proc-macro2 feature "proc-macro" (*)
-│   │   │   │               ├── quote feature "default"
-│   │   │   │               │   ├── quote v1.0.36 (*)
-│   │   │   │               │   └── quote feature "proc-macro" (*)
-│   │   │   │               └── syn feature "default"
-│   │   │   │                   ├── syn v2.0.72 (*)
-│   │   │   │                   ├── syn feature "clone-impls" (*)
-│   │   │   │                   ├── syn feature "derive" (*)
-│   │   │   │                   ├── syn feature "parsing" (*)
-│   │   │   │                   ├── syn feature "printing" (*)
-│   │   │   │                   └── syn feature "proc-macro" (*)
-│   │   │   └── memchr feature "default" (*)
+│   │   │   ├── memchr feature "default" (*)
+│   │   │   └── thiserror feature "default"
+│   │   │       └── thiserror v1.0.40
+│   │   │           └── thiserror-impl feature "default"
+│   │   │               └── thiserror-impl v1.0.40 (proc-macro)
+│   │   │                   ├── proc-macro2 feature "default"
+│   │   │                   │   ├── proc-macro2 v1.0.86 (*)
+│   │   │                   │   └── proc-macro2 feature "proc-macro" (*)
+│   │   │                   ├── quote feature "default"
+│   │   │                   │   ├── quote v1.0.36 (*)
+│   │   │                   │   └── quote feature "proc-macro" (*)
+│   │   │                   └── syn feature "default"
+│   │   │                       ├── syn v2.0.72 (*)
+│   │   │                       ├── syn feature "clone-impls" (*)
+│   │   │                       ├── syn feature "derive" (*)
+│   │   │                       ├── syn feature "parsing" (*)
+│   │   │                       ├── syn feature "printing" (*)
+│   │   │                       └── syn feature "proc-macro" (*)
 │   │   ├── pest feature "memchr"
 │   │   │   └── pest v2.7.11 (*)
 │   │   └── pest feature "std"
@@ -192,17 +194,7 @@ hdl_register_wizard v0.1.0 (/home/sylvaint/Devel/hdl-register-wizard)
 │   │           └── ucd-trie v0.1.6
 │   ├── pest_derive feature "default"
 │   │   ├── pest_derive v2.7.11 (proc-macro)
-│   │   │   ├── pest v2.7.11
-│   │   │   │   ├── ucd-trie v0.1.6
-│   │   │   │   ├── thiserror feature "default"
-│   │   │   │   │   └── thiserror v1.0.40
-│   │   │   │   │       └── thiserror-impl feature "default" (*)
-│   │   │   │   └── memchr feature "default"
-│   │   │   │       ├── memchr v2.7.4
-│   │   │   │       └── memchr feature "std"
-│   │   │   │           ├── memchr v2.7.4
-│   │   │   │           └── memchr feature "alloc"
-│   │   │   │               └── memchr v2.7.4
+│   │   │   ├── pest v2.7.11 (*)
 │   │   │   └── pest_generator v2.7.11
 │   │   │       ├── pest v2.7.11 (*)
 │   │   │       ├── proc-macro2 feature "default" (*)
@@ -210,26 +202,11 @@ hdl_register_wizard v0.1.0 (/home/sylvaint/Devel/hdl-register-wizard)
 │   │   │       ├── syn feature "default" (*)
 │   │   │       └── pest_meta feature "default"
 │   │   │           └── pest_meta v2.7.11
-│   │   │               ├── once_cell feature "default"
-│   │   │               │   ├── once_cell v1.19.0
-│   │   │               │   └── once_cell feature "std"
-│   │   │               │       ├── once_cell v1.19.0
-│   │   │               │       └── once_cell feature "alloc"
-│   │   │               │           ├── once_cell v1.19.0
-│   │   │               │           └── once_cell feature "race"
-│   │   │               │               └── once_cell v1.19.0
-│   │   │               └── pest feature "default"
-│   │   │                   ├── pest v2.7.11 (*)
-│   │   │                   ├── pest feature "memchr"
-│   │   │                   │   └── pest v2.7.11 (*)
-│   │   │                   └── pest feature "std"
-│   │   │                       ├── pest v2.7.11 (*)
-│   │   │                       └── ucd-trie feature "std"
-│   │   │                           └── ucd-trie v0.1.6
+│   │   │               ├── once_cell feature "default" (*)
+│   │   │               └── pest feature "default" (*)
 │   │   │               [build-dependencies]
 │   │   │               └── sha2 v0.10.6
-│   │   │                   ├── cfg-if feature "default"
-│   │   │                   │   └── cfg-if v1.0.0
+│   │   │                   ├── cfg-if feature "default" (*)
 │   │   │                   ├── cpufeatures feature "default"
 │   │   │                   │   └── cpufeatures v0.2.7
 │   │   │                   └── digest feature "default"
@@ -272,7 +249,7 @@ hdl_register_wizard v0.1.0 (/home/sylvaint/Devel/hdl-register-wizard)
 │                       └── unic-ucd-version v0.9.0
 │                           └── unic-common feature "default"
 │                               └── unic-common v0.9.0
-├── dioxus feature "hooks"
+├── dioxus feature "desktop"
 │   ├── dioxus v0.5.6
 │   │   ├── dioxus-config-macro feature "default"
 │   │   │   └── dioxus-config-macro v0.5.6 (proc-macro)
@@ -301,7 +278,11 @@ hdl_register_wizard v0.1.0 (/home/sylvaint/Devel/hdl-register-wizard)
 │   │   │       │   │   │   ├── syn feature "default" (*)
 │   │   │       │   │   │   └── syn feature "full"
 │   │   │       │   │   │       └── syn v2.0.72 (*)
+│   │   │       │   │   ├── futures-sink v0.3.28
 │   │   │       │   │   ├── futures-task v0.3.28
+│   │   │       │   │   ├── futures-io feature "std"
+│   │   │       │   │   │   └── futures-io v0.3.28
+│   │   │       │   │   ├── memchr feature "default" (*)
 │   │   │       │   │   ├── pin-project-lite feature "default"
 │   │   │       │   │   │   └── pin-project-lite v0.2.14
 │   │   │       │   │   ├── pin-utils feature "default"
@@ -336,6 +317,10 @@ hdl_register_wizard v0.1.0 (/home/sylvaint/Devel/hdl-register-wizard)
 │   │   │       │   │           └── parking_lot_core feature "default"
 │   │   │       │   │               └── parking_lot_core v0.9.7
 │   │   │       │   │                   ├── cfg-if feature "default" (*)
+│   │   │       │   │                   ├── libc feature "default"
+│   │   │       │   │                   │   ├── libc v0.2.155
+│   │   │       │   │                   │   └── libc feature "std"
+│   │   │       │   │                   │       └── libc v0.2.155
 │   │   │       │   │                   └── smallvec feature "default"
 │   │   │       │   │                       └── smallvec v1.10.0
 │   │   │       │   └── generational-box feature "check_generation"
@@ -464,157 +449,37 @@ hdl_register_wizard v0.1.0 (/home/sylvaint/Devel/hdl-register-wizard)
 │   │   │       │   │   ├── syn feature "default" (*)
 │   │   │       │   │   ├── syn feature "extra-traits" (*)
 │   │   │       │   │   ├── syn feature "full" (*)
+│   │   │       │   │   ├── tracing feature "default" (*)
 │   │   │       │   │   ├── dioxus-core feature "default"
 │   │   │       │   │   │   └── dioxus-core v0.5.6
-│   │   │       │   │   │       ├── futures-channel feature "default"
-│   │   │       │   │   │       │   ├── futures-channel v0.3.28
-│   │   │       │   │   │       │   │   └── futures-core v0.3.28
-│   │   │       │   │   │       │   └── futures-channel feature "std"
-│   │   │       │   │   │       │       ├── futures-channel v0.3.28 (*)
-│   │   │       │   │   │       │       ├── futures-channel feature "alloc"
-│   │   │       │   │   │       │       │   ├── futures-channel v0.3.28 (*)
-│   │   │       │   │   │       │       │   └── futures-core feature "alloc"
-│   │   │       │   │   │       │       │       └── futures-core v0.3.28
-│   │   │       │   │   │       │       └── futures-core feature "std"
-│   │   │       │   │   │       │           ├── futures-core v0.3.28
-│   │   │       │   │   │       │           └── futures-core feature "alloc" (*)
+│   │   │       │   │   │       ├── futures-channel feature "default" (*)
+│   │   │       │   │   │       ├── slab feature "default" (*)
+│   │   │       │   │   │       ├── generational-box feature "default" (*)
+│   │   │       │   │   │       ├── longest-increasing-subsequence feature "default" (*)
+│   │   │       │   │   │       ├── rustc-hash feature "default" (*)
+│   │   │       │   │   │       ├── slotmap feature "default" (*)
+│   │   │       │   │   │       ├── slotmap feature "serde" (*)
+│   │   │       │   │   │       ├── tracing feature "default" (*)
+│   │   │       │   │   │       ├── tracing-subscriber feature "default" (*)
 │   │   │       │   │   │       ├── futures-util feature "alloc"
 │   │   │       │   │   │       │   ├── futures-util v0.3.28
 │   │   │       │   │   │       │   │   ├── futures-core v0.3.28
 │   │   │       │   │   │       │   │   ├── futures-task v0.3.28
-│   │   │       │   │   │       │   │   ├── pin-project-lite feature "default"
-│   │   │       │   │   │       │   │   │   └── pin-project-lite v0.2.14
-│   │   │       │   │   │       │   │   ├── pin-utils feature "default"
-│   │   │       │   │   │       │   │   │   └── pin-utils v0.1.0
-│   │   │       │   │   │       │   │   └── slab feature "default"
-│   │   │       │   │   │       │   │       ├── slab v0.4.8
-│   │   │       │   │   │       │   │       │   [build-dependencies]
-│   │   │       │   │   │       │   │       │   └── autocfg feature "default" (*)
-│   │   │       │   │   │       │   │       └── slab feature "std"
-│   │   │       │   │   │       │   │           └── slab v0.4.8 (*)
-│   │   │       │   │   │       │   ├── futures-core feature "alloc" (*)
-│   │   │       │   │   │       │   └── futures-task feature "alloc"
-│   │   │       │   │   │       │       └── futures-task v0.3.28
-│   │   │       │   │   │       ├── futures-util feature "std"
-│   │   │       │   │   │       │   ├── futures-util v0.3.28 (*)
-│   │   │       │   │   │       │   ├── futures-core feature "std" (*)
-│   │   │       │   │   │       │   ├── futures-util feature "alloc" (*)
-│   │   │       │   │   │       │   ├── futures-util feature "slab"
-│   │   │       │   │   │       │   │   └── futures-util v0.3.28 (*)
-│   │   │       │   │   │       │   └── futures-task feature "std"
-│   │   │       │   │   │       │       ├── futures-task v0.3.28
-│   │   │       │   │   │       │       └── futures-task feature "alloc" (*)
-│   │   │       │   │   │       ├── slab feature "default" (*)
-│   │   │       │   │   │       ├── generational-box feature "default"
-│   │   │       │   │   │       │   ├── generational-box v0.5.6
-│   │   │       │   │   │       │   │   └── parking_lot feature "default"
-│   │   │       │   │   │       │   │       └── parking_lot v0.12.1
-│   │   │       │   │   │       │   │           ├── lock_api feature "default"
-│   │   │       │   │   │       │   │           │   └── lock_api v0.4.6
-│   │   │       │   │   │       │   │           │       └── scopeguard v1.2.0
-│   │   │       │   │   │       │   │           └── parking_lot_core feature "default"
-│   │   │       │   │   │       │   │               └── parking_lot_core v0.9.7
-│   │   │       │   │   │       │   │                   ├── cfg-if feature "default" (*)
-│   │   │       │   │   │       │   │                   ├── libc feature "default"
-│   │   │       │   │   │       │   │                   │   ├── libc v0.2.155
-│   │   │       │   │   │       │   │                   │   └── libc feature "std"
-│   │   │       │   │   │       │   │                   │       └── libc v0.2.155
-│   │   │       │   │   │       │   │                   └── smallvec feature "default"
-│   │   │       │   │   │       │   │                       └── smallvec v1.10.0
-│   │   │       │   │   │       │   └── generational-box feature "check_generation"
-│   │   │       │   │   │       │       └── generational-box v0.5.6 (*)
-│   │   │       │   │   │       ├── longest-increasing-subsequence feature "default"
-│   │   │       │   │   │       │   └── longest-increasing-subsequence v0.1.0
-│   │   │       │   │   │       ├── rustc-hash feature "default"
-│   │   │       │   │   │       │   ├── rustc-hash v1.1.0
-│   │   │       │   │   │       │   └── rustc-hash feature "std"
-│   │   │       │   │   │       │       └── rustc-hash v1.1.0
-│   │   │       │   │   │       ├── slotmap feature "default"
-│   │   │       │   │   │       │   ├── slotmap v1.0.7
-│   │   │       │   │   │       │   │   ├── serde feature "alloc"
-│   │   │       │   │   │       │   │   │   └── serde v1.0.204
-│   │   │       │   │   │       │   │   │       └── serde_derive feature "default" (*)
-│   │   │       │   │   │       │   │   └── serde feature "derive"
-│   │   │       │   │   │       │   │       ├── serde v1.0.204 (*)
-│   │   │       │   │   │       │   │       └── serde feature "serde_derive"
-│   │   │       │   │   │       │   │           └── serde v1.0.204 (*)
-│   │   │       │   │   │       │   │   [build-dependencies]
-│   │   │       │   │   │       │   │   └── version_check feature "default" (*)
-│   │   │       │   │   │       │   └── slotmap feature "std"
-│   │   │       │   │   │       │       └── slotmap v1.0.7 (*)
-│   │   │       │   │   │       ├── slotmap feature "serde"
-│   │   │       │   │   │       │   └── slotmap v1.0.7 (*)
-│   │   │       │   │   │       ├── tracing feature "default"
-│   │   │       │   │   │       │   ├── tracing v0.1.37
-│   │   │       │   │   │       │   │   ├── tracing-core v0.1.31
-│   │   │       │   │   │       │   │   │   └── once_cell feature "default" (*)
-│   │   │       │   │   │       │   │   ├── tracing-attributes feature "default" (*)
 │   │   │       │   │   │       │   │   ├── pin-project-lite feature "default" (*)
-│   │   │       │   │   │       │   │   └── cfg-if feature "default" (*)
-│   │   │       │   │   │       │   ├── tracing feature "attributes"
-│   │   │       │   │   │       │   │   ├── tracing v0.1.37 (*)
-│   │   │       │   │   │       │   │   └── tracing feature "tracing-attributes"
-│   │   │       │   │   │       │   │       └── tracing v0.1.37 (*)
-│   │   │       │   │   │       │   └── tracing feature "std"
-│   │   │       │   │   │       │       ├── tracing v0.1.37 (*)
-│   │   │       │   │   │       │       └── tracing-core feature "std"
-│   │   │       │   │   │       │           ├── tracing-core v0.1.31 (*)
-│   │   │       │   │   │       │           └── tracing-core feature "once_cell"
-│   │   │       │   │   │       │               └── tracing-core v0.1.31 (*)
-│   │   │       │   │   │       └── tracing-subscriber feature "default"
-│   │   │       │   │   │           ├── tracing-subscriber v0.3.18
-│   │   │       │   │   │           │   ├── tracing-core v0.1.31 (*)
-│   │   │       │   │   │           │   ├── smallvec feature "default" (*)
-│   │   │       │   │   │           │   ├── nu-ansi-term feature "default"
-│   │   │       │   │   │           │   │   └── nu-ansi-term v0.46.0
-│   │   │       │   │   │           │   │       └── overload feature "default"
-│   │   │       │   │   │           │   │           └── overload v0.1.1
-│   │   │       │   │   │           │   ├── sharded-slab feature "default"
-│   │   │       │   │   │           │   │   └── sharded-slab v0.1.7
-│   │   │       │   │   │           │   │       └── lazy_static feature "default"
-│   │   │       │   │   │           │   │           └── lazy_static v1.5.0
-│   │   │       │   │   │           │   ├── thread_local feature "default"
-│   │   │       │   │   │           │   │   └── thread_local v1.1.7
-│   │   │       │   │   │           │   │       ├── cfg-if feature "default" (*)
-│   │   │       │   │   │           │   │       └── once_cell feature "default" (*)
-│   │   │       │   │   │           │   ├── tracing-log feature "log-tracer"
-│   │   │       │   │   │           │   │   └── tracing-log v0.2.0
-│   │   │       │   │   │           │   │       ├── tracing-core feature "default"
-│   │   │       │   │   │           │   │       │   ├── tracing-core v0.1.31 (*)
-│   │   │       │   │   │           │   │       │   └── tracing-core feature "std" (*)
-│   │   │       │   │   │           │   │       ├── once_cell feature "default" (*)
-│   │   │       │   │   │           │   │       └── log feature "default"
-│   │   │       │   │   │           │   │           └── log v0.4.17
-│   │   │       │   │   │           │   │               └── cfg-if feature "default" (*)
-│   │   │       │   │   │           │   └── tracing-log feature "std"
-│   │   │       │   │   │           │       ├── tracing-log v0.2.0 (*)
-│   │   │       │   │   │           │       └── log feature "std"
-│   │   │       │   │   │           │           └── log v0.4.17 (*)
-│   │   │       │   │   │           ├── tracing-subscriber feature "ansi"
-│   │   │       │   │   │           │   ├── tracing-subscriber v0.3.18 (*)
-│   │   │       │   │   │           │   ├── tracing-subscriber feature "fmt"
-│   │   │       │   │   │           │   │   ├── tracing-subscriber v0.3.18 (*)
-│   │   │       │   │   │           │   │   ├── tracing-subscriber feature "registry"
-│   │   │       │   │   │           │   │   │   ├── tracing-subscriber v0.3.18 (*)
-│   │   │       │   │   │           │   │   │   ├── tracing-subscriber feature "sharded-slab"
-│   │   │       │   │   │           │   │   │   │   └── tracing-subscriber v0.3.18 (*)
-│   │   │       │   │   │           │   │   │   ├── tracing-subscriber feature "std"
-│   │   │       │   │   │           │   │   │   │   ├── tracing-subscriber v0.3.18 (*)
-│   │   │       │   │   │           │   │   │   │   ├── tracing-core feature "std" (*)
-│   │   │       │   │   │           │   │   │   │   └── tracing-subscriber feature "alloc"
-│   │   │       │   │   │           │   │   │   │       └── tracing-subscriber v0.3.18 (*)
-│   │   │       │   │   │           │   │   │   └── tracing-subscriber feature "thread_local"
-│   │   │       │   │   │           │   │   │       └── tracing-subscriber v0.3.18 (*)
-│   │   │       │   │   │           │   │   └── tracing-subscriber feature "std" (*)
-│   │   │       │   │   │           │   └── tracing-subscriber feature "nu-ansi-term"
-│   │   │       │   │   │           │       └── tracing-subscriber v0.3.18 (*)
-│   │   │       │   │   │           ├── tracing-subscriber feature "fmt" (*)
-│   │   │       │   │   │           ├── tracing-subscriber feature "smallvec"
-│   │   │       │   │   │           │   └── tracing-subscriber v0.3.18 (*)
-│   │   │       │   │   │           ├── tracing-subscriber feature "std" (*)
-│   │   │       │   │   │           └── tracing-subscriber feature "tracing-log"
-│   │   │       │   │   │               └── tracing-subscriber v0.3.18 (*)
-│   │   │       │   │   ├── tracing feature "default" (*)
+│   │   │       │   │   │       │   │   ├── pin-utils feature "default" (*)
+│   │   │       │   │   │       │   │   └── slab feature "default" (*)
+│   │   │       │   │   │       │   ├── futures-task feature "alloc" (*)
+│   │   │       │   │   │       │   └── futures-core feature "alloc"
+│   │   │       │   │   │       │       └── futures-core v0.3.28
+│   │   │       │   │   │       └── futures-util feature "std"
+│   │   │       │   │   │           ├── futures-util v0.3.28 (*)
+│   │   │       │   │   │           ├── futures-task feature "std" (*)
+│   │   │       │   │   │           ├── futures-util feature "alloc" (*)
+│   │   │       │   │   │           ├── futures-util feature "slab"
+│   │   │       │   │   │           │   └── futures-util v0.3.28 (*)
+│   │   │       │   │   │           └── futures-core feature "std"
+│   │   │       │   │   │               ├── futures-core v0.3.28
+│   │   │       │   │   │               └── futures-core feature "alloc" (*)
 │   │   │       │   │   ├── internment feature "default"
 │   │   │       │   │   │   ├── internment v0.7.0
 │   │   │       │   │   │   │   ├── parking_lot feature "default" (*)
@@ -640,13 +505,15 @@ hdl_register_wizard v0.1.0 (/home/sylvaint/Devel/hdl-register-wizard)
 │   │   │       │   │           │   └── cargo-platform v0.1.8
 │   │   │       │   │           │       └── serde feature "default"
 │   │   │       │   │           │           ├── serde v1.0.204 (*)
-│   │   │       │   │           │           └── serde feature "std"
-│   │   │       │   │           │               └── serde v1.0.204 (*)
+│   │   │       │   │           │           └── serde feature "std" (*)
 │   │   │       │   │           ├── cargo_metadata feature "default"
 │   │   │       │   │           │   └── cargo_metadata v0.18.1
-│   │   │       │   │           │       ├── serde feature "default" (*)
-│   │   │       │   │           │       ├── serde feature "derive" (*)
 │   │   │       │   │           │       ├── cargo-platform feature "default" (*)
+│   │   │       │   │           │       ├── serde feature "default" (*)
+│   │   │       │   │           │       ├── serde feature "derive"
+│   │   │       │   │           │       │   ├── serde v1.0.204 (*)
+│   │   │       │   │           │       │   └── serde feature "serde_derive"
+│   │   │       │   │           │       │       └── serde v1.0.204 (*)
 │   │   │       │   │           │       ├── camino feature "default"
 │   │   │       │   │           │       │   └── camino v1.1.7
 │   │   │       │   │           │       │       ├── serde feature "default" (*)
@@ -662,23 +529,17 @@ hdl_register_wizard v0.1.0 (/home/sylvaint/Devel/hdl-register-wizard)
 │   │   │       │   │           │       │       └── semver v1.0.17 (*)
 │   │   │       │   │           │       ├── semver feature "serde"
 │   │   │       │   │           │       │   └── semver v1.0.17 (*)
-│   │   │       │   │           │       ├── serde_json feature "default"
-│   │   │       │   │           │       │   ├── serde_json v1.0.96
-│   │   │       │   │           │       │   │   ├── serde v1.0.204 (*)
-│   │   │       │   │           │       │   │   ├── itoa feature "default"
-│   │   │       │   │           │       │   │   │   └── itoa v1.0.1
-│   │   │       │   │           │       │   │   └── ryu feature "default"
-│   │   │       │   │           │       │   │       └── ryu v1.0.9
-│   │   │       │   │           │       │   └── serde_json feature "std"
-│   │   │       │   │           │       │       ├── serde_json v1.0.96 (*)
-│   │   │       │   │           │       │       └── serde feature "std" (*)
+│   │   │       │   │           │       ├── serde_json feature "default" (*)
 │   │   │       │   │           │       ├── serde_json feature "unbounded_depth"
 │   │   │       │   │           │       │   └── serde_json v1.0.96 (*)
 │   │   │       │   │           │       └── thiserror feature "default" (*)
 │   │   │       │   │           ├── semver feature "default" (*)
 │   │   │       │   │           ├── cfg-expr feature "default"
 │   │   │       │   │           │   └── cfg-expr v0.15.2
-│   │   │       │   │           │       └── smallvec feature "default" (*)
+│   │   │       │   │           │       ├── smallvec feature "default"
+│   │   │       │   │           │       │   └── smallvec v1.10.0
+│   │   │       │   │           │       └── target-lexicon feature "default"
+│   │   │       │   │           │           └── target-lexicon v0.12.7
 │   │   │       │   │           └── petgraph feature "default"
 │   │   │       │   │               ├── petgraph v0.6.5
 │   │   │       │   │               │   ├── fixedbitset v0.4.2
@@ -709,36 +570,22 @@ hdl_register_wizard v0.1.0 (/home/sylvaint/Devel/hdl-register-wizard)
 │   │   │           └── prettyplease v0.2.20
 │   │   │               ├── proc-macro2 v1.0.86 (*)
 │   │   │               └── syn feature "full" (*)
-│   │   ├── dioxus-hooks feature "default"
-│   │   │   └── dioxus-hooks v0.5.6
-│   │   │       ├── futures-util v0.3.28 (*)
-│   │   │       ├── dioxus-core feature "default" (*)
-│   │   │       ├── futures-channel feature "default" (*)
-│   │   │       ├── slab feature "default" (*)
-│   │   │       ├── generational-box feature "default" (*)
-│   │   │       ├── tracing feature "default" (*)
-│   │   │       ├── dioxus-debug-cell feature "default"
-│   │   │       │   └── dioxus-debug-cell v0.1.1
-│   │   │       ├── dioxus-signals feature "default"
-│   │   │       │   └── dioxus-signals v0.5.7
-│   │   │       │       ├── futures-util v0.3.28 (*)
-│   │   │       │       ├── dioxus-core feature "default" (*)
-│   │   │       │       ├── futures-channel feature "default" (*)
-│   │   │       │       ├── generational-box feature "default" (*)
-│   │   │       │       ├── parking_lot feature "default" (*)
-│   │   │       │       ├── rustc-hash feature "default" (*)
-│   │   │       │       ├── tracing feature "default" (*)
-│   │   │       │       └── once_cell feature "default" (*)
-│   │   │       └── thiserror feature "default" (*)
-│   │   ├── dioxus-signals feature "default" (*)
-│   │   ├── dioxus-html feature "default"
-│   │   │   ├── dioxus-html v0.5.6
+│   │   ├── dioxus-desktop feature "default"
+│   │   │   ├── dioxus-desktop v0.5.6
+│   │   │   │   ├── futures-util v0.3.28 (*)
 │   │   │   │   ├── dioxus-core feature "default" (*)
+│   │   │   │   ├── dioxus-core feature "serialize"
+│   │   │   │   │   ├── dioxus-core v0.5.6 (*)
+│   │   │   │   │   └── dioxus-core feature "serde"
+│   │   │   │   │       └── dioxus-core v0.5.6 (*)
 │   │   │   │   ├── futures-channel feature "default" (*)
+│   │   │   │   ├── slab feature "default" (*)
 │   │   │   │   ├── generational-box feature "default" (*)
+│   │   │   │   ├── rustc-hash feature "default" (*)
 │   │   │   │   ├── serde feature "default" (*)
-│   │   │   │   ├── serde feature "derive" (*)
 │   │   │   │   ├── tracing feature "default" (*)
+│   │   │   │   ├── serde_json feature "default" (*)
+│   │   │   │   ├── thiserror feature "default" (*)
 │   │   │   │   ├── async-trait feature "default"
 │   │   │   │   │   └── async-trait v0.1.81 (proc-macro)
 │   │   │   │   │       ├── proc-macro2 feature "default" (*)
@@ -748,420 +595,1503 @@ hdl_register_wizard v0.1.0 (/home/sylvaint/Devel/hdl-register-wizard)
 │   │   │   │   │       ├── syn feature "printing" (*)
 │   │   │   │   │       ├── syn feature "proc-macro" (*)
 │   │   │   │   │       └── syn feature "visit-mut" (*)
-│   │   │   │   ├── dioxus-html-internal-macro feature "default"
-│   │   │   │   │   └── dioxus-html-internal-macro v0.5.6 (proc-macro)
-│   │   │   │   │       ├── proc-macro2 feature "default" (*)
-│   │   │   │   │       ├── quote feature "default" (*)
-│   │   │   │   │       ├── syn feature "default" (*)
-│   │   │   │   │       ├── syn feature "full" (*)
-│   │   │   │   │       └── convert_case feature "default" (*)
-│   │   │   │   ├── enumset feature "default"
-│   │   │   │   │   └── enumset v1.1.5
-│   │   │   │   │       └── enumset_derive feature "default"
-│   │   │   │   │           └── enumset_derive v0.10.0 (proc-macro)
-│   │   │   │   │               ├── darling v0.20.1
-│   │   │   │   │               │   ├── darling_core feature "default"
-│   │   │   │   │               │   │   └── darling_core v0.20.1
-│   │   │   │   │               │   │       ├── proc-macro2 feature "default" (*)
-│   │   │   │   │               │   │       ├── quote feature "default" (*)
-│   │   │   │   │               │   │       ├── syn feature "default" (*)
-│   │   │   │   │               │   │       ├── syn feature "extra-traits" (*)
-│   │   │   │   │               │   │       ├── syn feature "full" (*)
-│   │   │   │   │               │   │       ├── fnv feature "default"
-│   │   │   │   │               │   │       │   ├── fnv v1.0.7
-│   │   │   │   │               │   │       │   └── fnv feature "std"
-│   │   │   │   │               │   │       │       └── fnv v1.0.7
-│   │   │   │   │               │   │       └── ident_case feature "default"
-│   │   │   │   │               │   │           └── ident_case v1.0.1
-│   │   │   │   │               │   └── darling_macro feature "default"
-│   │   │   │   │               │       └── darling_macro v0.20.1 (proc-macro)
-│   │   │   │   │               │           ├── quote feature "default" (*)
-│   │   │   │   │               │           ├── syn feature "default" (*)
-│   │   │   │   │               │           └── darling_core feature "default" (*)
-│   │   │   │   │               ├── proc-macro2 feature "default" (*)
-│   │   │   │   │               ├── quote feature "default" (*)
-│   │   │   │   │               └── syn feature "default" (*)
-│   │   │   │   ├── euclid feature "default"
-│   │   │   │   │   ├── euclid v0.22.9
-│   │   │   │   │   │   ├── num-traits v0.2.15
-│   │   │   │   │   │   │   [build-dependencies]
-│   │   │   │   │   │   │   └── autocfg feature "default" (*)
-│   │   │   │   │   │   └── serde feature "serde_derive" (*)
-│   │   │   │   │   └── euclid feature "std"
-│   │   │   │   │       ├── euclid v0.22.9 (*)
-│   │   │   │   │       └── num-traits feature "std"
-│   │   │   │   │           └── num-traits v0.2.15 (*)
-│   │   │   │   ├── keyboard-types feature "default"
-│   │   │   │   │   ├── keyboard-types v0.7.0
+│   │   │   │   ├── dioxus-cli-config feature "read-config"
+│   │   │   │   │   └── dioxus-cli-config v0.5.6
+│   │   │   │   │       ├── serde feature "default" (*)
+│   │   │   │   │       ├── serde feature "derive" (*)
+│   │   │   │   │       ├── tracing feature "default" (*)
+│   │   │   │   │       ├── once_cell feature "default" (*)
+│   │   │   │   │       └── serde_json feature "default" (*)
+│   │   │   │   ├── dioxus-hooks feature "default"
+│   │   │   │   │   └── dioxus-hooks v0.5.6
+│   │   │   │   │       ├── futures-util v0.3.28 (*)
+│   │   │   │   │       ├── dioxus-core feature "default" (*)
+│   │   │   │   │       ├── futures-channel feature "default" (*)
+│   │   │   │   │       ├── slab feature "default" (*)
+│   │   │   │   │       ├── generational-box feature "default" (*)
+│   │   │   │   │       ├── tracing feature "default" (*)
+│   │   │   │   │       ├── thiserror feature "default" (*)
+│   │   │   │   │       ├── dioxus-debug-cell feature "default"
+│   │   │   │   │       │   └── dioxus-debug-cell v0.1.1
+│   │   │   │   │       └── dioxus-signals feature "default"
+│   │   │   │   │           └── dioxus-signals v0.5.7
+│   │   │   │   │               ├── futures-util v0.3.28 (*)
+│   │   │   │   │               ├── dioxus-core feature "default" (*)
+│   │   │   │   │               ├── futures-channel feature "default" (*)
+│   │   │   │   │               ├── generational-box feature "default" (*)
+│   │   │   │   │               ├── parking_lot feature "default" (*)
+│   │   │   │   │               ├── rustc-hash feature "default" (*)
+│   │   │   │   │               ├── tracing feature "default" (*)
+│   │   │   │   │               └── once_cell feature "default" (*)
+│   │   │   │   ├── dioxus-hot-reload feature "default"
+│   │   │   │   │   ├── dioxus-hot-reload v0.5.6
+│   │   │   │   │   │   ├── dioxus-core feature "default" (*)
+│   │   │   │   │   │   ├── dioxus-core feature "serialize" (*)
 │   │   │   │   │   │   ├── serde feature "default" (*)
 │   │   │   │   │   │   ├── serde feature "derive" (*)
-│   │   │   │   │   │   ├── bitflags feature "default" (*)
-│   │   │   │   │   │   └── unicode-segmentation feature "default"
-│   │   │   │   │   │       └── unicode-segmentation v1.10.1
-│   │   │   │   │   ├── keyboard-types feature "serde"
-│   │   │   │   │   │   ├── keyboard-types v0.7.0 (*)
-│   │   │   │   │   │   └── bitflags feature "serde"
-│   │   │   │   │   │       └── bitflags v2.6.0 (*)
-│   │   │   │   │   └── keyboard-types feature "webdriver"
-│   │   │   │   │       ├── keyboard-types v0.7.0 (*)
-│   │   │   │   │       └── keyboard-types feature "unicode-segmentation"
-│   │   │   │   │           └── keyboard-types v0.7.0 (*)
-│   │   │   │   ├── serde-value feature "default"
-│   │   │   │   │   └── serde-value v0.7.0
+│   │   │   │   │   │   ├── dioxus-rsx feature "default" (*)
+│   │   │   │   │   │   ├── serde_json feature "default" (*)
+│   │   │   │   │   │   ├── dioxus-html feature "default"
+│   │   │   │   │   │   │   ├── dioxus-html v0.5.6
+│   │   │   │   │   │   │   │   ├── dioxus-core feature "default" (*)
+│   │   │   │   │   │   │   │   ├── futures-channel feature "default" (*)
+│   │   │   │   │   │   │   │   ├── generational-box feature "default" (*)
+│   │   │   │   │   │   │   │   ├── serde feature "default" (*)
+│   │   │   │   │   │   │   │   ├── serde feature "derive" (*)
+│   │   │   │   │   │   │   │   ├── tracing feature "default" (*)
+│   │   │   │   │   │   │   │   ├── serde_json feature "default" (*)
+│   │   │   │   │   │   │   │   ├── async-trait feature "default" (*)
+│   │   │   │   │   │   │   │   ├── dioxus-html-internal-macro feature "default"
+│   │   │   │   │   │   │   │   │   └── dioxus-html-internal-macro v0.5.6 (proc-macro)
+│   │   │   │   │   │   │   │   │       ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   │   │   │       ├── quote feature "default" (*)
+│   │   │   │   │   │   │   │   │       ├── syn feature "default" (*)
+│   │   │   │   │   │   │   │   │       ├── syn feature "full" (*)
+│   │   │   │   │   │   │   │   │       └── convert_case feature "default" (*)
+│   │   │   │   │   │   │   │   ├── enumset feature "default"
+│   │   │   │   │   │   │   │   │   └── enumset v1.1.5
+│   │   │   │   │   │   │   │   │       └── enumset_derive feature "default"
+│   │   │   │   │   │   │   │   │           └── enumset_derive v0.10.0 (proc-macro)
+│   │   │   │   │   │   │   │   │               ├── darling v0.20.1
+│   │   │   │   │   │   │   │   │               │   ├── darling_core feature "default"
+│   │   │   │   │   │   │   │   │               │   │   └── darling_core v0.20.1
+│   │   │   │   │   │   │   │   │               │   │       ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   │   │   │               │   │       ├── quote feature "default" (*)
+│   │   │   │   │   │   │   │   │               │   │       ├── syn feature "default" (*)
+│   │   │   │   │   │   │   │   │               │   │       ├── syn feature "extra-traits" (*)
+│   │   │   │   │   │   │   │   │               │   │       ├── syn feature "full" (*)
+│   │   │   │   │   │   │   │   │               │   │       ├── fnv feature "default" (*)
+│   │   │   │   │   │   │   │   │               │   │       └── ident_case feature "default"
+│   │   │   │   │   │   │   │   │               │   │           └── ident_case v1.0.1
+│   │   │   │   │   │   │   │   │               │   └── darling_macro feature "default"
+│   │   │   │   │   │   │   │   │               │       └── darling_macro v0.20.1 (proc-macro)
+│   │   │   │   │   │   │   │   │               │           ├── quote feature "default" (*)
+│   │   │   │   │   │   │   │   │               │           ├── syn feature "default" (*)
+│   │   │   │   │   │   │   │   │               │           └── darling_core feature "default" (*)
+│   │   │   │   │   │   │   │   │               ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   │   │   │               ├── quote feature "default" (*)
+│   │   │   │   │   │   │   │   │               └── syn feature "default" (*)
+│   │   │   │   │   │   │   │   ├── euclid feature "default"
+│   │   │   │   │   │   │   │   │   ├── euclid v0.22.9
+│   │   │   │   │   │   │   │   │   │   ├── num-traits v0.2.15
+│   │   │   │   │   │   │   │   │   │   │   [build-dependencies]
+│   │   │   │   │   │   │   │   │   │   │   └── autocfg feature "default" (*)
+│   │   │   │   │   │   │   │   │   │   └── serde feature "serde_derive" (*)
+│   │   │   │   │   │   │   │   │   └── euclid feature "std"
+│   │   │   │   │   │   │   │   │       ├── euclid v0.22.9 (*)
+│   │   │   │   │   │   │   │   │       └── num-traits feature "std"
+│   │   │   │   │   │   │   │   │           └── num-traits v0.2.15 (*)
+│   │   │   │   │   │   │   │   ├── keyboard-types feature "default"
+│   │   │   │   │   │   │   │   │   ├── keyboard-types v0.7.0
+│   │   │   │   │   │   │   │   │   │   ├── serde feature "default" (*)
+│   │   │   │   │   │   │   │   │   │   ├── serde feature "derive" (*)
+│   │   │   │   │   │   │   │   │   │   ├── unicode-segmentation feature "default" (*)
+│   │   │   │   │   │   │   │   │   │   └── bitflags feature "default" (*)
+│   │   │   │   │   │   │   │   │   ├── keyboard-types feature "serde"
+│   │   │   │   │   │   │   │   │   │   ├── keyboard-types v0.7.0 (*)
+│   │   │   │   │   │   │   │   │   │   └── bitflags feature "serde"
+│   │   │   │   │   │   │   │   │   │       └── bitflags v2.6.0 (*)
+│   │   │   │   │   │   │   │   │   └── keyboard-types feature "webdriver"
+│   │   │   │   │   │   │   │   │       ├── keyboard-types v0.7.0 (*)
+│   │   │   │   │   │   │   │   │       └── keyboard-types feature "unicode-segmentation"
+│   │   │   │   │   │   │   │   │           └── keyboard-types v0.7.0 (*)
+│   │   │   │   │   │   │   │   ├── serde-value feature "default"
+│   │   │   │   │   │   │   │   │   └── serde-value v0.7.0
+│   │   │   │   │   │   │   │   │       ├── serde feature "default" (*)
+│   │   │   │   │   │   │   │   │       └── ordered-float feature "default"
+│   │   │   │   │   │   │   │   │           ├── ordered-float v2.10.0
+│   │   │   │   │   │   │   │   │           │   └── num-traits v0.2.15 (*)
+│   │   │   │   │   │   │   │   │           └── ordered-float feature "std"
+│   │   │   │   │   │   │   │   │               ├── ordered-float v2.10.0 (*)
+│   │   │   │   │   │   │   │   │               └── num-traits feature "std" (*)
+│   │   │   │   │   │   │   │   ├── serde_repr feature "default"
+│   │   │   │   │   │   │   │   │   └── serde_repr v0.1.12 (proc-macro)
+│   │   │   │   │   │   │   │   │       ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   │   │   │       ├── quote feature "default" (*)
+│   │   │   │   │   │   │   │   │       └── syn feature "default" (*)
+│   │   │   │   │   │   │   │   ├── tokio feature "default"
+│   │   │   │   │   │   │   │   │   └── tokio v1.38.1
+│   │   │   │   │   │   │   │   │       ├── pin-project-lite feature "default" (*)
+│   │   │   │   │   │   │   │   │       ├── bytes feature "default"
+│   │   │   │   │   │   │   │   │       │   ├── bytes v1.4.0
+│   │   │   │   │   │   │   │   │       │   └── bytes feature "std"
+│   │   │   │   │   │   │   │   │       │       └── bytes v1.4.0
+│   │   │   │   │   │   │   │   │       ├── num_cpus feature "default"
+│   │   │   │   │   │   │   │   │       │   └── num_cpus v1.15.0
+│   │   │   │   │   │   │   │   │       │       └── libc feature "default" (*)
+│   │   │   │   │   │   │   │   │       └── tokio-macros feature "default"
+│   │   │   │   │   │   │   │   │           └── tokio-macros v2.3.0 (proc-macro)
+│   │   │   │   │   │   │   │   │               ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   │   │   │               ├── quote feature "default" (*)
+│   │   │   │   │   │   │   │   │               ├── syn feature "default" (*)
+│   │   │   │   │   │   │   │   │               └── syn feature "full" (*)
+│   │   │   │   │   │   │   │   ├── tokio feature "fs"
+│   │   │   │   │   │   │   │   │   └── tokio v1.38.1 (*)
+│   │   │   │   │   │   │   │   └── tokio feature "io-util"
+│   │   │   │   │   │   │   │       ├── tokio v1.38.1 (*)
+│   │   │   │   │   │   │   │       └── tokio feature "bytes"
+│   │   │   │   │   │   │   │           └── tokio v1.38.1 (*)
+│   │   │   │   │   │   │   ├── dioxus-html feature "eval"
+│   │   │   │   │   │   │   │   ├── dioxus-html v0.5.6 (*)
+│   │   │   │   │   │   │   │   ├── dioxus-html feature "serde"
+│   │   │   │   │   │   │   │   │   └── dioxus-html v0.5.6 (*)
+│   │   │   │   │   │   │   │   └── dioxus-html feature "serde_json"
+│   │   │   │   │   │   │   │       └── dioxus-html v0.5.6 (*)
+│   │   │   │   │   │   │   ├── dioxus-html feature "mounted"
+│   │   │   │   │   │   │   │   └── dioxus-html v0.5.6 (*)
+│   │   │   │   │   │   │   └── dioxus-html feature "serialize"
+│   │   │   │   │   │   │       ├── dioxus-html v0.5.6 (*)
+│   │   │   │   │   │   │       ├── dioxus-core feature "serialize" (*)
+│   │   │   │   │   │   │       ├── dioxus-html feature "serde" (*)
+│   │   │   │   │   │   │       ├── dioxus-html feature "serde-value"
+│   │   │   │   │   │   │       │   └── dioxus-html v0.5.6 (*)
+│   │   │   │   │   │   │       ├── dioxus-html feature "serde_json" (*)
+│   │   │   │   │   │   │       ├── dioxus-html feature "serde_repr"
+│   │   │   │   │   │   │       │   └── dioxus-html v0.5.6 (*)
+│   │   │   │   │   │   │       ├── euclid feature "serde"
+│   │   │   │   │   │   │       │   └── euclid v0.22.9 (*)
+│   │   │   │   │   │   │       └── keyboard-types feature "serde" (*)
+│   │   │   │   │   │   └── interprocess-docfix feature "default"
+│   │   │   │   │   │       ├── interprocess-docfix v1.2.2
+│   │   │   │   │   │       │   ├── futures-core feature "default"
+│   │   │   │   │   │       │   │   ├── futures-core v0.3.28
+│   │   │   │   │   │       │   │   └── futures-core feature "std" (*)
+│   │   │   │   │   │       │   ├── futures-io feature "default"
+│   │   │   │   │   │       │   │   ├── futures-io v0.3.28
+│   │   │   │   │   │       │   │   └── futures-io feature "std" (*)
+│   │   │   │   │   │       │   ├── cfg-if feature "default" (*)
+│   │   │   │   │   │       │   ├── libc feature "default" (*)
+│   │   │   │   │   │       │   ├── libc feature "extra_traits"
+│   │   │   │   │   │       │   │   └── libc v0.2.155
+│   │   │   │   │   │       │   ├── once_cell feature "default" (*)
+│   │   │   │   │   │       │   ├── thiserror feature "default" (*)
+│   │   │   │   │   │       │   ├── blocking feature "default"
+│   │   │   │   │   │       │   │   └── blocking v1.3.1
+│   │   │   │   │   │       │   │       ├── log feature "default" (*)
+│   │   │   │   │   │       │   │       ├── async-channel feature "default"
+│   │   │   │   │   │       │   │       │   └── async-channel v1.8.0
+│   │   │   │   │   │       │   │       │       ├── futures-core feature "default" (*)
+│   │   │   │   │   │       │   │       │       ├── concurrent-queue feature "default"
+│   │   │   │   │   │       │   │       │       │   ├── concurrent-queue v2.5.0
+│   │   │   │   │   │       │   │       │       │   │   └── crossbeam-utils v0.8.15
+│   │   │   │   │   │       │   │       │       │   │       └── cfg-if feature "default" (*)
+│   │   │   │   │   │       │   │       │       │   └── concurrent-queue feature "std"
+│   │   │   │   │   │       │   │       │       │       └── concurrent-queue v2.5.0 (*)
+│   │   │   │   │   │       │   │       │       └── event-listener feature "default"
+│   │   │   │   │   │       │   │       │           └── event-listener v2.5.3
+│   │   │   │   │   │       │   │       ├── async-lock feature "default"
+│   │   │   │   │   │       │   │       │   └── async-lock v2.7.0
+│   │   │   │   │   │       │   │       │       └── event-listener feature "default" (*)
+│   │   │   │   │   │       │   │       ├── async-task feature "default"
+│   │   │   │   │   │       │   │       │   ├── async-task v4.4.0
+│   │   │   │   │   │       │   │       │   └── async-task feature "std"
+│   │   │   │   │   │       │   │       │       └── async-task v4.4.0
+│   │   │   │   │   │       │   │       ├── atomic-waker feature "default"
+│   │   │   │   │   │       │   │       │   └── atomic-waker v1.1.1
+│   │   │   │   │   │       │   │       ├── fastrand feature "default"
+│   │   │   │   │   │       │   │       │   └── fastrand v1.9.0
+│   │   │   │   │   │       │   │       └── futures-lite feature "default"
+│   │   │   │   │   │       │   │           ├── futures-lite v1.13.0
+│   │   │   │   │   │       │   │           │   ├── futures-core v0.3.28
+│   │   │   │   │   │       │   │           │   ├── futures-io feature "default" (*)
+│   │   │   │   │   │       │   │           │   ├── memchr feature "default" (*)
+│   │   │   │   │   │       │   │           │   ├── pin-project-lite feature "default" (*)
+│   │   │   │   │   │       │   │           │   ├── fastrand feature "default" (*)
+│   │   │   │   │   │       │   │           │   ├── parking feature "default"
+│   │   │   │   │   │       │   │           │   │   └── parking v2.2.0
+│   │   │   │   │   │       │   │           │   └── waker-fn feature "default"
+│   │   │   │   │   │       │   │           │       └── waker-fn v1.1.0
+│   │   │   │   │   │       │   │           └── futures-lite feature "std"
+│   │   │   │   │   │       │   │               ├── futures-lite v1.13.0 (*)
+│   │   │   │   │   │       │   │               ├── futures-lite feature "alloc"
+│   │   │   │   │   │       │   │               │   └── futures-lite v1.13.0 (*)
+│   │   │   │   │   │       │   │               ├── futures-lite feature "fastrand"
+│   │   │   │   │   │       │   │               │   └── futures-lite v1.13.0 (*)
+│   │   │   │   │   │       │   │               ├── futures-lite feature "futures-io"
+│   │   │   │   │   │       │   │               │   └── futures-lite v1.13.0 (*)
+│   │   │   │   │   │       │   │               ├── futures-lite feature "memchr"
+│   │   │   │   │   │       │   │               │   └── futures-lite v1.13.0 (*)
+│   │   │   │   │   │       │   │               ├── futures-lite feature "parking"
+│   │   │   │   │   │       │   │               │   └── futures-lite v1.13.0 (*)
+│   │   │   │   │   │       │   │               └── futures-lite feature "waker-fn"
+│   │   │   │   │   │       │   │                   └── futures-lite v1.13.0 (*)
+│   │   │   │   │   │       │   ├── intmap feature "default"
+│   │   │   │   │   │       │   │   └── intmap v0.7.1
+│   │   │   │   │   │       │   ├── spinning feature "default"
+│   │   │   │   │   │       │   │   ├── spinning v0.1.0
+│   │   │   │   │   │       │   │   │   └── lock_api feature "default" (*)
+│   │   │   │   │   │       │   │   └── spinning feature "std"
+│   │   │   │   │   │       │   │       └── spinning v0.1.0 (*)
+│   │   │   │   │   │       │   └── to_method feature "default"
+│   │   │   │   │   │       │       └── to_method v1.1.0
+│   │   │   │   │   │       │   [build-dependencies]
+│   │   │   │   │   │       │   └── rustc_version feature "default"
+│   │   │   │   │   │       │       └── rustc_version v0.4.0
+│   │   │   │   │   │       │           └── semver feature "default" (*)
+│   │   │   │   │   │       ├── interprocess-docfix feature "nonblocking"
+│   │   │   │   │   │       │   ├── interprocess-docfix v1.2.2 (*)
+│   │   │   │   │   │       │   ├── interprocess-docfix feature "blocking"
+│   │   │   │   │   │       │   │   └── interprocess-docfix v1.2.2 (*)
+│   │   │   │   │   │       │   ├── interprocess-docfix feature "futures-core"
+│   │   │   │   │   │       │   │   └── interprocess-docfix v1.2.2 (*)
+│   │   │   │   │   │       │   └── interprocess-docfix feature "futures-io"
+│   │   │   │   │   │       │       └── interprocess-docfix v1.2.2 (*)
+│   │   │   │   │   │       └── interprocess-docfix feature "signals"
+│   │   │   │   │   │           ├── interprocess-docfix v1.2.2 (*)
+│   │   │   │   │   │           ├── interprocess-docfix feature "intmap"
+│   │   │   │   │   │           │   └── interprocess-docfix v1.2.2 (*)
+│   │   │   │   │   │           ├── interprocess-docfix feature "once_cell"
+│   │   │   │   │   │           │   └── interprocess-docfix v1.2.2 (*)
+│   │   │   │   │   │           ├── interprocess-docfix feature "spinning"
+│   │   │   │   │   │           │   └── interprocess-docfix v1.2.2 (*)
+│   │   │   │   │   │           └── interprocess-docfix feature "thiserror"
+│   │   │   │   │   │               └── interprocess-docfix v1.2.2 (*)
+│   │   │   │   │   └── dioxus-hot-reload feature "dioxus-html"
+│   │   │   │   │       └── dioxus-hot-reload v0.5.6 (*)
+│   │   │   │   ├── dioxus-html feature "default" (*)
+│   │   │   │   ├── dioxus-html feature "eval" (*)
+│   │   │   │   ├── dioxus-html feature "mounted" (*)
+│   │   │   │   ├── dioxus-html feature "native-bind"
+│   │   │   │   │   ├── dioxus-html v0.5.6 (*)
+│   │   │   │   │   └── dioxus-html feature "tokio"
+│   │   │   │   │       └── dioxus-html v0.5.6 (*)
+│   │   │   │   ├── dioxus-html feature "serialize" (*)
+│   │   │   │   ├── tokio feature "default" (*)
+│   │   │   │   ├── tokio feature "fs" (*)
+│   │   │   │   ├── tokio feature "macros"
+│   │   │   │   │   ├── tokio v1.38.1 (*)
+│   │   │   │   │   └── tokio feature "tokio-macros"
+│   │   │   │   │       └── tokio v1.38.1 (*)
+│   │   │   │   ├── tokio feature "rt"
+│   │   │   │   │   └── tokio v1.38.1 (*)
+│   │   │   │   ├── tokio feature "rt-multi-thread"
+│   │   │   │   │   ├── tokio v1.38.1 (*)
+│   │   │   │   │   ├── tokio feature "num_cpus"
+│   │   │   │   │   │   └── tokio v1.38.1 (*)
+│   │   │   │   │   └── tokio feature "rt" (*)
+│   │   │   │   ├── tokio feature "sync"
+│   │   │   │   │   └── tokio v1.38.1 (*)
+│   │   │   │   ├── tokio feature "time"
+│   │   │   │   │   └── tokio v1.38.1 (*)
+│   │   │   │   ├── dioxus-interpreter-js feature "binary-protocol"
+│   │   │   │   │   ├── dioxus-interpreter-js v0.5.6
+│   │   │   │   │   │   ├── sledgehammer_bindgen v0.5.0
+│   │   │   │   │   │   │   └── sledgehammer_bindgen_macro feature "default"
+│   │   │   │   │   │   │       └── sledgehammer_bindgen_macro v0.5.1 (proc-macro)
+│   │   │   │   │   │   │           ├── quote feature "default" (*)
+│   │   │   │   │   │   │           ├── syn feature "default" (*)
+│   │   │   │   │   │   │           ├── syn feature "extra-traits" (*)
+│   │   │   │   │   │   │           └── syn feature "full" (*)
+│   │   │   │   │   │   ├── dioxus-core feature "default" (*)
+│   │   │   │   │   │   ├── dioxus-html feature "default" (*)
+│   │   │   │   │   │   └── sledgehammer_utils feature "default"
+│   │   │   │   │   │       └── sledgehammer_utils v0.2.1
+│   │   │   │   │   │           ├── rustc-hash feature "default" (*)
+│   │   │   │   │   │           ├── once_cell feature "default" (*)
+│   │   │   │   │   │           └── lru feature "default"
+│   │   │   │   │   │               ├── lru v0.12.3
+│   │   │   │   │   │               │   └── hashbrown feature "default"
+│   │   │   │   │   │               │       ├── hashbrown v0.14.5
+│   │   │   │   │   │               │       │   ├── ahash v0.8.11
+│   │   │   │   │   │               │       │   │   ├── cfg-if feature "default" (*)
+│   │   │   │   │   │               │       │   │   ├── once_cell feature "alloc" (*)
+│   │   │   │   │   │               │       │   │   └── zerocopy feature "simd"
+│   │   │   │   │   │               │       │   │       └── zerocopy v0.7.35
+│   │   │   │   │   │               │       │   │   [build-dependencies]
+│   │   │   │   │   │               │       │   │   └── version_check feature "default" (*)
+│   │   │   │   │   │               │       │   └── allocator-api2 feature "alloc"
+│   │   │   │   │   │               │       │       └── allocator-api2 v0.2.18
+│   │   │   │   │   │               │       ├── hashbrown feature "ahash"
+│   │   │   │   │   │               │       │   └── hashbrown v0.14.5 (*)
+│   │   │   │   │   │               │       ├── hashbrown feature "allocator-api2"
+│   │   │   │   │   │               │       │   └── hashbrown v0.14.5 (*)
+│   │   │   │   │   │               │       └── hashbrown feature "inline-more"
+│   │   │   │   │   │               │           └── hashbrown v0.14.5 (*)
+│   │   │   │   │   │               └── lru feature "hashbrown"
+│   │   │   │   │   │                   └── lru v0.12.3 (*)
+│   │   │   │   │   │   [build-dependencies]
+│   │   │   │   │   │   └── md5 feature "default"
+│   │   │   │   │   │       ├── md5 v0.7.0
+│   │   │   │   │   │       └── md5 feature "std"
+│   │   │   │   │   │           └── md5 v0.7.0
+│   │   │   │   │   ├── dioxus-interpreter-js feature "dioxus-core"
+│   │   │   │   │   │   └── dioxus-interpreter-js v0.5.6 (*)
+│   │   │   │   │   ├── dioxus-interpreter-js feature "dioxus-html"
+│   │   │   │   │   │   └── dioxus-interpreter-js v0.5.6 (*)
+│   │   │   │   │   └── dioxus-interpreter-js feature "sledgehammer"
+│   │   │   │   │       ├── dioxus-interpreter-js v0.5.6 (*)
+│   │   │   │   │       ├── dioxus-interpreter-js feature "sledgehammer_bindgen"
+│   │   │   │   │       │   └── dioxus-interpreter-js v0.5.6 (*)
+│   │   │   │   │       └── dioxus-interpreter-js feature "sledgehammer_utils"
+│   │   │   │   │           └── dioxus-interpreter-js v0.5.6 (*)
+│   │   │   │   ├── dioxus-interpreter-js feature "default"
+│   │   │   │   │   └── dioxus-interpreter-js v0.5.6 (*)
+│   │   │   │   ├── dioxus-interpreter-js feature "eval"
+│   │   │   │   │   └── dioxus-interpreter-js v0.5.6 (*)
+│   │   │   │   ├── dunce feature "default"
+│   │   │   │   │   └── dunce v1.0.4
+│   │   │   │   ├── global-hotkey feature "default"
+│   │   │   │   │   └── global-hotkey v0.5.4
+│   │   │   │   │       ├── once_cell feature "default" (*)
+│   │   │   │   │       ├── thiserror feature "default" (*)
+│   │   │   │   │       ├── keyboard-types feature "default" (*)
+│   │   │   │   │       ├── crossbeam-channel feature "default"
+│   │   │   │   │       │   ├── crossbeam-channel v0.5.8
+│   │   │   │   │       │   │   ├── crossbeam-utils v0.8.15 (*)
+│   │   │   │   │       │   │   └── cfg-if feature "default" (*)
+│   │   │   │   │       │   └── crossbeam-channel feature "std"
+│   │   │   │   │       │       ├── crossbeam-channel v0.5.8 (*)
+│   │   │   │   │       │       ├── crossbeam-utils feature "std"
+│   │   │   │   │       │       │   └── crossbeam-utils v0.8.15 (*)
+│   │   │   │   │       │       └── crossbeam-channel feature "crossbeam-utils"
+│   │   │   │   │       │           └── crossbeam-channel v0.5.8 (*)
+│   │   │   │   │       └── x11-dl feature "default"
+│   │   │   │   │           └── x11-dl v2.21.0
+│   │   │   │   │               ├── libc feature "default" (*)
+│   │   │   │   │               └── once_cell feature "default" (*)
+│   │   │   │   │               [build-dependencies]
+│   │   │   │   │               └── pkg-config feature "default"
+│   │   │   │   │                   └── pkg-config v0.3.27
+│   │   │   │   ├── infer feature "default"
+│   │   │   │   │   ├── infer v0.11.0
+│   │   │   │   │   │   └── cfb feature "default"
+│   │   │   │   │   │       └── cfb v0.7.3
+│   │   │   │   │   │           ├── fnv feature "default" (*)
+│   │   │   │   │   │           ├── byteorder feature "default"
+│   │   │   │   │   │           │   ├── byteorder v1.5.0
+│   │   │   │   │   │           │   └── byteorder feature "std"
+│   │   │   │   │   │           │       └── byteorder v1.5.0
+│   │   │   │   │   │           └── uuid feature "default"
+│   │   │   │   │   │               ├── uuid v1.10.0
+│   │   │   │   │   │               └── uuid feature "std"
+│   │   │   │   │   │                   └── uuid v1.10.0
+│   │   │   │   │   └── infer feature "std"
+│   │   │   │   │       ├── infer v0.11.0 (*)
+│   │   │   │   │       ├── infer feature "alloc"
+│   │   │   │   │       │   └── infer v0.11.0 (*)
+│   │   │   │   │       └── infer feature "cfb"
+│   │   │   │   │           └── infer v0.11.0 (*)
+│   │   │   │   ├── muda feature "default"
+│   │   │   │   │   ├── muda v0.11.5
+│   │   │   │   │   │   ├── once_cell feature "default" (*)
+│   │   │   │   │   │   ├── thiserror feature "default" (*)
+│   │   │   │   │   │   ├── keyboard-types feature "default" (*)
+│   │   │   │   │   │   ├── crossbeam-channel feature "default" (*)
+│   │   │   │   │   │   ├── gtk feature "default"
+│   │   │   │   │   │   │   └── gtk v0.18.1
+│   │   │   │   │   │   │       ├── futures-channel feature "default" (*)
+│   │   │   │   │   │   │       ├── libc feature "default" (*)
+│   │   │   │   │   │   │       ├── atk feature "default"
+│   │   │   │   │   │   │       │   └── atk v0.18.0
+│   │   │   │   │   │   │       │       ├── libc feature "default" (*)
+│   │   │   │   │   │   │       │       ├── atk-sys feature "default"
+│   │   │   │   │   │   │       │       │   └── atk-sys v0.18.0
+│   │   │   │   │   │   │       │       │       ├── libc feature "default" (*)
+│   │   │   │   │   │   │       │       │       ├── glib-sys feature "default"
+│   │   │   │   │   │   │       │       │       │   └── glib-sys v0.18.1
+│   │   │   │   │   │   │       │       │       │       └── libc feature "default" (*)
+│   │   │   │   │   │   │       │       │       │       [build-dependencies]
+│   │   │   │   │   │   │       │       │       │       └── system-deps feature "default"
+│   │   │   │   │   │   │       │       │       │           └── system-deps v6.1.0
+│   │   │   │   │   │   │       │       │       │               ├── cfg-expr feature "default" (*)
+│   │   │   │   │   │   │       │       │       │               ├── cfg-expr feature "targets"
+│   │   │   │   │   │   │       │       │       │               │   ├── cfg-expr v0.15.2 (*)
+│   │   │   │   │   │   │       │       │       │               │   └── cfg-expr feature "target-lexicon"
+│   │   │   │   │   │   │       │       │       │               │       └── cfg-expr v0.15.2 (*)
+│   │   │   │   │   │   │       │       │       │               ├── pkg-config feature "default" (*)
+│   │   │   │   │   │   │       │       │       │               ├── heck feature "default"
+│   │   │   │   │   │   │       │       │       │               │   └── heck v0.4.1
+│   │   │   │   │   │   │       │       │       │               ├── toml feature "parse"
+│   │   │   │   │   │   │       │       │       │               │   └── toml v0.7.4
+│   │   │   │   │   │   │       │       │       │               │       ├── serde feature "default" (*)
+│   │   │   │   │   │   │       │       │       │               │       ├── serde_spanned feature "default"
+│   │   │   │   │   │   │       │       │       │               │       │   └── serde_spanned v0.6.2
+│   │   │   │   │   │   │       │       │       │               │       │       └── serde feature "default" (*)
+│   │   │   │   │   │   │       │       │       │               │       ├── serde_spanned feature "serde"
+│   │   │   │   │   │   │       │       │       │               │       │   └── serde_spanned v0.6.2 (*)
+│   │   │   │   │   │   │       │       │       │               │       ├── toml_datetime feature "default"
+│   │   │   │   │   │   │       │       │       │               │       │   └── toml_datetime v0.6.3
+│   │   │   │   │   │   │       │       │       │               │       │       └── serde feature "default" (*)
+│   │   │   │   │   │   │       │       │       │               │       ├── toml_datetime feature "serde"
+│   │   │   │   │   │   │       │       │       │               │       │   └── toml_datetime v0.6.3 (*)
+│   │   │   │   │   │   │       │       │       │               │       ├── toml_edit feature "default"
+│   │   │   │   │   │   │       │       │       │               │       │   └── toml_edit v0.19.10
+│   │   │   │   │   │   │       │       │       │               │       │       ├── serde feature "default" (*)
+│   │   │   │   │   │   │       │       │       │               │       │       ├── serde_spanned feature "default" (*)
+│   │   │   │   │   │   │       │       │       │               │       │       ├── serde_spanned feature "serde" (*)
+│   │   │   │   │   │   │       │       │       │               │       │       ├── toml_datetime feature "default" (*)
+│   │   │   │   │   │   │       │       │       │               │       │       ├── indexmap feature "default"
+│   │   │   │   │   │   │       │       │       │               │       │       │   └── indexmap v1.9.3
+│   │   │   │   │   │   │       │       │       │               │       │       │       └── hashbrown feature "raw"
+│   │   │   │   │   │   │       │       │       │               │       │       │           └── hashbrown v0.12.3 (*)
+│   │   │   │   │   │   │       │       │       │               │       │       │       [build-dependencies]
+│   │   │   │   │   │   │       │       │       │               │       │       │       └── autocfg feature "default" (*)
+│   │   │   │   │   │   │       │       │       │               │       │       ├── indexmap feature "std"
+│   │   │   │   │   │   │       │       │       │               │       │       │   └── indexmap v1.9.3 (*)
+│   │   │   │   │   │   │       │       │       │               │       │       └── winnow feature "default"
+│   │   │   │   │   │   │       │       │       │               │       │           ├── winnow v0.4.6
+│   │   │   │   │   │   │       │       │       │               │       │           └── winnow feature "std"
+│   │   │   │   │   │   │       │       │       │               │       │               ├── winnow v0.4.6
+│   │   │   │   │   │   │       │       │       │               │       │               └── winnow feature "alloc"
+│   │   │   │   │   │   │       │       │       │               │       │                   └── winnow v0.4.6
+│   │   │   │   │   │   │       │       │       │               │       └── toml_edit feature "serde"
+│   │   │   │   │   │   │       │       │       │               │           ├── toml_edit v0.19.10 (*)
+│   │   │   │   │   │   │       │       │       │               │           └── toml_datetime feature "serde" (*)
+│   │   │   │   │   │   │       │       │       │               └── version-compare feature "default"
+│   │   │   │   │   │   │       │       │       │                   └── version-compare v0.1.1
+│   │   │   │   │   │   │       │       │       └── gobject-sys feature "default"
+│   │   │   │   │   │   │       │       │           └── gobject-sys v0.18.0
+│   │   │   │   │   │   │       │       │               ├── libc feature "default" (*)
+│   │   │   │   │   │   │       │       │               └── glib-sys feature "default" (*)
+│   │   │   │   │   │   │       │       │               [build-dependencies]
+│   │   │   │   │   │   │       │       │               └── system-deps feature "default" (*)
+│   │   │   │   │   │   │       │       │       [build-dependencies]
+│   │   │   │   │   │   │       │       │       └── system-deps feature "default" (*)
+│   │   │   │   │   │   │       │       └── glib feature "default"
+│   │   │   │   │   │   │       │           ├── glib v0.18.5
+│   │   │   │   │   │   │       │           │   ├── futures-core v0.3.28
+│   │   │   │   │   │   │       │           │   ├── futures-task v0.3.28
+│   │   │   │   │   │   │       │           │   ├── futures-channel feature "default" (*)
+│   │   │   │   │   │   │       │           │   ├── futures-util feature "default"
+│   │   │   │   │   │   │       │           │   │   ├── futures-util v0.3.28 (*)
+│   │   │   │   │   │   │       │           │   │   ├── futures-util feature "async-await"
+│   │   │   │   │   │   │       │           │   │   │   └── futures-util v0.3.28 (*)
+│   │   │   │   │   │   │       │           │   │   ├── futures-util feature "async-await-macro"
+│   │   │   │   │   │   │       │           │   │   │   ├── futures-util v0.3.28 (*)
+│   │   │   │   │   │   │       │           │   │   │   ├── futures-util feature "async-await" (*)
+│   │   │   │   │   │   │       │           │   │   │   └── futures-util feature "futures-macro"
+│   │   │   │   │   │   │       │           │   │   │       └── futures-util v0.3.28 (*)
+│   │   │   │   │   │   │       │           │   │   └── futures-util feature "std" (*)
+│   │   │   │   │   │   │       │           │   ├── memchr feature "default" (*)
+│   │   │   │   │   │   │       │           │   ├── libc feature "default" (*)
+│   │   │   │   │   │   │       │           │   ├── smallvec feature "const_generics"
+│   │   │   │   │   │   │       │           │   │   └── smallvec v1.10.0
+│   │   │   │   │   │   │       │           │   ├── smallvec feature "const_new"
+│   │   │   │   │   │   │       │           │   │   ├── smallvec v1.10.0
+│   │   │   │   │   │   │       │           │   │   └── smallvec feature "const_generics" (*)
+│   │   │   │   │   │   │       │           │   ├── smallvec feature "default" (*)
+│   │   │   │   │   │   │       │           │   ├── smallvec feature "union"
+│   │   │   │   │   │   │       │           │   │   └── smallvec v1.10.0
+│   │   │   │   │   │   │       │           │   ├── once_cell feature "default" (*)
+│   │   │   │   │   │   │       │           │   ├── thiserror feature "default" (*)
+│   │   │   │   │   │   │       │           │   ├── bitflags feature "default" (*)
+│   │   │   │   │   │   │       │           │   ├── glib-sys feature "default" (*)
+│   │   │   │   │   │   │       │           │   ├── gobject-sys feature "default" (*)
+│   │   │   │   │   │   │       │           │   ├── futures-executor feature "default"
+│   │   │   │   │   │   │       │           │   │   ├── futures-executor v0.3.28
+│   │   │   │   │   │   │       │           │   │   │   ├── futures-core v0.3.28
+│   │   │   │   │   │   │       │           │   │   │   ├── futures-task v0.3.28
+│   │   │   │   │   │   │       │           │   │   │   └── futures-util v0.3.28 (*)
+│   │   │   │   │   │   │       │           │   │   └── futures-executor feature "std"
+│   │   │   │   │   │   │       │           │   │       ├── futures-executor v0.3.28 (*)
+│   │   │   │   │   │   │       │           │   │       ├── futures-core feature "std" (*)
+│   │   │   │   │   │   │       │           │   │       ├── futures-util feature "std" (*)
+│   │   │   │   │   │   │       │           │   │       └── futures-task feature "std" (*)
+│   │   │   │   │   │   │       │           │   ├── gio-sys feature "default"
+│   │   │   │   │   │   │       │           │   │   └── gio-sys v0.18.1
+│   │   │   │   │   │   │       │           │   │       ├── libc feature "default" (*)
+│   │   │   │   │   │   │       │           │   │       ├── glib-sys feature "default" (*)
+│   │   │   │   │   │   │       │           │   │       └── gobject-sys feature "default" (*)
+│   │   │   │   │   │   │       │           │   │       [build-dependencies]
+│   │   │   │   │   │   │       │           │   │       └── system-deps feature "default" (*)
+│   │   │   │   │   │   │       │           │   └── glib-macros feature "default"
+│   │   │   │   │   │   │       │           │       └── glib-macros v0.18.5 (proc-macro)
+│   │   │   │   │   │   │       │           │           ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   │       │           │           ├── quote feature "default" (*)
+│   │   │   │   │   │   │       │           │           ├── syn feature "default" (*)
+│   │   │   │   │   │   │       │           │           ├── syn feature "full" (*)
+│   │   │   │   │   │   │       │           │           ├── heck feature "default" (*)
+│   │   │   │   │   │   │       │           │           ├── proc-macro-crate feature "default"
+│   │   │   │   │   │   │       │           │           │   └── proc-macro-crate v2.0.2
+│   │   │   │   │   │   │       │           │           │       ├── toml_datetime feature "default" (*)
+│   │   │   │   │   │   │       │           │           │       └── toml_edit feature "default"
+│   │   │   │   │   │   │       │           │           │           └── toml_edit v0.20.2
+│   │   │   │   │   │   │       │           │           │               ├── indexmap feature "default" (*)
+│   │   │   │   │   │   │       │           │           │               ├── indexmap feature "std" (*)
+│   │   │   │   │   │   │       │           │           │               ├── toml_datetime feature "default" (*)
+│   │   │   │   │   │   │       │           │           │               └── winnow feature "default"
+│   │   │   │   │   │   │       │           │           │                   ├── winnow v0.5.40
+│   │   │   │   │   │   │       │           │           │                   └── winnow feature "std"
+│   │   │   │   │   │   │       │           │           │                       ├── winnow v0.5.40
+│   │   │   │   │   │   │       │           │           │                       └── winnow feature "alloc"
+│   │   │   │   │   │   │       │           │           │                           └── winnow v0.5.40
+│   │   │   │   │   │   │       │           │           └── proc-macro-error feature "default"
+│   │   │   │   │   │   │       │           │               ├── proc-macro-error v1.0.4
+│   │   │   │   │   │   │       │           │               │   ├── syn v1.0.109
+│   │   │   │   │   │   │       │           │               │   │   ├── proc-macro2 v1.0.86 (*)
+│   │   │   │   │   │   │       │           │               │   │   ├── quote v1.0.36 (*)
+│   │   │   │   │   │   │       │           │               │   │   └── unicode-ident feature "default" (*)
+│   │   │   │   │   │   │       │           │               │   ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   │       │           │               │   ├── quote feature "default" (*)
+│   │   │   │   │   │   │       │           │               │   └── proc-macro-error-attr feature "default"
+│   │   │   │   │   │   │       │           │               │       └── proc-macro-error-attr v1.0.4 (proc-macro)
+│   │   │   │   │   │   │       │           │               │           ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   │       │           │               │           └── quote feature "default" (*)
+│   │   │   │   │   │   │       │           │               │           [build-dependencies]
+│   │   │   │   │   │   │       │           │               │           └── version_check feature "default" (*)
+│   │   │   │   │   │   │       │           │               │   [build-dependencies]
+│   │   │   │   │   │   │       │           │               │   └── version_check feature "default" (*)
+│   │   │   │   │   │   │       │           │               └── proc-macro-error feature "syn-error"
+│   │   │   │   │   │   │       │           │                   ├── proc-macro-error v1.0.4 (*)
+│   │   │   │   │   │   │       │           │                   └── proc-macro-error feature "syn"
+│   │   │   │   │   │   │       │           │                       └── proc-macro-error v1.0.4 (*)
+│   │   │   │   │   │   │       │           └── glib feature "gio"
+│   │   │   │   │   │   │       │               ├── glib v0.18.5 (*)
+│   │   │   │   │   │   │       │               └── glib feature "gio_ffi"
+│   │   │   │   │   │   │       │                   └── glib v0.18.5 (*)
+│   │   │   │   │   │   │       ├── glib feature "default" (*)
+│   │   │   │   │   │   │       ├── cairo-rs feature "default"
+│   │   │   │   │   │   │       │   ├── cairo-rs v0.18.5
+│   │   │   │   │   │   │       │   │   ├── libc feature "default" (*)
+│   │   │   │   │   │   │       │   │   ├── once_cell feature "default" (*)
+│   │   │   │   │   │   │       │   │   ├── thiserror feature "default" (*)
+│   │   │   │   │   │   │       │   │   ├── bitflags feature "default" (*)
+│   │   │   │   │   │   │       │   │   ├── glib feature "default" (*)
+│   │   │   │   │   │   │       │   │   └── cairo-sys-rs feature "default"
+│   │   │   │   │   │   │       │   │       └── cairo-sys-rs v0.18.2
+│   │   │   │   │   │   │       │   │           ├── libc feature "default" (*)
+│   │   │   │   │   │   │       │   │           └── glib-sys feature "default" (*)
+│   │   │   │   │   │   │       │   │           [build-dependencies]
+│   │   │   │   │   │   │       │   │           └── system-deps feature "default" (*)
+│   │   │   │   │   │   │       │   └── cairo-rs feature "use_glib"
+│   │   │   │   │   │   │       │       ├── cairo-rs v0.18.5 (*)
+│   │   │   │   │   │   │       │       ├── cairo-rs feature "glib"
+│   │   │   │   │   │   │       │       │   └── cairo-rs v0.18.5 (*)
+│   │   │   │   │   │   │       │       └── cairo-sys-rs feature "use_glib"
+│   │   │   │   │   │   │       │           ├── cairo-sys-rs v0.18.2 (*)
+│   │   │   │   │   │   │       │           └── cairo-sys-rs feature "glib"
+│   │   │   │   │   │   │       │               └── cairo-sys-rs v0.18.2 (*)
+│   │   │   │   │   │   │       ├── field-offset feature "default"
+│   │   │   │   │   │   │       │   └── field-offset v0.3.6
+│   │   │   │   │   │   │       │       └── memoffset feature "default"
+│   │   │   │   │   │   │       │           └── memoffset v0.9.0
+│   │   │   │   │   │   │       │               [build-dependencies]
+│   │   │   │   │   │   │       │               └── autocfg feature "default" (*)
+│   │   │   │   │   │   │       │       [build-dependencies]
+│   │   │   │   │   │   │       │       └── rustc_version feature "default" (*)
+│   │   │   │   │   │   │       ├── gdk feature "default"
+│   │   │   │   │   │   │       │   └── gdk v0.18.0
+│   │   │   │   │   │   │       │       ├── libc feature "default" (*)
+│   │   │   │   │   │   │       │       ├── glib feature "default" (*)
+│   │   │   │   │   │   │       │       ├── cairo-rs feature "default" (*)
+│   │   │   │   │   │   │       │       ├── gdk-pixbuf feature "default"
+│   │   │   │   │   │   │       │       │   └── gdk-pixbuf v0.18.5
+│   │   │   │   │   │   │       │       │       ├── libc feature "default" (*)
+│   │   │   │   │   │   │       │       │       ├── once_cell feature "default" (*)
+│   │   │   │   │   │   │       │       │       ├── glib feature "default" (*)
+│   │   │   │   │   │   │       │       │       ├── gdk-pixbuf-sys feature "default"
+│   │   │   │   │   │   │       │       │       │   └── gdk-pixbuf-sys v0.18.0
+│   │   │   │   │   │   │       │       │       │       ├── libc feature "default" (*)
+│   │   │   │   │   │   │       │       │       │       ├── glib-sys feature "default" (*)
+│   │   │   │   │   │   │       │       │       │       ├── gobject-sys feature "default" (*)
+│   │   │   │   │   │   │       │       │       │       └── gio-sys feature "default" (*)
+│   │   │   │   │   │   │       │       │       │       [build-dependencies]
+│   │   │   │   │   │   │       │       │       │       └── system-deps feature "default" (*)
+│   │   │   │   │   │   │       │       │       └── gio feature "default"
+│   │   │   │   │   │   │       │       │           └── gio v0.18.4
+│   │   │   │   │   │   │       │       │               ├── futures-core v0.3.28
+│   │   │   │   │   │   │       │       │               ├── futures-util v0.3.28 (*)
+│   │   │   │   │   │   │       │       │               ├── futures-channel feature "default" (*)
+│   │   │   │   │   │   │       │       │               ├── futures-io feature "default" (*)
+│   │   │   │   │   │   │       │       │               ├── pin-project-lite feature "default" (*)
+│   │   │   │   │   │   │       │       │               ├── libc feature "default" (*)
+│   │   │   │   │   │   │       │       │               ├── smallvec feature "default" (*)
+│   │   │   │   │   │   │       │       │               ├── once_cell feature "default" (*)
+│   │   │   │   │   │   │       │       │               ├── thiserror feature "default" (*)
+│   │   │   │   │   │   │       │       │               ├── glib feature "default" (*)
+│   │   │   │   │   │   │       │       │               └── gio-sys feature "default" (*)
+│   │   │   │   │   │   │       │       ├── gio feature "default" (*)
+│   │   │   │   │   │   │       │       ├── gdk-sys feature "default"
+│   │   │   │   │   │   │       │       │   └── gdk-sys v0.18.0
+│   │   │   │   │   │   │       │       │       ├── libc feature "default" (*)
+│   │   │   │   │   │   │       │       │       ├── glib-sys feature "default" (*)
+│   │   │   │   │   │   │       │       │       ├── gobject-sys feature "default" (*)
+│   │   │   │   │   │   │       │       │       ├── gio-sys feature "default" (*)
+│   │   │   │   │   │   │       │       │       ├── cairo-sys-rs feature "default" (*)
+│   │   │   │   │   │   │       │       │       ├── gdk-pixbuf-sys feature "default" (*)
+│   │   │   │   │   │   │       │       │       └── pango-sys feature "default"
+│   │   │   │   │   │   │       │       │           └── pango-sys v0.18.0
+│   │   │   │   │   │   │       │       │               ├── libc feature "default" (*)
+│   │   │   │   │   │   │       │       │               ├── glib-sys feature "default" (*)
+│   │   │   │   │   │   │       │       │               └── gobject-sys feature "default" (*)
+│   │   │   │   │   │   │       │       │               [build-dependencies]
+│   │   │   │   │   │   │       │       │               └── system-deps feature "default" (*)
+│   │   │   │   │   │   │       │       │       [build-dependencies]
+│   │   │   │   │   │   │       │       │       ├── pkg-config feature "default" (*)
+│   │   │   │   │   │   │       │       │       └── system-deps feature "default" (*)
+│   │   │   │   │   │   │       │       └── pango feature "default"
+│   │   │   │   │   │   │       │           └── pango v0.18.3
+│   │   │   │   │   │   │       │               ├── libc feature "default" (*)
+│   │   │   │   │   │   │       │               ├── once_cell feature "default" (*)
+│   │   │   │   │   │   │       │               ├── glib feature "default" (*)
+│   │   │   │   │   │   │       │               ├── gio feature "default" (*)
+│   │   │   │   │   │   │       │               └── pango-sys feature "default" (*)
+│   │   │   │   │   │   │       ├── gdk-pixbuf feature "default" (*)
+│   │   │   │   │   │   │       ├── gio feature "default" (*)
+│   │   │   │   │   │   │       ├── pango feature "default" (*)
+│   │   │   │   │   │   │       ├── gtk-sys feature "default"
+│   │   │   │   │   │   │       │   └── gtk-sys v0.18.0
+│   │   │   │   │   │   │       │       ├── libc feature "default" (*)
+│   │   │   │   │   │   │       │       ├── atk-sys feature "default" (*)
+│   │   │   │   │   │   │       │       ├── glib-sys feature "default" (*)
+│   │   │   │   │   │   │       │       ├── gobject-sys feature "default" (*)
+│   │   │   │   │   │   │       │       ├── gio-sys feature "default" (*)
+│   │   │   │   │   │   │       │       ├── cairo-sys-rs feature "default" (*)
+│   │   │   │   │   │   │       │       ├── gdk-pixbuf-sys feature "default" (*)
+│   │   │   │   │   │   │       │       ├── gdk-sys feature "default" (*)
+│   │   │   │   │   │   │       │       └── pango-sys feature "default" (*)
+│   │   │   │   │   │   │       │       [build-dependencies]
+│   │   │   │   │   │   │       │       └── system-deps feature "default" (*)
+│   │   │   │   │   │   │       └── gtk3-macros feature "default"
+│   │   │   │   │   │   │           └── gtk3-macros v0.18.0 (proc-macro)
+│   │   │   │   │   │   │               ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   │               ├── quote feature "default" (*)
+│   │   │   │   │   │   │               ├── syn feature "default" (*)
+│   │   │   │   │   │   │               ├── syn feature "full" (*)
+│   │   │   │   │   │   │               ├── proc-macro-error feature "default" (*)
+│   │   │   │   │   │   │               └── proc-macro-crate feature "default"
+│   │   │   │   │   │   │                   └── proc-macro-crate v1.3.1
+│   │   │   │   │   │   │                       ├── once_cell feature "default" (*)
+│   │   │   │   │   │   │                       └── toml_edit feature "default" (*)
+│   │   │   │   │   │   │       [build-dependencies]
+│   │   │   │   │   │   │       └── pkg-config feature "default" (*)
+│   │   │   │   │   │   └── libxdo feature "default"
+│   │   │   │   │   │       └── libxdo v0.6.0
+│   │   │   │   │   │           └── libxdo-sys feature "default"
+│   │   │   │   │   │               └── libxdo-sys v0.11.0
+│   │   │   │   │   │                   ├── libc feature "default" (*)
+│   │   │   │   │   │                   └── x11 feature "default"
+│   │   │   │   │   │                       └── x11 v2.21.0
+│   │   │   │   │   │                           └── libc feature "default" (*)
+│   │   │   │   │   │                           [build-dependencies]
+│   │   │   │   │   │                           └── pkg-config feature "default" (*)
+│   │   │   │   │   └── muda feature "libxdo"
+│   │   │   │   │       └── muda v0.11.5 (*)
+│   │   │   │   ├── rfd feature "default"
+│   │   │   │   │   ├── rfd v0.14.1
+│   │   │   │   │   │   ├── ashpd v0.8.1
+│   │   │   │   │   │   │   ├── rand v0.8.5
+│   │   │   │   │   │   │   │   ├── libc v0.2.155
+│   │   │   │   │   │   │   │   ├── rand_chacha v0.3.1
+│   │   │   │   │   │   │   │   │   ├── ppv-lite86 feature "simd"
+│   │   │   │   │   │   │   │   │   │   └── ppv-lite86 v0.2.17
+│   │   │   │   │   │   │   │   │   └── rand_core feature "default"
+│   │   │   │   │   │   │   │   │       └── rand_core v0.6.4
+│   │   │   │   │   │   │   │   │           └── getrandom feature "default"
+│   │   │   │   │   │   │   │   │               └── getrandom v0.2.3
+│   │   │   │   │   │   │   │   │                   ├── libc v0.2.155
+│   │   │   │   │   │   │   │   │                   └── cfg-if feature "default" (*)
+│   │   │   │   │   │   │   │   └── rand_core feature "default" (*)
+│   │   │   │   │   │   │   ├── futures-channel feature "default" (*)
+│   │   │   │   │   │   │   ├── futures-util feature "default" (*)
+│   │   │   │   │   │   │   ├── serde feature "default" (*)
+│   │   │   │   │   │   │   ├── serde feature "derive" (*)
+│   │   │   │   │   │   │   ├── serde_repr feature "default" (*)
+│   │   │   │   │   │   │   ├── async-fs feature "default"
+│   │   │   │   │   │   │   │   └── async-fs v2.1.2
+│   │   │   │   │   │   │   │       ├── blocking feature "default" (*)
+│   │   │   │   │   │   │   │       ├── async-lock feature "default"
+│   │   │   │   │   │   │   │       │   ├── async-lock v3.4.0
+│   │   │   │   │   │   │   │       │   │   ├── event-listener v5.3.1
+│   │   │   │   │   │   │   │       │   │   │   ├── concurrent-queue v2.5.0 (*)
+│   │   │   │   │   │   │   │       │   │   │   ├── pin-project-lite feature "default" (*)
+│   │   │   │   │   │   │   │       │   │   │   └── parking feature "default" (*)
+│   │   │   │   │   │   │   │       │   │   ├── event-listener-strategy v0.5.2
+│   │   │   │   │   │   │   │       │   │   │   ├── event-listener v5.3.1 (*)
+│   │   │   │   │   │   │   │       │   │   │   └── pin-project-lite feature "default" (*)
+│   │   │   │   │   │   │   │       │   │   └── pin-project-lite feature "default" (*)
+│   │   │   │   │   │   │   │       │   └── async-lock feature "std"
+│   │   │   │   │   │   │   │       │       ├── async-lock v3.4.0 (*)
+│   │   │   │   │   │   │   │       │       ├── event-listener feature "std"
+│   │   │   │   │   │   │   │       │       │   ├── event-listener v5.3.1 (*)
+│   │   │   │   │   │   │   │       │       │   ├── concurrent-queue feature "std" (*)
+│   │   │   │   │   │   │   │       │       │   └── event-listener feature "parking"
+│   │   │   │   │   │   │   │       │       │       └── event-listener v5.3.1 (*)
+│   │   │   │   │   │   │   │       │       └── event-listener-strategy feature "std"
+│   │   │   │   │   │   │   │       │           ├── event-listener-strategy v0.5.2 (*)
+│   │   │   │   │   │   │   │       │           └── event-listener feature "std" (*)
+│   │   │   │   │   │   │   │       └── futures-lite feature "default"
+│   │   │   │   │   │   │   │           ├── futures-lite v2.3.0
+│   │   │   │   │   │   │   │           │   ├── fastrand v2.1.0
+│   │   │   │   │   │   │   │           │   ├── futures-core v0.3.28
+│   │   │   │   │   │   │   │           │   ├── futures-io feature "default" (*)
+│   │   │   │   │   │   │   │           │   ├── pin-project-lite feature "default" (*)
+│   │   │   │   │   │   │   │           │   └── parking feature "default" (*)
+│   │   │   │   │   │   │   │           ├── futures-lite feature "race"
+│   │   │   │   │   │   │   │           │   ├── futures-lite v2.3.0 (*)
+│   │   │   │   │   │   │   │           │   └── futures-lite feature "fastrand"
+│   │   │   │   │   │   │   │           │       └── futures-lite v2.3.0 (*)
+│   │   │   │   │   │   │   │           └── futures-lite feature "std"
+│   │   │   │   │   │   │   │               ├── futures-lite v2.3.0 (*)
+│   │   │   │   │   │   │   │               ├── futures-lite feature "alloc"
+│   │   │   │   │   │   │   │               │   └── futures-lite v2.3.0 (*)
+│   │   │   │   │   │   │   │               ├── futures-lite feature "fastrand" (*)
+│   │   │   │   │   │   │   │               ├── futures-lite feature "futures-io"
+│   │   │   │   │   │   │   │               │   └── futures-lite v2.3.0 (*)
+│   │   │   │   │   │   │   │               ├── futures-lite feature "parking"
+│   │   │   │   │   │   │   │               │   └── futures-lite v2.3.0 (*)
+│   │   │   │   │   │   │   │               └── fastrand feature "std"
+│   │   │   │   │   │   │   │                   ├── fastrand v2.1.0
+│   │   │   │   │   │   │   │                   └── fastrand feature "alloc"
+│   │   │   │   │   │   │   │                       └── fastrand v2.1.0
+│   │   │   │   │   │   │   ├── async-net feature "default"
+│   │   │   │   │   │   │   │   └── async-net v2.0.0
+│   │   │   │   │   │   │   │       ├── blocking feature "default" (*)
+│   │   │   │   │   │   │   │       ├── futures-lite feature "default" (*)
+│   │   │   │   │   │   │   │       └── async-io feature "default"
+│   │   │   │   │   │   │   │           └── async-io v2.3.3
+│   │   │   │   │   │   │   │               ├── futures-lite v2.3.0 (*)
+│   │   │   │   │   │   │   │               ├── tracing v0.1.37 (*)
+│   │   │   │   │   │   │   │               ├── futures-io feature "std" (*)
+│   │   │   │   │   │   │   │               ├── slab feature "default" (*)
+│   │   │   │   │   │   │   │               ├── cfg-if feature "default" (*)
+│   │   │   │   │   │   │   │               ├── concurrent-queue feature "default" (*)
+│   │   │   │   │   │   │   │               ├── parking feature "default" (*)
+│   │   │   │   │   │   │   │               ├── async-lock feature "default" (*)
+│   │   │   │   │   │   │   │               ├── polling feature "default"
+│   │   │   │   │   │   │   │               │   └── polling v3.7.2
+│   │   │   │   │   │   │   │               │       ├── tracing v0.1.37 (*)
+│   │   │   │   │   │   │   │               │       ├── cfg-if feature "default" (*)
+│   │   │   │   │   │   │   │               │       ├── rustix feature "event"
+│   │   │   │   │   │   │   │               │       │   └── rustix v0.38.34
+│   │   │   │   │   │   │   │               │       │       ├── bitflags v2.6.0 (*)
+│   │   │   │   │   │   │   │               │       │       ├── linux-raw-sys feature "elf"
+│   │   │   │   │   │   │   │               │       │       │   └── linux-raw-sys v0.4.14
+│   │   │   │   │   │   │   │               │       │       ├── linux-raw-sys feature "errno"
+│   │   │   │   │   │   │   │               │       │       │   └── linux-raw-sys v0.4.14
+│   │   │   │   │   │   │   │               │       │       ├── linux-raw-sys feature "general"
+│   │   │   │   │   │   │   │               │       │       │   └── linux-raw-sys v0.4.14
+│   │   │   │   │   │   │   │               │       │       ├── linux-raw-sys feature "ioctl"
+│   │   │   │   │   │   │   │               │       │       │   └── linux-raw-sys v0.4.14
+│   │   │   │   │   │   │   │               │       │       └── linux-raw-sys feature "no_std"
+│   │   │   │   │   │   │   │               │       │           └── linux-raw-sys v0.4.14
+│   │   │   │   │   │   │   │               │       ├── rustix feature "fs"
+│   │   │   │   │   │   │   │               │       │   └── rustix v0.38.34 (*)
+│   │   │   │   │   │   │   │               │       ├── rustix feature "pipe"
+│   │   │   │   │   │   │   │               │       │   └── rustix v0.38.34 (*)
+│   │   │   │   │   │   │   │               │       ├── rustix feature "process"
+│   │   │   │   │   │   │   │               │       │   ├── rustix v0.38.34 (*)
+│   │   │   │   │   │   │   │               │       │   └── linux-raw-sys feature "prctl"
+│   │   │   │   │   │   │   │               │       │       └── linux-raw-sys v0.4.14
+│   │   │   │   │   │   │   │               │       ├── rustix feature "std"
+│   │   │   │   │   │   │   │               │       │   ├── rustix v0.38.34 (*)
+│   │   │   │   │   │   │   │               │       │   ├── bitflags feature "std"
+│   │   │   │   │   │   │   │               │       │   │   └── bitflags v2.6.0 (*)
+│   │   │   │   │   │   │   │               │       │   ├── rustix feature "alloc"
+│   │   │   │   │   │   │   │               │       │   │   └── rustix v0.38.34 (*)
+│   │   │   │   │   │   │   │               │       │   └── rustix feature "libc-extra-traits"
+│   │   │   │   │   │   │   │               │       │       └── rustix v0.38.34 (*)
+│   │   │   │   │   │   │   │               │       └── rustix feature "time"
+│   │   │   │   │   │   │   │               │           └── rustix v0.38.34 (*)
+│   │   │   │   │   │   │   │               ├── rustix feature "fs" (*)
+│   │   │   │   │   │   │   │               ├── rustix feature "net"
+│   │   │   │   │   │   │   │               │   ├── rustix v0.38.34 (*)
+│   │   │   │   │   │   │   │               │   ├── linux-raw-sys feature "if_ether"
+│   │   │   │   │   │   │   │               │   │   └── linux-raw-sys v0.4.14
+│   │   │   │   │   │   │   │               │   ├── linux-raw-sys feature "net"
+│   │   │   │   │   │   │   │               │   │   └── linux-raw-sys v0.4.14
+│   │   │   │   │   │   │   │               │   ├── linux-raw-sys feature "netlink"
+│   │   │   │   │   │   │   │               │   │   └── linux-raw-sys v0.4.14
+│   │   │   │   │   │   │   │               │   └── linux-raw-sys feature "xdp"
+│   │   │   │   │   │   │   │               │       └── linux-raw-sys v0.4.14
+│   │   │   │   │   │   │   │               └── rustix feature "std" (*)
+│   │   │   │   │   │   │   ├── enumflags2 feature "default"
+│   │   │   │   │   │   │   │   └── enumflags2 v0.7.7
+│   │   │   │   │   │   │   │       ├── serde v1.0.204 (*)
+│   │   │   │   │   │   │   │       └── enumflags2_derive feature "default"
+│   │   │   │   │   │   │   │           └── enumflags2_derive v0.7.7 (proc-macro)
+│   │   │   │   │   │   │   │               ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   │   │               ├── quote feature "default" (*)
+│   │   │   │   │   │   │   │               ├── syn feature "default" (*)
+│   │   │   │   │   │   │   │               └── syn feature "full" (*)
+│   │   │   │   │   │   │   ├── url feature "default"
+│   │   │   │   │   │   │   │   └── url v2.4.0
+│   │   │   │   │   │   │   │       ├── serde feature "default" (*)
+│   │   │   │   │   │   │   │       ├── serde feature "derive" (*)
+│   │   │   │   │   │   │   │       ├── form_urlencoded feature "default"
+│   │   │   │   │   │   │   │       │   ├── form_urlencoded v1.2.0
+│   │   │   │   │   │   │   │       │   │   └── percent-encoding v2.3.0
+│   │   │   │   │   │   │   │       │   └── form_urlencoded feature "std"
+│   │   │   │   │   │   │   │       │       ├── form_urlencoded v1.2.0 (*)
+│   │   │   │   │   │   │   │       │       ├── form_urlencoded feature "alloc"
+│   │   │   │   │   │   │   │       │       │   ├── form_urlencoded v1.2.0 (*)
+│   │   │   │   │   │   │   │       │       │   └── percent-encoding feature "alloc"
+│   │   │   │   │   │   │   │       │       │       └── percent-encoding v2.3.0
+│   │   │   │   │   │   │   │       │       └── percent-encoding feature "std"
+│   │   │   │   │   │   │   │       │           ├── percent-encoding v2.3.0
+│   │   │   │   │   │   │   │       │           └── percent-encoding feature "alloc" (*)
+│   │   │   │   │   │   │   │       ├── percent-encoding feature "default"
+│   │   │   │   │   │   │   │       │   ├── percent-encoding v2.3.0
+│   │   │   │   │   │   │   │       │   └── percent-encoding feature "std" (*)
+│   │   │   │   │   │   │   │       └── idna feature "default"
+│   │   │   │   │   │   │   │           ├── idna v0.4.0
+│   │   │   │   │   │   │   │           │   ├── unicode-normalization v0.1.22
+│   │   │   │   │   │   │   │           │   │   ├── tinyvec feature "alloc"
+│   │   │   │   │   │   │   │           │   │   │   ├── tinyvec v1.6.0
+│   │   │   │   │   │   │   │           │   │   │   │   └── tinyvec_macros feature "default"
+│   │   │   │   │   │   │   │           │   │   │   │       └── tinyvec_macros v0.1.1
+│   │   │   │   │   │   │   │           │   │   │   └── tinyvec feature "tinyvec_macros"
+│   │   │   │   │   │   │   │           │   │   │       └── tinyvec v1.6.0 (*)
+│   │   │   │   │   │   │   │           │   │   └── tinyvec feature "default"
+│   │   │   │   │   │   │   │           │   │       └── tinyvec v1.6.0 (*)
+│   │   │   │   │   │   │   │           │   └── unicode-bidi feature "hardcoded-data"
+│   │   │   │   │   │   │   │           │       └── unicode-bidi v0.3.13
+│   │   │   │   │   │   │   │           └── idna feature "std"
+│   │   │   │   │   │   │   │               ├── idna v0.4.0 (*)
+│   │   │   │   │   │   │   │               ├── idna feature "alloc"
+│   │   │   │   │   │   │   │               │   └── idna v0.4.0 (*)
+│   │   │   │   │   │   │   │               ├── unicode-bidi feature "std"
+│   │   │   │   │   │   │   │               │   └── unicode-bidi v0.3.13
+│   │   │   │   │   │   │   │               └── unicode-normalization feature "std"
+│   │   │   │   │   │   │   │                   └── unicode-normalization v0.1.22 (*)
+│   │   │   │   │   │   │   ├── url feature "serde"
+│   │   │   │   │   │   │   │   └── url v2.4.0 (*)
+│   │   │   │   │   │   │   └── zbus feature "url"
+│   │   │   │   │   │   │       ├── zbus v4.0.1
+│   │   │   │   │   │   │       │   ├── futures-core feature "default" (*)
+│   │   │   │   │   │   │       │   ├── futures-util feature "sink"
+│   │   │   │   │   │   │       │   │   ├── futures-util v0.3.28 (*)
+│   │   │   │   │   │   │       │   │   └── futures-util feature "futures-sink"
+│   │   │   │   │   │   │       │   │       └── futures-util v0.3.28 (*)
+│   │   │   │   │   │   │       │   ├── futures-util feature "std" (*)
+│   │   │   │   │   │   │       │   ├── futures-sink feature "default"
+│   │   │   │   │   │   │       │   │   ├── futures-sink v0.3.28
+│   │   │   │   │   │   │       │   │   └── futures-sink feature "std"
+│   │   │   │   │   │   │       │   │       ├── futures-sink v0.3.28
+│   │   │   │   │   │   │       │   │       └── futures-sink feature "alloc"
+│   │   │   │   │   │   │       │   │           └── futures-sink v0.3.28
+│   │   │   │   │   │   │       │   ├── serde feature "default" (*)
+│   │   │   │   │   │   │       │   ├── serde feature "derive" (*)
+│   │   │   │   │   │   │       │   ├── tracing feature "default" (*)
+│   │   │   │   │   │   │       │   ├── async-trait feature "default" (*)
+│   │   │   │   │   │   │       │   ├── serde_repr feature "default" (*)
+│   │   │   │   │   │   │       │   ├── blocking feature "default" (*)
+│   │   │   │   │   │   │       │   ├── async-task feature "default" (*)
+│   │   │   │   │   │   │       │   ├── async-fs feature "default" (*)
+│   │   │   │   │   │   │       │   ├── async-lock feature "default" (*)
+│   │   │   │   │   │   │       │   ├── event-listener feature "default"
+│   │   │   │   │   │   │       │   │   ├── event-listener v5.3.1 (*)
+│   │   │   │   │   │   │       │   │   └── event-listener feature "std" (*)
+│   │   │   │   │   │   │       │   ├── async-io feature "default" (*)
+│   │   │   │   │   │   │       │   ├── enumflags2 feature "default" (*)
+│   │   │   │   │   │   │       │   ├── enumflags2 feature "serde"
+│   │   │   │   │   │   │       │   │   └── enumflags2 v0.7.7 (*)
+│   │   │   │   │   │   │       │   ├── rand feature "default"
+│   │   │   │   │   │   │       │   │   ├── rand v0.8.5 (*)
+│   │   │   │   │   │   │       │   │   ├── rand feature "std"
+│   │   │   │   │   │   │       │   │   │   ├── rand v0.8.5 (*)
+│   │   │   │   │   │   │       │   │   │   ├── rand feature "alloc"
+│   │   │   │   │   │   │       │   │   │   │   ├── rand v0.8.5 (*)
+│   │   │   │   │   │   │       │   │   │   │   └── rand_core feature "alloc"
+│   │   │   │   │   │   │       │   │   │   │       └── rand_core v0.6.4 (*)
+│   │   │   │   │   │   │       │   │   │   ├── rand feature "getrandom"
+│   │   │   │   │   │   │       │   │   │   │   ├── rand v0.8.5 (*)
+│   │   │   │   │   │   │       │   │   │   │   └── rand_core feature "getrandom"
+│   │   │   │   │   │   │       │   │   │   │       └── rand_core v0.6.4 (*)
+│   │   │   │   │   │   │       │   │   │   ├── rand feature "libc"
+│   │   │   │   │   │   │       │   │   │   │   └── rand v0.8.5 (*)
+│   │   │   │   │   │   │       │   │   │   ├── rand feature "rand_chacha"
+│   │   │   │   │   │   │       │   │   │   │   └── rand v0.8.5 (*)
+│   │   │   │   │   │   │       │   │   │   ├── rand_chacha feature "std"
+│   │   │   │   │   │   │       │   │   │   │   ├── rand_chacha v0.3.1 (*)
+│   │   │   │   │   │   │       │   │   │   │   └── ppv-lite86 feature "std"
+│   │   │   │   │   │   │       │   │   │   │       └── ppv-lite86 v0.2.17
+│   │   │   │   │   │   │       │   │   │   └── rand_core feature "std"
+│   │   │   │   │   │   │       │   │   │       ├── rand_core v0.6.4 (*)
+│   │   │   │   │   │   │       │   │   │       ├── rand_core feature "alloc" (*)
+│   │   │   │   │   │   │       │   │   │       ├── rand_core feature "getrandom" (*)
+│   │   │   │   │   │   │       │   │   │       └── getrandom feature "std"
+│   │   │   │   │   │   │       │   │   │           └── getrandom v0.2.3 (*)
+│   │   │   │   │   │   │       │   │   └── rand feature "std_rng"
+│   │   │   │   │   │   │       │   │       ├── rand v0.8.5 (*)
+│   │   │   │   │   │   │       │   │       └── rand feature "rand_chacha" (*)
+│   │   │   │   │   │   │       │   ├── async-broadcast feature "default"
+│   │   │   │   │   │   │       │   │   └── async-broadcast v0.7.1
+│   │   │   │   │   │   │       │   │       ├── futures-core feature "default" (*)
+│   │   │   │   │   │   │       │   │       ├── pin-project-lite feature "default" (*)
+│   │   │   │   │   │   │       │   │       ├── event-listener feature "default" (*)
+│   │   │   │   │   │   │       │   │       └── event-listener-strategy feature "default"
+│   │   │   │   │   │   │       │   │           ├── event-listener-strategy v0.5.2 (*)
+│   │   │   │   │   │   │       │   │           └── event-listener-strategy feature "std" (*)
+│   │   │   │   │   │   │       │   ├── async-executor feature "default"
+│   │   │   │   │   │   │       │   │   └── async-executor v1.13.0
+│   │   │   │   │   │   │       │   │       ├── futures-lite v2.3.0 (*)
+│   │   │   │   │   │   │       │   │       ├── slab feature "default" (*)
+│   │   │   │   │   │   │       │   │       ├── concurrent-queue feature "default" (*)
+│   │   │   │   │   │   │       │   │       ├── async-task feature "default" (*)
+│   │   │   │   │   │   │       │   │       └── fastrand feature "default"
+│   │   │   │   │   │   │       │   │           ├── fastrand v2.1.0
+│   │   │   │   │   │   │       │   │           └── fastrand feature "std" (*)
+│   │   │   │   │   │   │       │   ├── derivative feature "default"
+│   │   │   │   │   │   │       │   │   └── derivative v2.2.0 (proc-macro)
+│   │   │   │   │   │   │       │   │       ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   │       │   │       ├── quote feature "default" (*)
+│   │   │   │   │   │   │       │   │       ├── syn feature "default"
+│   │   │   │   │   │   │       │   │       │   ├── syn v1.0.109 (*)
+│   │   │   │   │   │   │       │   │       │   ├── syn feature "clone-impls"
+│   │   │   │   │   │   │       │   │       │   │   └── syn v1.0.109 (*)
+│   │   │   │   │   │   │       │   │       │   ├── syn feature "derive"
+│   │   │   │   │   │   │       │   │       │   │   └── syn v1.0.109 (*)
+│   │   │   │   │   │   │       │   │       │   ├── syn feature "parsing"
+│   │   │   │   │   │   │       │   │       │   │   └── syn v1.0.109 (*)
+│   │   │   │   │   │   │       │   │       │   ├── syn feature "printing"
+│   │   │   │   │   │   │       │   │       │   │   ├── syn v1.0.109 (*)
+│   │   │   │   │   │   │       │   │       │   │   └── syn feature "quote"
+│   │   │   │   │   │   │       │   │       │   │       └── syn v1.0.109 (*)
+│   │   │   │   │   │   │       │   │       │   └── syn feature "proc-macro"
+│   │   │   │   │   │   │       │   │       │       ├── syn v1.0.109 (*)
+│   │   │   │   │   │   │       │   │       │       ├── proc-macro2 feature "proc-macro" (*)
+│   │   │   │   │   │   │       │   │       │       ├── quote feature "proc-macro" (*)
+│   │   │   │   │   │   │       │   │       │       └── syn feature "quote" (*)
+│   │   │   │   │   │   │       │   │       ├── syn feature "extra-traits"
+│   │   │   │   │   │   │       │   │       │   └── syn v1.0.109 (*)
+│   │   │   │   │   │   │       │   │       └── syn feature "visit"
+│   │   │   │   │   │   │       │   │           └── syn v1.0.109 (*)
+│   │   │   │   │   │   │       │   ├── hex feature "default"
+│   │   │   │   │   │   │       │   │   ├── hex v0.4.3
+│   │   │   │   │   │   │       │   │   └── hex feature "std"
+│   │   │   │   │   │   │       │   │       ├── hex v0.4.3
+│   │   │   │   │   │   │       │   │       └── hex feature "alloc"
+│   │   │   │   │   │   │       │   │           └── hex v0.4.3
+│   │   │   │   │   │   │       │   ├── nix feature "socket"
+│   │   │   │   │   │   │       │   │   ├── nix v0.27.1
+│   │   │   │   │   │   │       │   │   │   ├── cfg-if feature "default" (*)
+│   │   │   │   │   │   │       │   │   │   ├── libc feature "default" (*)
+│   │   │   │   │   │   │       │   │   │   ├── libc feature "extra_traits" (*)
+│   │   │   │   │   │   │       │   │   │   ├── bitflags feature "default" (*)
+│   │   │   │   │   │   │       │   │   │   └── memoffset feature "default" (*)
+│   │   │   │   │   │   │       │   │   └── nix feature "memoffset"
+│   │   │   │   │   │   │       │   │       └── nix v0.27.1 (*)
+│   │   │   │   │   │   │       │   ├── nix feature "uio"
+│   │   │   │   │   │   │       │   │   └── nix v0.27.1 (*)
+│   │   │   │   │   │   │       │   ├── nix feature "user"
+│   │   │   │   │   │   │       │   │   ├── nix v0.27.1 (*)
+│   │   │   │   │   │   │       │   │   └── nix feature "feature"
+│   │   │   │   │   │   │       │   │       └── nix v0.27.1 (*)
+│   │   │   │   │   │   │       │   ├── ordered-stream feature "default"
+│   │   │   │   │   │   │       │   │   └── ordered-stream v0.2.0
+│   │   │   │   │   │   │       │   │       ├── futures-core feature "default" (*)
+│   │   │   │   │   │   │       │   │       └── pin-project-lite feature "default" (*)
+│   │   │   │   │   │   │       │   ├── sha1 feature "default"
+│   │   │   │   │   │   │       │   │   ├── sha1 v0.10.6
+│   │   │   │   │   │   │       │   │   │   ├── cfg-if feature "default" (*)
+│   │   │   │   │   │   │       │   │   │   ├── cpufeatures feature "default" (*)
+│   │   │   │   │   │   │       │   │   │   └── digest feature "default"
+│   │   │   │   │   │   │       │   │   │       ├── digest v0.10.7
+│   │   │   │   │   │   │       │   │   │       │   ├── block-buffer feature "default" (*)
+│   │   │   │   │   │   │       │   │   │       │   └── crypto-common feature "default"
+│   │   │   │   │   │   │       │   │   │       │       └── crypto-common v0.1.6
+│   │   │   │   │   │   │       │   │   │       │           ├── generic-array feature "default" (*)
+│   │   │   │   │   │   │       │   │   │       │           ├── generic-array feature "more_lengths" (*)
+│   │   │   │   │   │   │       │   │   │       │           └── typenum feature "default" (*)
+│   │   │   │   │   │   │       │   │   │       └── digest feature "core-api"
+│   │   │   │   │   │   │       │   │   │           ├── digest v0.10.7 (*)
+│   │   │   │   │   │   │       │   │   │           └── digest feature "block-buffer"
+│   │   │   │   │   │   │       │   │   │               └── digest v0.10.7 (*)
+│   │   │   │   │   │   │       │   │   └── sha1 feature "std"
+│   │   │   │   │   │   │       │   │       ├── sha1 v0.10.6 (*)
+│   │   │   │   │   │   │       │   │       └── digest feature "std"
+│   │   │   │   │   │   │       │   │           ├── digest v0.10.7 (*)
+│   │   │   │   │   │   │       │   │           ├── digest feature "alloc"
+│   │   │   │   │   │   │       │   │           │   └── digest v0.10.7 (*)
+│   │   │   │   │   │   │       │   │           └── crypto-common feature "std"
+│   │   │   │   │   │   │       │   │               └── crypto-common v0.1.6 (*)
+│   │   │   │   │   │   │       │   ├── sha1 feature "std" (*)
+│   │   │   │   │   │   │       │   ├── static_assertions feature "default"
+│   │   │   │   │   │   │       │   │   └── static_assertions v1.1.0
+│   │   │   │   │   │   │       │   ├── xdg-home feature "default"
+│   │   │   │   │   │   │       │   │   └── xdg-home v1.2.0
+│   │   │   │   │   │   │       │   │       └── libc feature "default" (*)
+│   │   │   │   │   │   │       │   ├── zbus_macros feature "default"
+│   │   │   │   │   │   │       │   │   └── zbus_macros v4.0.1 (proc-macro)
+│   │   │   │   │   │   │       │   │       ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   │       │   │       ├── quote feature "default" (*)
+│   │   │   │   │   │   │       │   │       ├── syn feature "default" (*)
+│   │   │   │   │   │   │       │   │       ├── syn feature "extra-traits" (*)
+│   │   │   │   │   │   │       │   │       ├── syn feature "fold"
+│   │   │   │   │   │   │       │   │       │   └── syn v1.0.109 (*)
+│   │   │   │   │   │   │       │   │       ├── syn feature "full"
+│   │   │   │   │   │   │       │   │       │   └── syn v1.0.109 (*)
+│   │   │   │   │   │   │       │   │       ├── proc-macro-crate feature "default" (*)
+│   │   │   │   │   │   │       │   │       ├── regex feature "default" (*)
+│   │   │   │   │   │   │       │   │       └── zvariant_utils feature "default"
+│   │   │   │   │   │   │       │   │           └── zvariant_utils v1.1.0
+│   │   │   │   │   │   │       │   │               ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   │       │   │               ├── quote feature "default" (*)
+│   │   │   │   │   │   │       │   │               ├── syn feature "default" (*)
+│   │   │   │   │   │   │       │   │               ├── syn feature "extra-traits" (*)
+│   │   │   │   │   │   │       │   │               └── syn feature "full" (*)
+│   │   │   │   │   │   │       │   ├── zbus_names feature "default"
+│   │   │   │   │   │   │       │   │   └── zbus_names v3.0.0
+│   │   │   │   │   │   │       │   │       ├── serde feature "default" (*)
+│   │   │   │   │   │   │       │   │       ├── serde feature "derive" (*)
+│   │   │   │   │   │   │       │   │       ├── static_assertions feature "default" (*)
+│   │   │   │   │   │   │       │   │       └── zvariant feature "enumflags2"
+│   │   │   │   │   │   │       │   │           └── zvariant v4.0.0
+│   │   │   │   │   │   │       │   │               ├── serde feature "default" (*)
+│   │   │   │   │   │   │       │   │               ├── serde feature "derive" (*)
+│   │   │   │   │   │   │       │   │               ├── enumflags2 feature "default" (*)
+│   │   │   │   │   │   │       │   │               ├── enumflags2 feature "serde" (*)
+│   │   │   │   │   │   │       │   │               ├── url feature "default" (*)
+│   │   │   │   │   │   │       │   │               ├── url feature "serde" (*)
+│   │   │   │   │   │   │       │   │               ├── static_assertions feature "default" (*)
+│   │   │   │   │   │   │       │   │               ├── endi feature "default"
+│   │   │   │   │   │   │       │   │               │   ├── endi v1.1.0
+│   │   │   │   │   │   │       │   │               │   └── endi feature "std"
+│   │   │   │   │   │   │       │   │               │       └── endi v1.1.0
+│   │   │   │   │   │   │       │   │               └── zvariant_derive feature "default"
+│   │   │   │   │   │   │       │   │                   └── zvariant_derive v4.0.0 (proc-macro)
+│   │   │   │   │   │   │       │   │                       ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   │       │   │                       ├── quote feature "default" (*)
+│   │   │   │   │   │   │       │   │                       ├── syn feature "default" (*)
+│   │   │   │   │   │   │       │   │                       ├── syn feature "extra-traits" (*)
+│   │   │   │   │   │   │       │   │                       ├── syn feature "full" (*)
+│   │   │   │   │   │   │       │   │                       ├── proc-macro-crate feature "default" (*)
+│   │   │   │   │   │   │       │   │                       └── zvariant_utils feature "default" (*)
+│   │   │   │   │   │   │       │   └── zvariant feature "enumflags2" (*)
+│   │   │   │   │   │   │       └── zvariant feature "url"
+│   │   │   │   │   │   │           └── zvariant v4.0.0 (*)
+│   │   │   │   │   │   ├── log feature "default" (*)
+│   │   │   │   │   │   ├── pollster feature "default"
+│   │   │   │   │   │   │   └── pollster v0.3.0
+│   │   │   │   │   │   ├── raw-window-handle feature "default"
+│   │   │   │   │   │   │   └── raw-window-handle v0.6.2
+│   │   │   │   │   │   └── urlencoding feature "default"
+│   │   │   │   │   │       └── urlencoding v2.1.3
+│   │   │   │   │   ├── rfd feature "async-std"
+│   │   │   │   │   │   ├── rfd v0.14.1 (*)
+│   │   │   │   │   │   └── ashpd feature "async-std"
+│   │   │   │   │   │       ├── ashpd v0.8.1 (*)
+│   │   │   │   │   │       └── zbus feature "async-io"
+│   │   │   │   │   │           ├── zbus v4.0.1 (*)
+│   │   │   │   │   │           ├── futures-util feature "io"
+│   │   │   │   │   │           │   ├── futures-util v0.3.28 (*)
+│   │   │   │   │   │           │   ├── futures-util feature "futures-io"
+│   │   │   │   │   │           │   │   └── futures-util v0.3.28 (*)
+│   │   │   │   │   │           │   ├── futures-util feature "memchr"
+│   │   │   │   │   │           │   │   └── futures-util v0.3.28 (*)
+│   │   │   │   │   │           │   └── futures-util feature "std" (*)
+│   │   │   │   │   │           ├── zbus feature "async-executor"
+│   │   │   │   │   │           │   └── zbus v4.0.1 (*)
+│   │   │   │   │   │           ├── zbus feature "async-fs"
+│   │   │   │   │   │           │   └── zbus v4.0.1 (*)
+│   │   │   │   │   │           ├── zbus feature "async-lock"
+│   │   │   │   │   │           │   └── zbus v4.0.1 (*)
+│   │   │   │   │   │           ├── zbus feature "async-task"
+│   │   │   │   │   │           │   └── zbus v4.0.1 (*)
+│   │   │   │   │   │           └── zbus feature "blocking"
+│   │   │   │   │   │               └── zbus v4.0.1 (*)
+│   │   │   │   │   └── rfd feature "xdg-portal"
+│   │   │   │   │       ├── rfd v0.14.1 (*)
+│   │   │   │   │       ├── rfd feature "ashpd"
+│   │   │   │   │       │   └── rfd v0.14.1 (*)
+│   │   │   │   │       ├── rfd feature "pollster"
+│   │   │   │   │       │   └── rfd v0.14.1 (*)
+│   │   │   │   │       └── rfd feature "urlencoding"
+│   │   │   │   │           └── rfd v0.14.1 (*)
+│   │   │   │   ├── urlencoding feature "default" (*)
+│   │   │   │   ├── signal-hook feature "default"
+│   │   │   │   │   ├── signal-hook v0.3.17
+│   │   │   │   │   │   ├── libc feature "default" (*)
+│   │   │   │   │   │   └── signal-hook-registry feature "default"
+│   │   │   │   │   │       └── signal-hook-registry v1.4.2
+│   │   │   │   │   │           └── libc feature "default" (*)
+│   │   │   │   │   ├── signal-hook feature "channel"
+│   │   │   │   │   │   └── signal-hook v0.3.17 (*)
+│   │   │   │   │   └── signal-hook feature "iterator"
+│   │   │   │   │       ├── signal-hook v0.3.17 (*)
+│   │   │   │   │       └── signal-hook feature "channel" (*)
+│   │   │   │   ├── tao feature "default"
+│   │   │   │   │   ├── tao v0.26.2
+│   │   │   │   │   │   ├── parking_lot feature "default" (*)
+│   │   │   │   │   │   ├── libc feature "default" (*)
+│   │   │   │   │   │   ├── serde feature "default" (*)
+│   │   │   │   │   │   ├── serde feature "serde_derive" (*)
+│   │   │   │   │   │   ├── lazy_static feature "default" (*)
+│   │   │   │   │   │   ├── log feature "default" (*)
+│   │   │   │   │   │   ├── crossbeam-channel feature "default" (*)
+│   │   │   │   │   │   ├── x11-dl feature "default" (*)
+│   │   │   │   │   │   ├── gtk feature "default" (*)
+│   │   │   │   │   │   ├── url feature "default" (*)
+│   │   │   │   │   │   ├── raw-window-handle feature "default" (*)
+│   │   │   │   │   │   ├── raw-window-handle feature "std"
+│   │   │   │   │   │   │   ├── raw-window-handle v0.6.2
+│   │   │   │   │   │   │   └── raw-window-handle feature "alloc"
+│   │   │   │   │   │   │       └── raw-window-handle v0.6.2
+│   │   │   │   │   │   ├── bitflags feature "default"
+│   │   │   │   │   │   │   └── bitflags v1.3.2
+│   │   │   │   │   │   ├── dlopen2 feature "default"
+│   │   │   │   │   │   │   ├── dlopen2 v0.7.0
+│   │   │   │   │   │   │   │   ├── libc feature "default" (*)
+│   │   │   │   │   │   │   │   ├── once_cell feature "default" (*)
+│   │   │   │   │   │   │   │   └── dlopen2_derive feature "default"
+│   │   │   │   │   │   │   │       └── dlopen2_derive v0.4.0 (proc-macro)
+│   │   │   │   │   │   │   │           ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   │   │           ├── quote feature "default" (*)
+│   │   │   │   │   │   │   │           ├── syn feature "default" (*)
+│   │   │   │   │   │   │   │           └── syn feature "extra-traits" (*)
+│   │   │   │   │   │   │   ├── dlopen2 feature "derive"
+│   │   │   │   │   │   │   │   ├── dlopen2 v0.7.0 (*)
+│   │   │   │   │   │   │   │   └── dlopen2 feature "dlopen2_derive"
+│   │   │   │   │   │   │   │       └── dlopen2 v0.7.0 (*)
+│   │   │   │   │   │   │   ├── dlopen2 feature "symbor"
+│   │   │   │   │   │   │   │   └── dlopen2 v0.7.0 (*)
+│   │   │   │   │   │   │   └── dlopen2 feature "wrapper"
+│   │   │   │   │   │   │       └── dlopen2 v0.7.0 (*)
+│   │   │   │   │   │   ├── gdkwayland-sys feature "default"
+│   │   │   │   │   │   │   └── gdkwayland-sys v0.18.0
+│   │   │   │   │   │   │       ├── libc feature "default" (*)
+│   │   │   │   │   │   │       ├── glib-sys feature "default" (*)
+│   │   │   │   │   │   │       ├── gobject-sys feature "default" (*)
+│   │   │   │   │   │   │       └── gdk-sys feature "default" (*)
+│   │   │   │   │   │   │       [build-dependencies]
+│   │   │   │   │   │   │       ├── pkg-config feature "default" (*)
+│   │   │   │   │   │   │       └── system-deps feature "default" (*)
+│   │   │   │   │   │   ├── gdkx11-sys feature "default"
+│   │   │   │   │   │   │   └── gdkx11-sys v0.18.0
+│   │   │   │   │   │   │       ├── libc feature "default" (*)
+│   │   │   │   │   │   │       ├── glib-sys feature "default" (*)
+│   │   │   │   │   │   │       ├── gdk-sys feature "default" (*)
+│   │   │   │   │   │   │       └── x11 feature "default" (*)
+│   │   │   │   │   │   │       [build-dependencies]
+│   │   │   │   │   │   │       └── system-deps feature "default" (*)
+│   │   │   │   │   │   ├── instant feature "default"
+│   │   │   │   │   │   │   └── instant v0.1.12
+│   │   │   │   │   │   │       └── cfg-if feature "default" (*)
+│   │   │   │   │   │   ├── raw-window-handle feature "default"
+│   │   │   │   │   │   │   └── raw-window-handle v0.5.2
+│   │   │   │   │   │   └── raw-window-handle feature "std"
+│   │   │   │   │   │       ├── raw-window-handle v0.5.2
+│   │   │   │   │   │       └── raw-window-handle feature "alloc"
+│   │   │   │   │   │           └── raw-window-handle v0.5.2
+│   │   │   │   │   └── tao feature "rwh_06"
+│   │   │   │   │       └── tao v0.26.2 (*)
+│   │   │   │   ├── tao feature "rwh_05"
+│   │   │   │   │   └── tao v0.26.2 (*)
+│   │   │   │   ├── webbrowser feature "default"
+│   │   │   │   │   └── webbrowser v0.8.15
+│   │   │   │   │       ├── log feature "default" (*)
+│   │   │   │   │       ├── url feature "default" (*)
+│   │   │   │   │       └── home feature "default"
+│   │   │   │   │           └── home v0.5.9
+│   │   │   │   ├── wry feature "file-drop"
+│   │   │   │   │   └── wry v0.37.0
+│   │   │   │   │       ├── libc feature "default" (*)
 │   │   │   │   │       ├── serde feature "default" (*)
-│   │   │   │   │       └── ordered-float feature "default"
-│   │   │   │   │           ├── ordered-float v2.10.0
-│   │   │   │   │           │   └── num-traits v0.2.15 (*)
-│   │   │   │   │           └── ordered-float feature "std"
-│   │   │   │   │               ├── ordered-float v2.10.0 (*)
-│   │   │   │   │               └── num-traits feature "std" (*)
-│   │   │   │   ├── serde_json feature "default" (*)
-│   │   │   │   ├── serde_repr feature "default"
-│   │   │   │   │   └── serde_repr v0.1.12 (proc-macro)
-│   │   │   │   │       ├── proc-macro2 feature "default" (*)
-│   │   │   │   │       ├── quote feature "default" (*)
-│   │   │   │   │       └── syn feature "default" (*)
-│   │   │   │   ├── wasm-bindgen feature "default"
-│   │   │   │   │   ├── wasm-bindgen v0.2.92
-│   │   │   │   │   │   ├── cfg-if feature "default" (*)
-│   │   │   │   │   │   └── wasm-bindgen-macro feature "default"
-│   │   │   │   │   │       └── wasm-bindgen-macro v0.2.92 (proc-macro)
-│   │   │   │   │   │           ├── quote feature "default" (*)
-│   │   │   │   │   │           └── wasm-bindgen-macro-support feature "default"
-│   │   │   │   │   │               └── wasm-bindgen-macro-support v0.2.92
-│   │   │   │   │   │                   ├── proc-macro2 feature "default" (*)
-│   │   │   │   │   │                   ├── quote feature "default" (*)
-│   │   │   │   │   │                   ├── syn feature "default" (*)
-│   │   │   │   │   │                   ├── syn feature "full" (*)
-│   │   │   │   │   │                   ├── syn feature "visit" (*)
-│   │   │   │   │   │                   ├── wasm-bindgen-backend feature "default"
-│   │   │   │   │   │                   │   └── wasm-bindgen-backend v0.2.92
-│   │   │   │   │   │                   │       ├── proc-macro2 feature "default" (*)
-│   │   │   │   │   │                   │       ├── quote feature "default" (*)
-│   │   │   │   │   │                   │       ├── syn feature "default" (*)
-│   │   │   │   │   │                   │       ├── syn feature "full" (*)
-│   │   │   │   │   │                   │       ├── once_cell feature "default" (*)
-│   │   │   │   │   │                   │       ├── log feature "default" (*)
-│   │   │   │   │   │                   │       ├── bumpalo feature "default"
-│   │   │   │   │   │                   │       │   └── bumpalo v3.12.1
-│   │   │   │   │   │                   │       └── wasm-bindgen-shared feature "default"
-│   │   │   │   │   │                   │           └── wasm-bindgen-shared v0.2.92
-│   │   │   │   │   │                   └── wasm-bindgen-shared feature "default" (*)
-│   │   │   │   │   ├── wasm-bindgen feature "spans"
-│   │   │   │   │   │   ├── wasm-bindgen v0.2.92 (*)
-│   │   │   │   │   │   └── wasm-bindgen-macro feature "spans"
-│   │   │   │   │   │       ├── wasm-bindgen-macro v0.2.92 (proc-macro) (*)
-│   │   │   │   │   │       └── wasm-bindgen-macro-support feature "spans"
-│   │   │   │   │   │           ├── wasm-bindgen-macro-support v0.2.92 (*)
-│   │   │   │   │   │           └── wasm-bindgen-backend feature "spans"
-│   │   │   │   │   │               └── wasm-bindgen-backend v0.2.92 (*)
-│   │   │   │   │   └── wasm-bindgen feature "std"
-│   │   │   │   │       └── wasm-bindgen v0.2.92 (*)
-│   │   │   │   ├── web-sys feature "AnimationEvent"
-│   │   │   │   │   ├── web-sys v0.3.69
-│   │   │   │   │   │   ├── wasm-bindgen feature "default" (*)
-│   │   │   │   │   │   └── js-sys feature "default"
-│   │   │   │   │   │       └── js-sys v0.3.69
-│   │   │   │   │   │           └── wasm-bindgen feature "default" (*)
-│   │   │   │   │   └── web-sys feature "Event"
-│   │   │   │   │       └── web-sys v0.3.69 (*)
-│   │   │   │   ├── web-sys feature "ClipboardEvent"
-│   │   │   │   │   ├── web-sys v0.3.69 (*)
-│   │   │   │   │   └── web-sys feature "Event" (*)
-│   │   │   │   ├── web-sys feature "CompositionEvent"
-│   │   │   │   │   ├── web-sys v0.3.69 (*)
-│   │   │   │   │   ├── web-sys feature "Event" (*)
-│   │   │   │   │   └── web-sys feature "UiEvent"
-│   │   │   │   │       ├── web-sys v0.3.69 (*)
-│   │   │   │   │       └── web-sys feature "Event" (*)
-│   │   │   │   ├── web-sys feature "DragEvent"
-│   │   │   │   │   ├── web-sys v0.3.69 (*)
-│   │   │   │   │   ├── web-sys feature "Event" (*)
-│   │   │   │   │   ├── web-sys feature "MouseEvent"
-│   │   │   │   │   │   ├── web-sys v0.3.69 (*)
-│   │   │   │   │   │   ├── web-sys feature "Event" (*)
-│   │   │   │   │   │   └── web-sys feature "UiEvent" (*)
-│   │   │   │   │   └── web-sys feature "UiEvent" (*)
-│   │   │   │   ├── web-sys feature "FocusEvent"
-│   │   │   │   │   ├── web-sys v0.3.69 (*)
-│   │   │   │   │   ├── web-sys feature "Event" (*)
-│   │   │   │   │   └── web-sys feature "UiEvent" (*)
-│   │   │   │   ├── web-sys feature "InputEvent"
-│   │   │   │   │   ├── web-sys v0.3.69 (*)
-│   │   │   │   │   ├── web-sys feature "Event" (*)
-│   │   │   │   │   └── web-sys feature "UiEvent" (*)
-│   │   │   │   ├── web-sys feature "KeyboardEvent"
-│   │   │   │   │   ├── web-sys v0.3.69 (*)
-│   │   │   │   │   ├── web-sys feature "Event" (*)
-│   │   │   │   │   └── web-sys feature "UiEvent" (*)
-│   │   │   │   ├── web-sys feature "MouseEvent" (*)
-│   │   │   │   ├── web-sys feature "PointerEvent"
-│   │   │   │   │   ├── web-sys v0.3.69 (*)
-│   │   │   │   │   ├── web-sys feature "Event" (*)
-│   │   │   │   │   ├── web-sys feature "MouseEvent" (*)
-│   │   │   │   │   └── web-sys feature "UiEvent" (*)
-│   │   │   │   ├── web-sys feature "Touch"
-│   │   │   │   │   └── web-sys v0.3.69 (*)
-│   │   │   │   ├── web-sys feature "TouchEvent"
-│   │   │   │   │   ├── web-sys v0.3.69 (*)
-│   │   │   │   │   ├── web-sys feature "Event" (*)
-│   │   │   │   │   └── web-sys feature "UiEvent" (*)
-│   │   │   │   ├── web-sys feature "TouchList"
-│   │   │   │   │   └── web-sys v0.3.69 (*)
-│   │   │   │   ├── web-sys feature "TransitionEvent"
-│   │   │   │   │   ├── web-sys v0.3.69 (*)
-│   │   │   │   │   └── web-sys feature "Event" (*)
-│   │   │   │   ├── web-sys feature "WheelEvent"
-│   │   │   │   │   ├── web-sys v0.3.69 (*)
-│   │   │   │   │   ├── web-sys feature "Event" (*)
-│   │   │   │   │   ├── web-sys feature "MouseEvent" (*)
-│   │   │   │   │   └── web-sys feature "UiEvent" (*)
-│   │   │   │   └── web-sys feature "default"
-│   │   │   │       └── web-sys v0.3.69 (*)
-│   │   │   ├── dioxus-html feature "eval"
-│   │   │   │   ├── dioxus-html v0.5.6 (*)
-│   │   │   │   ├── dioxus-html feature "serde"
-│   │   │   │   │   └── dioxus-html v0.5.6 (*)
-│   │   │   │   └── dioxus-html feature "serde_json"
-│   │   │   │       └── dioxus-html v0.5.6 (*)
-│   │   │   ├── dioxus-html feature "mounted"
-│   │   │   │   ├── dioxus-html v0.5.6 (*)
-│   │   │   │   ├── web-sys feature "DomRect"
-│   │   │   │   │   ├── web-sys v0.3.69 (*)
-│   │   │   │   │   └── web-sys feature "DomRectReadOnly"
-│   │   │   │   │       └── web-sys v0.3.69 (*)
-│   │   │   │   ├── web-sys feature "Element"
-│   │   │   │   │   ├── web-sys v0.3.69 (*)
-│   │   │   │   │   ├── web-sys feature "EventTarget"
-│   │   │   │   │   │   └── web-sys v0.3.69 (*)
-│   │   │   │   │   └── web-sys feature "Node"
-│   │   │   │   │       ├── web-sys v0.3.69 (*)
-│   │   │   │   │       └── web-sys feature "EventTarget" (*)
-│   │   │   │   ├── web-sys feature "HtmlElement"
-│   │   │   │   │   ├── web-sys v0.3.69 (*)
-│   │   │   │   │   ├── web-sys feature "Element" (*)
-│   │   │   │   │   ├── web-sys feature "EventTarget" (*)
-│   │   │   │   │   └── web-sys feature "Node" (*)
-│   │   │   │   ├── web-sys feature "ScrollBehavior"
-│   │   │   │   │   └── web-sys v0.3.69 (*)
-│   │   │   │   ├── web-sys feature "ScrollIntoViewOptions"
-│   │   │   │   │   └── web-sys v0.3.69 (*)
-│   │   │   │   └── web-sys feature "ScrollLogicalPosition"
-│   │   │   │       └── web-sys v0.3.69 (*)
-│   │   │   └── dioxus-html feature "serialize"
-│   │   │       ├── dioxus-html v0.5.6 (*)
-│   │   │       ├── dioxus-core feature "serialize"
-│   │   │       │   ├── dioxus-core v0.5.6 (*)
-│   │   │       │   └── dioxus-core feature "serde"
-│   │   │       │       └── dioxus-core v0.5.6 (*)
-│   │   │       ├── dioxus-html feature "serde" (*)
-│   │   │       ├── dioxus-html feature "serde-value"
-│   │   │       │   └── dioxus-html v0.5.6 (*)
-│   │   │       ├── dioxus-html feature "serde_json" (*)
-│   │   │       ├── dioxus-html feature "serde_repr"
-│   │   │       │   └── dioxus-html v0.5.6 (*)
-│   │   │       ├── euclid feature "serde"
-│   │   │       │   └── euclid v0.22.9 (*)
-│   │   │       └── keyboard-types feature "serde" (*)
-│   │   └── dioxus-web feature "default"
-│   │       ├── dioxus-web v0.5.6
-│   │       │   ├── dioxus-core feature "default" (*)
-│   │       │   ├── dioxus-core feature "serialize" (*)
-│   │       │   ├── futures-channel feature "default" (*)
-│   │       │   ├── futures-util feature "async-await"
-│   │       │   │   └── futures-util v0.3.28 (*)
-│   │       │   ├── futures-util feature "async-await-macro"
-│   │       │   │   ├── futures-util v0.3.28 (*)
-│   │       │   │   ├── futures-util feature "async-await" (*)
-│   │       │   │   └── futures-util feature "futures-macro"
-│   │       │   │       └── futures-util v0.3.28 (*)
-│   │       │   ├── futures-util feature "std" (*)
-│   │       │   ├── generational-box feature "default" (*)
-│   │       │   ├── rustc-hash feature "default" (*)
-│   │       │   ├── serde feature "default" (*)
-│   │       │   ├── tracing feature "default" (*)
-│   │       │   ├── dioxus-html feature "default" (*)
-│   │       │   ├── dioxus-html feature "wasm-bind"
-│   │       │   │   ├── dioxus-html v0.5.6 (*)
-│   │       │   │   ├── dioxus-html feature "wasm-bindgen"
-│   │       │   │   │   └── dioxus-html v0.5.6 (*)
-│   │       │   │   └── dioxus-html feature "web-sys"
-│   │       │   │       └── dioxus-html v0.5.6 (*)
-│   │       │   ├── async-trait feature "default" (*)
-│   │       │   ├── serde_json feature "default" (*)
-│   │       │   ├── wasm-bindgen feature "default" (*)
-│   │       │   ├── web-sys feature "DataTransfer"
-│   │       │   │   └── web-sys v0.3.69 (*)
-│   │       │   ├── web-sys feature "Document"
-│   │       │   │   ├── web-sys v0.3.69 (*)
-│   │       │   │   ├── web-sys feature "EventTarget" (*)
-│   │       │   │   └── web-sys feature "Node" (*)
-│   │       │   ├── web-sys feature "HtmlElement" (*)
-│   │       │   ├── web-sys feature "HtmlFormElement"
-│   │       │   │   ├── web-sys v0.3.69 (*)
-│   │       │   │   ├── web-sys feature "Element" (*)
-│   │       │   │   ├── web-sys feature "EventTarget" (*)
-│   │       │   │   ├── web-sys feature "HtmlElement" (*)
-│   │       │   │   └── web-sys feature "Node" (*)
-│   │       │   ├── web-sys feature "HtmlInputElement"
-│   │       │   │   ├── web-sys v0.3.69 (*)
-│   │       │   │   ├── web-sys feature "Element" (*)
-│   │       │   │   ├── web-sys feature "EventTarget" (*)
-│   │       │   │   ├── web-sys feature "HtmlElement" (*)
-│   │       │   │   └── web-sys feature "Node" (*)
-│   │       │   ├── web-sys feature "HtmlSelectElement"
-│   │       │   │   ├── web-sys v0.3.69 (*)
-│   │       │   │   ├── web-sys feature "Element" (*)
-│   │       │   │   ├── web-sys feature "EventTarget" (*)
-│   │       │   │   ├── web-sys feature "HtmlElement" (*)
-│   │       │   │   └── web-sys feature "Node" (*)
-│   │       │   ├── web-sys feature "HtmlTextAreaElement"
-│   │       │   │   ├── web-sys v0.3.69 (*)
-│   │       │   │   ├── web-sys feature "Element" (*)
-│   │       │   │   ├── web-sys feature "EventTarget" (*)
-│   │       │   │   ├── web-sys feature "HtmlElement" (*)
-│   │       │   │   └── web-sys feature "Node" (*)
-│   │       │   ├── web-sys feature "NodeList"
-│   │       │   │   └── web-sys v0.3.69 (*)
-│   │       │   ├── web-sys feature "Text"
-│   │       │   │   ├── web-sys v0.3.69 (*)
-│   │       │   │   ├── web-sys feature "CharacterData"
-│   │       │   │   │   ├── web-sys v0.3.69 (*)
-│   │       │   │   │   ├── web-sys feature "EventTarget" (*)
-│   │       │   │   │   └── web-sys feature "Node" (*)
-│   │       │   │   ├── web-sys feature "EventTarget" (*)
-│   │       │   │   └── web-sys feature "Node" (*)
-│   │       │   ├── web-sys feature "Window"
-│   │       │   │   ├── web-sys v0.3.69 (*)
-│   │       │   │   └── web-sys feature "EventTarget" (*)
-│   │       │   ├── web-sys feature "console"
-│   │       │   │   └── web-sys v0.3.69 (*)
-│   │       │   ├── web-sys feature "default" (*)
-│   │       │   ├── js-sys feature "default" (*)
-│   │       │   ├── console_error_panic_hook feature "default"
-│   │       │   │   └── console_error_panic_hook v0.1.7
-│   │       │   │       ├── cfg-if feature "default" (*)
-│   │       │   │       └── wasm-bindgen feature "default" (*)
-│   │       │   ├── dioxus-interpreter-js feature "default"
-│   │       │   │   └── dioxus-interpreter-js v0.5.6
-│   │       │   │       ├── sledgehammer_bindgen v0.5.0
-│   │       │   │       │   ├── wasm-bindgen feature "default" (*)
-│   │       │   │       │   └── sledgehammer_bindgen_macro feature "default"
-│   │       │   │       │       └── sledgehammer_bindgen_macro v0.5.1 (proc-macro)
-│   │       │   │       │           ├── quote feature "default" (*)
-│   │       │   │       │           ├── syn feature "default" (*)
-│   │       │   │       │           ├── syn feature "extra-traits" (*)
-│   │       │   │       │           └── syn feature "full" (*)
-│   │       │   │       ├── wasm-bindgen feature "default" (*)
-│   │       │   │       ├── web-sys feature "Element" (*)
-│   │       │   │       ├── web-sys feature "Node" (*)
-│   │       │   │       ├── web-sys feature "default" (*)
-│   │       │   │       ├── js-sys feature "default" (*)
-│   │       │   │       ├── sledgehammer_utils feature "default"
-│   │       │   │       │   └── sledgehammer_utils v0.2.1
-│   │       │   │       │       ├── rustc-hash feature "default" (*)
-│   │       │   │       │       ├── once_cell feature "default" (*)
-│   │       │   │       │       └── lru feature "default"
-│   │       │   │       │           ├── lru v0.12.3
-│   │       │   │       │           │   └── hashbrown feature "default"
-│   │       │   │       │           │       ├── hashbrown v0.14.5
-│   │       │   │       │           │       │   ├── ahash v0.8.11
-│   │       │   │       │           │       │   │   ├── cfg-if feature "default" (*)
-│   │       │   │       │           │       │   │   ├── once_cell feature "alloc" (*)
-│   │       │   │       │           │       │   │   └── zerocopy feature "simd"
-│   │       │   │       │           │       │   │       └── zerocopy v0.7.35
-│   │       │   │       │           │       │   │   [build-dependencies]
-│   │       │   │       │           │       │   │   └── version_check feature "default" (*)
-│   │       │   │       │           │       │   └── allocator-api2 feature "alloc"
-│   │       │   │       │           │       │       └── allocator-api2 v0.2.18
-│   │       │   │       │           │       ├── hashbrown feature "ahash"
-│   │       │   │       │           │       │   └── hashbrown v0.14.5 (*)
-│   │       │   │       │           │       ├── hashbrown feature "allocator-api2"
-│   │       │   │       │           │       │   └── hashbrown v0.14.5 (*)
-│   │       │   │       │           │       └── hashbrown feature "inline-more"
-│   │       │   │       │           │           └── hashbrown v0.14.5 (*)
-│   │       │   │       │           └── lru feature "hashbrown"
-│   │       │   │       │               └── lru v0.12.3 (*)
-│   │       │   │       └── wasm-bindgen-futures feature "default"
-│   │       │   │           └── wasm-bindgen-futures v0.4.42
-│   │       │   │               ├── cfg-if feature "default" (*)
-│   │       │   │               ├── wasm-bindgen feature "default" (*)
-│   │       │   │               └── js-sys feature "default" (*)
-│   │       │   │       [build-dependencies]
-│   │       │   │       └── md5 feature "default"
-│   │       │   │           ├── md5 v0.7.0
-│   │       │   │           └── md5 feature "std"
-│   │       │   │               └── md5 v0.7.0
-│   │       │   ├── dioxus-interpreter-js feature "minimal_bindings"
-│   │       │   │   └── dioxus-interpreter-js v0.5.6 (*)
-│   │       │   ├── dioxus-interpreter-js feature "webonly"
-│   │       │   │   ├── dioxus-interpreter-js v0.5.6 (*)
-│   │       │   │   ├── dioxus-interpreter-js feature "js-sys"
-│   │       │   │   │   └── dioxus-interpreter-js v0.5.6 (*)
-│   │       │   │   ├── dioxus-interpreter-js feature "sledgehammer"
-│   │       │   │   │   ├── dioxus-interpreter-js v0.5.6 (*)
-│   │       │   │   │   ├── dioxus-interpreter-js feature "sledgehammer_bindgen"
-│   │       │   │   │   │   └── dioxus-interpreter-js v0.5.6 (*)
-│   │       │   │   │   └── dioxus-interpreter-js feature "sledgehammer_utils"
-│   │       │   │   │       └── dioxus-interpreter-js v0.5.6 (*)
-│   │       │   │   ├── dioxus-interpreter-js feature "sledgehammer_bindgen" (*)
-│   │       │   │   ├── dioxus-interpreter-js feature "wasm-bindgen"
-│   │       │   │   │   └── dioxus-interpreter-js v0.5.6 (*)
-│   │       │   │   ├── dioxus-interpreter-js feature "wasm-bindgen-futures"
-│   │       │   │   │   └── dioxus-interpreter-js v0.5.6 (*)
-│   │       │   │   ├── dioxus-interpreter-js feature "web-sys"
-│   │       │   │   │   └── dioxus-interpreter-js v0.5.6 (*)
-│   │       │   │   └── sledgehammer_bindgen feature "web"
-│   │       │   │       ├── sledgehammer_bindgen v0.5.0 (*)
-│   │       │   │       ├── sledgehammer_bindgen feature "wasm-bindgen"
-│   │       │   │       │   └── sledgehammer_bindgen v0.5.0 (*)
-│   │       │   │       └── sledgehammer_bindgen_macro feature "web"
-│   │       │   │           └── sledgehammer_bindgen_macro v0.5.1 (proc-macro) (*)
-│   │       │   ├── wasm-bindgen-futures feature "default" (*)
-│   │       │   └── serde-wasm-bindgen feature "default"
-│   │       │       └── serde-wasm-bindgen v0.5.0
-│   │       │           ├── serde feature "default" (*)
-│   │       │           ├── wasm-bindgen feature "default" (*)
-│   │       │           └── js-sys feature "default" (*)
-│   │       ├── dioxus-web feature "eval"
-│   │       │   ├── dioxus-web v0.5.6 (*)
-│   │       │   ├── dioxus-html feature "eval" (*)
-│   │       │   ├── dioxus-web feature "async-trait"
-│   │       │   │   └── dioxus-web v0.5.6 (*)
-│   │       │   ├── dioxus-web feature "serde-wasm-bindgen"
-│   │       │   │   └── dioxus-web v0.5.6 (*)
-│   │       │   └── dioxus-interpreter-js feature "eval"
-│   │       │       └── dioxus-interpreter-js v0.5.6 (*)
-│   │       ├── dioxus-web feature "file_engine"
-│   │       │   ├── dioxus-web v0.5.6 (*)
-│   │       │   ├── web-sys feature "File"
-│   │       │   │   ├── web-sys v0.3.69 (*)
-│   │       │   │   └── web-sys feature "Blob"
-│   │       │   │       └── web-sys v0.3.69 (*)
-│   │       │   ├── web-sys feature "FileList"
-│   │       │   │   └── web-sys v0.3.69 (*)
-│   │       │   ├── web-sys feature "FileReader"
-│   │       │   │   ├── web-sys v0.3.69 (*)
-│   │       │   │   └── web-sys feature "EventTarget" (*)
-│   │       │   └── dioxus-web feature "async-trait" (*)
-│   │       ├── dioxus-web feature "hot_reload"
-│   │       │   ├── dioxus-web v0.5.6 (*)
-│   │       │   ├── web-sys feature "Location"
-│   │       │   │   └── web-sys v0.3.69 (*)
-│   │       │   ├── web-sys feature "MessageEvent"
-│   │       │   │   ├── web-sys v0.3.69 (*)
-│   │       │   │   └── web-sys feature "Event" (*)
-│   │       │   └── web-sys feature "WebSocket"
-│   │       │       ├── web-sys v0.3.69 (*)
-│   │       │       └── web-sys feature "EventTarget" (*)
-│   │       ├── dioxus-web feature "mounted"
-│   │       │   ├── dioxus-web v0.5.6 (*)
-│   │       │   ├── dioxus-html feature "mounted" (*)
-│   │       │   └── web-sys feature "Element" (*)
-│   │       └── dioxus-web feature "panic_hook"
-│   │           ├── dioxus-web v0.5.6 (*)
-│   │           └── dioxus-web feature "console_error_panic_hook"
-│   │               └── dioxus-web v0.5.6 (*)
+│   │   │   │   │       ├── serde feature "derive" (*)
+│   │   │   │   │       ├── once_cell feature "default" (*)
+│   │   │   │   │       ├── log feature "default" (*)
+│   │   │   │   │       ├── serde_json feature "default" (*)
+│   │   │   │   │       ├── thiserror feature "default" (*)
+│   │   │   │   │       ├── x11-dl feature "default" (*)
+│   │   │   │   │       ├── gtk feature "default" (*)
+│   │   │   │   │       ├── percent-encoding feature "default" (*)
+│   │   │   │   │       ├── raw-window-handle feature "default" (*)
+│   │   │   │   │       ├── raw-window-handle feature "std" (*)
+│   │   │   │   │       ├── gdkx11 feature "default"
+│   │   │   │   │       │   └── gdkx11 v0.18.0
+│   │   │   │   │       │       ├── libc feature "default" (*)
+│   │   │   │   │       │       ├── glib feature "default" (*)
+│   │   │   │   │       │       ├── gdk feature "default" (*)
+│   │   │   │   │       │       ├── gio feature "default" (*)
+│   │   │   │   │       │       ├── x11 feature "default" (*)
+│   │   │   │   │       │       └── gdkx11-sys feature "default" (*)
+│   │   │   │   │       ├── http feature "default"
+│   │   │   │   │       │   └── http v0.2.9
+│   │   │   │   │       │       ├── itoa feature "default" (*)
+│   │   │   │   │       │       ├── fnv feature "default" (*)
+│   │   │   │   │       │       └── bytes feature "default" (*)
+│   │   │   │   │       ├── javascriptcore-rs feature "default"
+│   │   │   │   │       │   ├── javascriptcore-rs v1.1.2
+│   │   │   │   │       │   │   ├── glib feature "default" (*)
+│   │   │   │   │       │   │   ├── bitflags feature "default" (*)
+│   │   │   │   │       │   │   └── javascriptcore-rs-sys feature "default"
+│   │   │   │   │       │   │       └── javascriptcore-rs-sys v1.1.1
+│   │   │   │   │       │   │           ├── libc feature "default" (*)
+│   │   │   │   │       │   │           ├── glib-sys feature "default" (*)
+│   │   │   │   │       │   │           └── gobject-sys feature "default" (*)
+│   │   │   │   │       │   │           [build-dependencies]
+│   │   │   │   │       │   │           └── system-deps feature "default" (*)
+│   │   │   │   │       │   └── javascriptcore-rs feature "v2_38"
+│   │   │   │   │       │       ├── javascriptcore-rs v1.1.2 (*)
+│   │   │   │   │       │       ├── javascriptcore-rs feature "v2_28"
+│   │   │   │   │       │       │   ├── javascriptcore-rs v1.1.2 (*)
+│   │   │   │   │       │       │   └── javascriptcore-rs-sys feature "v2_28"
+│   │   │   │   │       │       │       └── javascriptcore-rs-sys v1.1.1 (*)
+│   │   │   │   │       │       └── javascriptcore-rs-sys feature "v2_38"
+│   │   │   │   │       │           ├── javascriptcore-rs-sys v1.1.1 (*)
+│   │   │   │   │       │           └── javascriptcore-rs-sys feature "v2_28" (*)
+│   │   │   │   │       ├── javascriptcore-rs feature "v2_28" (*)
+│   │   │   │   │       ├── soup3 feature "default"
+│   │   │   │   │       │   ├── soup3 v0.5.0
+│   │   │   │   │       │   │   ├── futures-channel feature "default" (*)
+│   │   │   │   │       │   │   ├── libc feature "default" (*)
+│   │   │   │   │       │   │   ├── glib feature "default" (*)
+│   │   │   │   │       │   │   ├── glib feature "v2_66"
+│   │   │   │   │       │   │   │   ├── glib v0.18.5 (*)
+│   │   │   │   │       │   │   │   ├── glib-sys feature "v2_66"
+│   │   │   │   │       │   │   │   │   ├── glib-sys v0.18.1 (*)
+│   │   │   │   │       │   │   │   │   └── glib-sys feature "v2_64"
+│   │   │   │   │       │   │   │   │       ├── glib-sys v0.18.1 (*)
+│   │   │   │   │       │   │   │   │       └── glib-sys feature "v2_62"
+│   │   │   │   │       │   │   │   │           ├── glib-sys v0.18.1 (*)
+│   │   │   │   │       │   │   │   │           └── glib-sys feature "v2_60"
+│   │   │   │   │       │   │   │   │               ├── glib-sys v0.18.1 (*)
+│   │   │   │   │       │   │   │   │               └── glib-sys feature "v2_58"
+│   │   │   │   │       │   │   │   │                   └── glib-sys v0.18.1 (*)
+│   │   │   │   │       │   │   │   ├── gobject-sys feature "v2_66"
+│   │   │   │   │       │   │   │   │   ├── gobject-sys v0.18.0 (*)
+│   │   │   │   │       │   │   │   │   └── gobject-sys feature "v2_62"
+│   │   │   │   │       │   │   │   │       ├── gobject-sys v0.18.0 (*)
+│   │   │   │   │       │   │   │   │       └── gobject-sys feature "v2_58"
+│   │   │   │   │       │   │   │   │           └── gobject-sys v0.18.0 (*)
+│   │   │   │   │       │   │   │   └── glib feature "v2_64"
+│   │   │   │   │       │   │   │       ├── glib v0.18.5 (*)
+│   │   │   │   │       │   │   │       ├── glib-sys feature "v2_64" (*)
+│   │   │   │   │       │   │   │       └── glib feature "v2_62"
+│   │   │   │   │       │   │   │           ├── glib v0.18.5 (*)
+│   │   │   │   │       │   │   │           ├── glib-sys feature "v2_62" (*)
+│   │   │   │   │       │   │   │           ├── gobject-sys feature "v2_62" (*)
+│   │   │   │   │       │   │   │           └── glib feature "v2_60"
+│   │   │   │   │       │   │   │               ├── glib v0.18.5 (*)
+│   │   │   │   │       │   │   │               ├── glib-sys feature "v2_60" (*)
+│   │   │   │   │       │   │   │               └── glib feature "v2_58"
+│   │   │   │   │       │   │   │                   ├── glib v0.18.5 (*)
+│   │   │   │   │       │   │   │                   ├── glib-sys feature "v2_58" (*)
+│   │   │   │   │       │   │   │                   └── gobject-sys feature "v2_58" (*)
+│   │   │   │   │       │   │   ├── gio feature "default" (*)
+│   │   │   │   │       │   │   ├── gio feature "v2_70"
+│   │   │   │   │       │   │   │   ├── gio v0.18.4 (*)
+│   │   │   │   │       │   │   │   ├── glib feature "v2_70"
+│   │   │   │   │       │   │   │   │   ├── glib v0.18.5 (*)
+│   │   │   │   │       │   │   │   │   ├── glib-sys feature "v2_70"
+│   │   │   │   │       │   │   │   │   │   ├── glib-sys v0.18.1 (*)
+│   │   │   │   │       │   │   │   │   │   └── glib-sys feature "v2_68"
+│   │   │   │   │       │   │   │   │   │       ├── glib-sys v0.18.1 (*)
+│   │   │   │   │       │   │   │   │   │       └── glib-sys feature "v2_66" (*)
+│   │   │   │   │       │   │   │   │   ├── gobject-sys feature "v2_70"
+│   │   │   │   │       │   │   │   │   │   ├── gobject-sys v0.18.0 (*)
+│   │   │   │   │       │   │   │   │   │   └── gobject-sys feature "v2_68"
+│   │   │   │   │       │   │   │   │   │       ├── gobject-sys v0.18.0 (*)
+│   │   │   │   │       │   │   │   │   │       └── gobject-sys feature "v2_66" (*)
+│   │   │   │   │       │   │   │   │   └── glib feature "v2_68"
+│   │   │   │   │       │   │   │   │       ├── glib v0.18.5 (*)
+│   │   │   │   │       │   │   │   │       ├── glib-sys feature "v2_68" (*)
+│   │   │   │   │       │   │   │   │       ├── gobject-sys feature "v2_68" (*)
+│   │   │   │   │       │   │   │   │       └── glib feature "v2_66" (*)
+│   │   │   │   │       │   │   │   ├── gio-sys feature "v2_70"
+│   │   │   │   │       │   │   │   │   ├── gio-sys v0.18.1 (*)
+│   │   │   │   │       │   │   │   │   └── gio-sys feature "v2_68"
+│   │   │   │   │       │   │   │   │       ├── gio-sys v0.18.1 (*)
+│   │   │   │   │       │   │   │   │       └── gio-sys feature "v2_66"
+│   │   │   │   │       │   │   │   │           ├── gio-sys v0.18.1 (*)
+│   │   │   │   │       │   │   │   │           └── gio-sys feature "v2_64"
+│   │   │   │   │       │   │   │   │               ├── gio-sys v0.18.1 (*)
+│   │   │   │   │       │   │   │   │               └── gio-sys feature "v2_62"
+│   │   │   │   │       │   │   │   │                   ├── gio-sys v0.18.1 (*)
+│   │   │   │   │       │   │   │   │                   └── gio-sys feature "v2_60"
+│   │   │   │   │       │   │   │   │                       ├── gio-sys v0.18.1 (*)
+│   │   │   │   │       │   │   │   │                       └── gio-sys feature "v2_58"
+│   │   │   │   │       │   │   │   │                           └── gio-sys v0.18.1 (*)
+│   │   │   │   │       │   │   │   └── gio feature "v2_68"
+│   │   │   │   │       │   │   │       ├── gio v0.18.4 (*)
+│   │   │   │   │       │   │   │       ├── glib feature "v2_68" (*)
+│   │   │   │   │       │   │   │       ├── gio-sys feature "v2_68" (*)
+│   │   │   │   │       │   │   │       └── gio feature "v2_66"
+│   │   │   │   │       │   │   │           ├── gio v0.18.4 (*)
+│   │   │   │   │       │   │   │           ├── glib feature "v2_66" (*)
+│   │   │   │   │       │   │   │           ├── gio-sys feature "v2_66" (*)
+│   │   │   │   │       │   │   │           └── gio feature "v2_64"
+│   │   │   │   │       │   │   │               ├── gio v0.18.4 (*)
+│   │   │   │   │       │   │   │               ├── glib feature "v2_64" (*)
+│   │   │   │   │       │   │   │               ├── gio-sys feature "v2_64" (*)
+│   │   │   │   │       │   │   │               └── gio feature "v2_62"
+│   │   │   │   │       │   │   │                   ├── gio v0.18.4 (*)
+│   │   │   │   │       │   │   │                   ├── glib feature "v2_62" (*)
+│   │   │   │   │       │   │   │                   ├── gio-sys feature "v2_62" (*)
+│   │   │   │   │       │   │   │                   └── gio feature "v2_60"
+│   │   │   │   │       │   │   │                       ├── gio v0.18.4 (*)
+│   │   │   │   │       │   │   │                       ├── glib feature "v2_60" (*)
+│   │   │   │   │       │   │   │                       ├── gio-sys feature "v2_60" (*)
+│   │   │   │   │       │   │   │                       └── gio feature "v2_58"
+│   │   │   │   │       │   │   │                           ├── gio v0.18.4 (*)
+│   │   │   │   │       │   │   │                           ├── glib feature "v2_58" (*)
+│   │   │   │   │       │   │   │                           └── gio-sys feature "v2_58" (*)
+│   │   │   │   │       │   │   └── soup3-sys feature "default"
+│   │   │   │   │       │   │       └── soup3-sys v0.5.0
+│   │   │   │   │       │   │           ├── libc feature "default" (*)
+│   │   │   │   │       │   │           ├── glib-sys feature "default" (*)
+│   │   │   │   │       │   │           ├── gobject-sys feature "default" (*)
+│   │   │   │   │       │   │           └── gio-sys feature "default" (*)
+│   │   │   │   │       │   │           [build-dependencies]
+│   │   │   │   │       │   │           └── system-deps feature "default" (*)
+│   │   │   │   │       │   └── soup3-sys feature "v3_0"
+│   │   │   │   │       │       └── soup3-sys v0.5.0 (*)
+│   │   │   │   │       ├── webkit2gtk feature "default"
+│   │   │   │   │       │   └── webkit2gtk v2.0.1
+│   │   │   │   │       │       ├── libc feature "default" (*)
+│   │   │   │   │       │       ├── once_cell feature "default" (*)
+│   │   │   │   │       │       ├── gtk feature "default" (*)
+│   │   │   │   │       │       ├── glib-sys feature "default" (*)
+│   │   │   │   │       │       ├── gobject-sys feature "default" (*)
+│   │   │   │   │       │       ├── glib feature "default" (*)
+│   │   │   │   │       │       ├── gio-sys feature "default" (*)
+│   │   │   │   │       │       ├── cairo-rs feature "default" (*)
+│   │   │   │   │       │       ├── gdk feature "default" (*)
+│   │   │   │   │       │       ├── gio feature "default" (*)
+│   │   │   │   │       │       ├── gdk-sys feature "default" (*)
+│   │   │   │   │       │       ├── gtk-sys feature "default" (*)
+│   │   │   │   │       │       ├── bitflags feature "default" (*)
+│   │   │   │   │       │       ├── javascriptcore-rs feature "default" (*)
+│   │   │   │   │       │       ├── soup3 feature "default" (*)
+│   │   │   │   │       │       └── webkit2gtk-sys feature "default"
+│   │   │   │   │       │           └── webkit2gtk-sys v2.0.1
+│   │   │   │   │       │               ├── libc feature "default" (*)
+│   │   │   │   │       │               ├── glib-sys feature "default" (*)
+│   │   │   │   │       │               ├── gobject-sys feature "default" (*)
+│   │   │   │   │       │               ├── gio-sys feature "default" (*)
+│   │   │   │   │       │               ├── cairo-sys-rs feature "default" (*)
+│   │   │   │   │       │               ├── gdk-sys feature "default" (*)
+│   │   │   │   │       │               ├── gtk-sys feature "default" (*)
+│   │   │   │   │       │               ├── bitflags feature "default" (*)
+│   │   │   │   │       │               ├── javascriptcore-rs-sys feature "default" (*)
+│   │   │   │   │       │               └── soup3-sys feature "default" (*)
+│   │   │   │   │       │               [build-dependencies]
+│   │   │   │   │       │               ├── pkg-config feature "default" (*)
+│   │   │   │   │       │               └── system-deps feature "default" (*)
+│   │   │   │   │       ├── webkit2gtk feature "v2_38"
+│   │   │   │   │       │   ├── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   ├── webkit2gtk feature "v2_36"
+│   │   │   │   │       │   │   ├── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   │   ├── webkit2gtk feature "v2_34"
+│   │   │   │   │       │   │   │   ├── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   │   │   ├── webkit2gtk feature "v2_32"
+│   │   │   │   │       │   │   │   │   ├── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   ├── webkit2gtk feature "v2_30"
+│   │   │   │   │       │   │   │   │   │   ├── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   ├── webkit2gtk feature "v2_28"
+│   │   │   │   │       │   │   │   │   │   │   ├── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   ├── webkit2gtk feature "v2_26"
+│   │   │   │   │       │   │   │   │   │   │   │   ├── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   ├── webkit2gtk feature "v2_24"
+│   │   │   │   │       │   │   │   │   │   │   │   │   ├── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   ├── webkit2gtk feature "v2_22"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   ├── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   ├── webkit2gtk feature "v2_20"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   ├── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   ├── webkit2gtk feature "v2_18"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   ├── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   ├── webkit2gtk feature "v2_16"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   ├── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   ├── webkit2gtk feature "v2_14"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   ├── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   ├── webkit2gtk feature "v2_12"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   ├── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   ├── webkit2gtk feature "v2_10"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   ├── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   ├── webkit2gtk feature "v2_8"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   ├── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   ├── webkit2gtk feature "v2_6"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   ├── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   ├── webkit2gtk feature "v2_4"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   ├── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   └── webkit2gtk feature "v2_2"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │       └── webkit2gtk v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   └── webkit2gtk-sys feature "v2_6"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │       └── webkit2gtk-sys v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   └── webkit2gtk-sys feature "v2_8"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │       ├── webkit2gtk-sys v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │       └── webkit2gtk-sys feature "v2_6" (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   └── webkit2gtk-sys feature "v2_10"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   │       ├── webkit2gtk-sys v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   │       └── webkit2gtk-sys feature "v2_8" (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │   └── webkit2gtk-sys feature "v2_12"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │       ├── webkit2gtk-sys v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   │       └── webkit2gtk-sys feature "v2_10" (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │   └── webkit2gtk-sys feature "v2_14"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │       ├── webkit2gtk-sys v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   │       └── webkit2gtk-sys feature "v2_12" (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │   └── webkit2gtk-sys feature "v2_16"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │       ├── webkit2gtk-sys v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   │       └── webkit2gtk-sys feature "v2_14" (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │   └── webkit2gtk-sys feature "v2_18"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │       ├── webkit2gtk-sys v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   │       └── webkit2gtk-sys feature "v2_16" (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │   └── webkit2gtk-sys feature "v2_20"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │       ├── webkit2gtk-sys v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   │       └── webkit2gtk-sys feature "v2_18" (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │   └── webkit2gtk-sys feature "v2_22"
+│   │   │   │   │       │   │   │   │   │   │   │   │   │       ├── webkit2gtk-sys v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   │       └── webkit2gtk-sys feature "v2_20" (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │   └── webkit2gtk-sys feature "v2_24"
+│   │   │   │   │       │   │   │   │   │   │   │   │       ├── webkit2gtk-sys v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │   │       └── webkit2gtk-sys feature "v2_22" (*)
+│   │   │   │   │       │   │   │   │   │   │   │   └── webkit2gtk-sys feature "v2_26"
+│   │   │   │   │       │   │   │   │   │   │   │       ├── webkit2gtk-sys v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │   │       └── webkit2gtk-sys feature "v2_24" (*)
+│   │   │   │   │       │   │   │   │   │   │   └── webkit2gtk-sys feature "v2_28"
+│   │   │   │   │       │   │   │   │   │   │       ├── webkit2gtk-sys v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │   │       └── webkit2gtk-sys feature "v2_26" (*)
+│   │   │   │   │       │   │   │   │   │   └── webkit2gtk-sys feature "v2_30"
+│   │   │   │   │       │   │   │   │   │       ├── webkit2gtk-sys v2.0.1 (*)
+│   │   │   │   │       │   │   │   │   │       └── webkit2gtk-sys feature "v2_28" (*)
+│   │   │   │   │       │   │   │   │   └── webkit2gtk-sys feature "v2_32"
+│   │   │   │   │       │   │   │   │       ├── webkit2gtk-sys v2.0.1 (*)
+│   │   │   │   │       │   │   │   │       └── webkit2gtk-sys feature "v2_30" (*)
+│   │   │   │   │       │   │   │   └── webkit2gtk-sys feature "v2_34"
+│   │   │   │   │       │   │   │       ├── webkit2gtk-sys v2.0.1 (*)
+│   │   │   │   │       │   │   │       └── webkit2gtk-sys feature "v2_32" (*)
+│   │   │   │   │       │   │   └── webkit2gtk-sys feature "v2_36"
+│   │   │   │   │       │   │       ├── webkit2gtk-sys v2.0.1 (*)
+│   │   │   │   │       │   │       └── webkit2gtk-sys feature "v2_34" (*)
+│   │   │   │   │       │   └── webkit2gtk-sys feature "v2_38"
+│   │   │   │   │       │       ├── webkit2gtk-sys v2.0.1 (*)
+│   │   │   │   │       │       └── webkit2gtk-sys feature "v2_36" (*)
+│   │   │   │   │       └── webkit2gtk-sys feature "default" (*)
+│   │   │   │   │       [build-dependencies]
+│   │   │   │   │       └── cfg_aliases feature "default"
+│   │   │   │   │           └── cfg_aliases v0.1.1
+│   │   │   │   ├── wry feature "os-webview"
+│   │   │   │   │   ├── wry v0.37.0 (*)
+│   │   │   │   │   ├── wry feature "gdkx11"
+│   │   │   │   │   │   └── wry v0.37.0 (*)
+│   │   │   │   │   ├── wry feature "javascriptcore-rs"
+│   │   │   │   │   │   └── wry v0.37.0 (*)
+│   │   │   │   │   ├── wry feature "soup3"
+│   │   │   │   │   │   └── wry v0.37.0 (*)
+│   │   │   │   │   ├── wry feature "webkit2gtk"
+│   │   │   │   │   │   └── wry v0.37.0 (*)
+│   │   │   │   │   ├── wry feature "webkit2gtk-sys"
+│   │   │   │   │   │   └── wry v0.37.0 (*)
+│   │   │   │   │   └── wry feature "x11-dl"
+│   │   │   │   │       └── wry v0.37.0 (*)
+│   │   │   │   └── wry feature "protocol"
+│   │   │   │       └── wry v0.37.0 (*)
+│   │   │   ├── dioxus-desktop feature "devtools"
+│   │   │   │   ├── dioxus-desktop v0.5.6 (*)
+│   │   │   │   └── wry feature "devtools"
+│   │   │   │       └── wry v0.37.0 (*)
+│   │   │   ├── dioxus-desktop feature "hot-reload"
+│   │   │   │   ├── dioxus-desktop v0.5.6 (*)
+│   │   │   │   └── dioxus-desktop feature "dioxus-hot-reload"
+│   │   │   │       └── dioxus-desktop v0.5.6 (*)
+│   │   │   ├── dioxus-desktop feature "tokio_runtime"
+│   │   │   │   ├── dioxus-desktop v0.5.6 (*)
+│   │   │   │   └── dioxus-desktop feature "tokio"
+│   │   │   │       └── dioxus-desktop v0.5.6 (*)
+│   │   │   └── wry feature "objc-exception"
+│   │   │       └── wry v0.37.0 (*)
+│   │   ├── dioxus-hooks feature "default" (*)
+│   │   ├── dioxus-signals feature "default" (*)
+│   │   └── dioxus-html feature "default" (*)
+│   ├── dioxus feature "dioxus-config-macro"
+│   │   └── dioxus v0.5.6 (*)
+│   ├── dioxus feature "dioxus-desktop"
+│   │   └── dioxus v0.5.6 (*)
+│   └── dioxus-config-macro feature "desktop"
+│       └── dioxus-config-macro v0.5.6 (proc-macro) (*)
+├── dioxus feature "hooks"
+│   ├── dioxus v0.5.6 (*)
 │   └── dioxus feature "dioxus-hooks"
 │       └── dioxus v0.5.6 (*)
 ├── dioxus feature "html"
@@ -1176,116 +2106,41 @@ hdl_register_wizard v0.1.0 (/home/sylvaint/Devel/hdl-register-wizard)
 │   ├── dioxus v0.5.6 (*)
 │   └── dioxus feature "dioxus-signals"
 │       └── dioxus v0.5.6 (*)
-├── dioxus feature "web"
-│   ├── dioxus v0.5.6 (*)
-│   ├── dioxus feature "dioxus-config-macro"
-│   │   └── dioxus v0.5.6 (*)
-│   ├── dioxus feature "dioxus-web"
-│   │   └── dioxus v0.5.6 (*)
-│   └── dioxus-config-macro feature "web"
-│       └── dioxus-config-macro v0.5.6 (proc-macro) (*)
 ├── serde feature "default" (*)
 ├── serde feature "derive" (*)
 ├── serde feature "rc"
 │   └── serde v1.0.204 (*)
 ├── lazy_static feature "default" (*)
 ├── serde_json feature "default" (*)
-├── wasm-bindgen feature "default" (*)
-├── web-sys feature "Storage"
-│   └── web-sys v0.3.69 (*)
-├── web-sys feature "Window" (*)
-├── web-sys feature "default" (*)
-├── js-sys feature "default" (*)
+├── rfd feature "xdg-portal" (*)
+├── getrandom feature "default" (*)
+├── urlencoding feature "default" (*)
+├── tao feature "default" (*)
+├── tao feature "serde"
+│   └── tao v0.26.2 (*)
+├── directories-next feature "default"
+│   └── directories-next v2.0.0
+│       ├── cfg-if feature "default" (*)
+│       └── dirs-sys-next feature "default"
+│           └── dirs-sys-next v0.1.2
+│               └── libc feature "default" (*)
 ├── futures-timer feature "default"
 │   └── futures-timer v3.0.2
-├── getrandom feature "default"
-│   └── getrandom v0.2.3
-│       ├── wasm-bindgen v0.2.92 (*)
-│       ├── cfg-if feature "default" (*)
-│       └── js-sys feature "default" (*)
-├── getrandom feature "js"
-│   ├── getrandom v0.2.3 (*)
-│   ├── getrandom feature "js-sys"
-│   │   └── getrandom v0.2.3 (*)
-│   └── getrandom feature "wasm-bindgen"
-│       └── getrandom v0.2.3 (*)
 ├── mini_markdown feature "default"
 │   └── mini_markdown v0.3.5
-├── rfd feature "xdg-portal"
-│   ├── rfd v0.14.1
-│   │   ├── log feature "default" (*)
-│   │   ├── wasm-bindgen feature "default" (*)
-│   │   ├── web-sys feature "Blob" (*)
-│   │   ├── web-sys feature "BlobPropertyBag"
-│   │   │   └── web-sys v0.3.69 (*)
-│   │   ├── web-sys feature "Document" (*)
-│   │   ├── web-sys feature "Element" (*)
-│   │   ├── web-sys feature "File" (*)
-│   │   ├── web-sys feature "FileList" (*)
-│   │   ├── web-sys feature "FileReader" (*)
-│   │   ├── web-sys feature "HtmlAnchorElement"
-│   │   │   ├── web-sys v0.3.69 (*)
-│   │   │   ├── web-sys feature "Element" (*)
-│   │   │   ├── web-sys feature "EventTarget" (*)
-│   │   │   ├── web-sys feature "HtmlElement" (*)
-│   │   │   └── web-sys feature "Node" (*)
-│   │   ├── web-sys feature "HtmlButtonElement"
-│   │   │   ├── web-sys v0.3.69 (*)
-│   │   │   ├── web-sys feature "Element" (*)
-│   │   │   ├── web-sys feature "EventTarget" (*)
-│   │   │   ├── web-sys feature "HtmlElement" (*)
-│   │   │   └── web-sys feature "Node" (*)
-│   │   ├── web-sys feature "HtmlInputElement" (*)
-│   │   ├── web-sys feature "Url"
-│   │   │   └── web-sys v0.3.69 (*)
-│   │   ├── web-sys feature "Window" (*)
-│   │   ├── web-sys feature "default" (*)
-│   │   ├── js-sys feature "default" (*)
-│   │   ├── wasm-bindgen-futures feature "default" (*)
-│   │   └── raw-window-handle feature "default"
-│   │       └── raw-window-handle v0.6.2
-│   ├── rfd feature "ashpd"
-│   │   └── rfd v0.14.1 (*)
-│   ├── rfd feature "pollster"
-│   │   └── rfd v0.14.1 (*)
-│   └── rfd feature "urlencoding"
-│       └── rfd v0.14.1 (*)
 ├── strum feature "default"
 │   └── strum v0.19.5
 ├── strum_macros feature "default"
 │   └── strum_macros v0.19.4 (proc-macro)
 │       ├── proc-macro2 feature "default" (*)
 │       ├── quote feature "default" (*)
-│       ├── heck feature "default"
-│       │   └── heck v0.3.3
-│       │       └── unicode-segmentation feature "default" (*)
-│       ├── syn feature "default"
-│       │   ├── syn v1.0.109
-│       │   │   ├── proc-macro2 v1.0.86 (*)
-│       │   │   ├── quote v1.0.36 (*)
-│       │   │   └── unicode-ident feature "default" (*)
-│       │   ├── syn feature "clone-impls"
-│       │   │   └── syn v1.0.109 (*)
-│       │   ├── syn feature "derive"
-│       │   │   └── syn v1.0.109 (*)
-│       │   ├── syn feature "parsing"
-│       │   │   └── syn v1.0.109 (*)
-│       │   ├── syn feature "printing"
-│       │   │   ├── syn v1.0.109 (*)
-│       │   │   └── syn feature "quote"
-│       │   │       └── syn v1.0.109 (*)
-│       │   └── syn feature "proc-macro"
-│       │       ├── syn v1.0.109 (*)
-│       │       ├── proc-macro2 feature "proc-macro" (*)
-│       │       ├── quote feature "proc-macro" (*)
-│       │       └── syn feature "quote" (*)
-│       ├── syn feature "extra-traits"
-│       │   └── syn v1.0.109 (*)
-│       └── syn feature "parsing" (*)
-├── unidecode feature "default"
-│   └── unidecode v0.3.0
-└── urlencoding feature "default"
-    └── urlencoding v2.1.3
+│       ├── syn feature "default" (*)
+│       ├── syn feature "extra-traits" (*)
+│       ├── syn feature "parsing" (*)
+│       └── heck feature "default"
+│           └── heck v0.3.3
+│               └── unicode-segmentation feature "default" (*)
+└── unidecode feature "default"
+    └── unidecode v0.3.0
 [build-dependencies]
-└── mini_markdown feature "default"
-    └── mini_markdown v0.3.5
+└── mini_markdown feature "default" (*)

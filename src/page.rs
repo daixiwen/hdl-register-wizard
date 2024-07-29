@@ -89,7 +89,7 @@ pub fn FileSave(app_data: Signal<HdlWizardApp>) -> Element {
 #[cfg(not(target_arch = "wasm32"))]
 #[component]
 #[allow(unused)]
-pub fn FileSave(app_data: Signal<HdlWizardApp>, trigger: Signal<bool>) -> Element {
+pub fn FileSave(app_data: Signal<HdlWizardApp>) -> Element {
     None
 }
 

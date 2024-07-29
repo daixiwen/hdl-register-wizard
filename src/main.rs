@@ -3,9 +3,10 @@
 #![warn(clippy::all, rust_2018_idioms)]
 #![allow(non_snake_case)]
 
+use hdl_register_wizard::app;
 #[cfg(not(target_arch = "wasm32"))]
 use dioxus_desktop::{Config, WindowBuilder};
-use hdl_register_wizard::app;
+#[cfg(target_arch = "wasm32")]
 use dioxus::prelude::*;
 
 /// When compiling natively, open a window and launch the application
