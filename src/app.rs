@@ -5,14 +5,14 @@
 use dioxus_desktop::tao;
 
 use std::sync::Arc;
-use std::cell::RefCell;
 use crate::file_formats;
 use crate::navigation;
 use crate::page;
 use crate::settings;
 use crate::undo;
-//#[cfg(not(target_arch = "wasm32"))]
-//use dioxus_desktop::use_window;
+
+#[cfg(not(target_arch = "wasm32"))]
+use std::cell::RefCell;
 #[cfg(not(target_arch = "wasm32"))]
 use directories_next::ProjectDirs;
 #[cfg(not(target_arch = "wasm32"))]

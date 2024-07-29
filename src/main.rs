@@ -6,6 +6,7 @@
 #[cfg(not(target_arch = "wasm32"))]
 use dioxus_desktop::{Config, WindowBuilder};
 use hdl_register_wizard::app;
+use dioxus::prelude::*;
 
 /// When compiling natively, open a window and launch the application
 #[cfg(not(target_arch = "wasm32"))]
@@ -31,5 +32,5 @@ fn main() {
 #[cfg(target_arch = "wasm32")]
 fn main() {
     // launch the web app
-    dioxus_web::launch(app::App);
+    launch(app::App);
 }

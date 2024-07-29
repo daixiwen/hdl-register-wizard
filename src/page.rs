@@ -22,53 +22,54 @@ pub mod preview;
 #[cfg(target_arch = "wasm32")]
 #[component]
 pub fn FileSave(app_data: Signal<HdlWizardApp>) -> Element {
-    rsx! {
-        if let Some(download_uri) = &app_data.read().web_file_save {
-            let file_name = match &app_data.read().data.current_file_name {
-                None => format!("{}.regwiz",&app_data.read().data.model.name),
-                Some(name) => name.clone(),
-            };
+    let mut app_data_delete = app_data.clone();
+    let mut app_data_download = app_data.clone();
+    let app_data = app_data.read();
+    if let Some(download_uri) = &app_data.web_file_save {
+        let file_name = match &app_data.data.current_file_name {
+            None => format!("{}.regwiz",&app_data.data.model.name),
+            Some(name) => name.clone(),
+        };
 
-            rsx! {
+        rsx! {
+            div {
+                class: "modal is-active",
                 div {
-                    class: "modal is-active",
-                    div {
-                        class:"modal-background"
-                    },
-                    div {
-                        class:"modal-content",
-                        article {
-                            class: "message is-link",
-                            div {
-                                class:"message-header",
-                                p {
-                                    "Download"
-                                },
-                                button {
-                                    class:"delete",
-                                    onclick: move |_| app_data.with_mut(|app| {app.web_file_save = None;})
-                                }
+                    class:"modal-background"
+                },
+                div {
+                    class:"modal-content",
+                    article {
+                        class: "message is-link",
+                        div {
+                            class:"message-header",
+                            p {
+                                "Download"
+                            },
+                            button {
+                                class:"delete",
+                                onclick: move |_| app_data_delete.with_mut(|app| {app.web_file_save = None;})
                             }
-                            div {
-                                class: "message-body",
-                                span {
-                                    "Click here to download the file: "
-                                },
-                                a {
-                                    href: "{download_uri}",
-                                    download: "{file_name}",
-                                    onclick: move |_| app_data.with_mut(|app| {app.web_file_save = None;}),
-                                    "{file_name}"
-                                }
+                        }
+                        div {
+                            class: "message-body",
+                            span {
+                                "Click here to download the file: "
+                            },
+                            a {
+                                href: "{download_uri}",
+                                download: "{file_name}",
+                                onclick: move |_| app_data_download.with_mut(|app| {app.web_file_save = None;}),
+                                "{file_name}"
                             }
                         }
                     }
                 }
             }
-        } else {
-            rsx!{
-                ""
-            }
+        }
+    } else {
+        rsx!{
+            ""
         }
     }
 }

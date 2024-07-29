@@ -6,12 +6,16 @@ use dioxus::prelude::*;
 use crate::file_formats::mdf::Mdf;
 use std::sync::Arc;
 use crate::settings::Settings;
-use rfd::AsyncFileDialog;
-
-use super::genmodel::GenModel;
-use super::documentation;
-use std::io::Write;
 use crate::page::PageType;
+
+#[cfg(not(target_arch = "wasm32"))]
+use rfd::AsyncFileDialog;
+#[cfg(not(target_arch = "wasm32"))]
+use super::genmodel::GenModel;
+#[cfg(not(target_arch = "wasm32"))]
+use super::documentation;
+#[cfg(not(target_arch = "wasm32"))]
+use std::io::Write;
 
 #[cfg(not(target_arch = "wasm32"))]
 /// Called from the menu to generate the files
@@ -57,7 +61,7 @@ async fn gen_all(model: Arc<Mdf>, settings: Settings, mut status: Signal<Option<
 
 #[cfg(target_arch = "wasm32")]
 /// Called from the menu to generate the files
-async fn gen_all(_model: Arc<Mdf>, _settings: Settings, status: UseState<Option<Result<(), String>>>, _gen_doc : bool, _gen_code : bool) {
+async fn gen_all(_model: Arc<Mdf>, _settings: Settings, mut status: Signal<Option<Result<(), String>>>, _gen_doc : bool, _gen_code : bool) {
     status.set(Some(Ok(())));
 }
 
