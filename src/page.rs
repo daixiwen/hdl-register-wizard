@@ -31,6 +31,16 @@ pub fn FileSave(app_data: Signal<HdlWizardApp>) -> Element {
             Some(name) => name.clone(),
         };
 
+        let _eval = eval(
+            r#"
+                // find the a element and simulate a click on it
+
+                // we need to put a timeout to let the DOM render before the javascript is called
+                setTimeout(function() {
+                    document.getElementById("autodownload").click();    
+                    }, 100);
+                "#);
+
         rsx! {
             div {
                 class: "modal is-active",
@@ -59,6 +69,7 @@ pub fn FileSave(app_data: Signal<HdlWizardApp>) -> Element {
                             a {
                                 href: "{download_uri}",
                                 download: "{file_name}",
+                                id: "autodownload",
                                 onclick: move |_| app_data_download.with_mut(|app| {app.web_file_save = None;}),
                                 "{file_name}"
                             }
@@ -78,7 +89,7 @@ pub fn FileSave(app_data: Signal<HdlWizardApp>) -> Element {
 #[cfg(not(target_arch = "wasm32"))]
 #[component]
 #[allow(unused)]
-pub fn FileSave(app_data: Signal<HdlWizardApp>) -> Element {
+pub fn FileSave(app_data: Signal<HdlWizardApp>, trigger: Signal<bool>) -> Element {
     None
 }
 
@@ -86,6 +97,7 @@ pub fn FileSave(app_data: Signal<HdlWizardApp>) -> Element {
 #[component]
 pub fn Content(app_data: Signal<HdlWizardApp>) -> Element {
     let mut notification_timer = use_signal(|| false);
+
     let page_type = app_data.read().page_type.to_owned();
     
     // notification system. We use a timer in a future to know when to remove it
@@ -167,11 +179,10 @@ pub fn Content(app_data: Signal<HdlWizardApp>) -> Element {
                 None
             }
         },
-        // add the box for the file save when in the webapp
-
-            FileSave {
-                app_data: app_data
-            }
+        // add the box for the file save when in the webapp        
+        FileSave {
+            app_data: app_data
+        }
         
         // fill in the contents, calling the correct module depending on the page type
         match page_type {
