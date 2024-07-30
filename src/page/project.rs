@@ -4,34 +4,32 @@
 use crate::app::HdlWizardApp;
 use crate::file_formats::mdf;
 use crate::gui_blocks;
-use crate::gui_blocks::callback;
+use crate::gui_blocks::callback_model;
 use crate::page::PageType;
 use dioxus::prelude::*;
 
 /// builds a line in the table with all the interfaces
-#[inline_props]
-fn TableLine<'a>(
-    cx: Scope<'a>,
-    app_data: &'a UseRef<HdlWizardApp>,
+#[component]
+fn TableLine(app_data: Signal<HdlWizardApp>,
     interface_number: usize,
     interface_name: String,
     interface_type: mdf::InterfaceType,
-) -> Element<'a> {
+) -> Element {
     let num_of_interfaces = app_data.read().data.model.interfaces.len();
-    let up_disabled = *interface_number == 0;
-    let down_disabled = *interface_number == num_of_interfaces - 1;
+    let up_disabled = interface_number == 0;
+    let down_disabled = interface_number == num_of_interfaces - 1;
 
     let display_name = if interface_name.is_empty() {
-        "(empty)"
+        "(empty)".to_owned()
     } else {
         interface_name
     };
 
-    cx.render(rsx! {
+    rsx! {
         tr {
             td {
                 a { onclick: move |_| {
-                        app_data.with_mut(|data| data.page_type = PageType::Interface(*interface_number))
+                        app_data.with_mut(|data| data.page_type = PageType::Interface(interface_number))
                     },
                     "{display_name}"
                 }
@@ -48,7 +46,7 @@ fn TableLine<'a>(
                                     .with_mut(|data| {
                                         data.get_mut_model()
                                             .interfaces
-                                            .swap(*interface_number - 1, *interface_number);
+                                            .swap(interface_number - 1, interface_number);
                                         data.register_undo("move interface up")
                                     })
                             }
@@ -64,7 +62,7 @@ fn TableLine<'a>(
                                     .with_mut(|data| {
                                         data.get_mut_model()
                                             .interfaces
-                                            .swap(*interface_number, *interface_number + 1);
+                                            .swap(interface_number, interface_number + 1);
                                         data.register_undo("move interface down")
                                     })
                             }
@@ -74,7 +72,7 @@ fn TableLine<'a>(
                     button {
                         class: "button is-link",
                         onclick: move |_| {
-                            app_data.with_mut(|data| data.page_type = PageType::Interface(*interface_number))
+                            app_data.with_mut(|data| data.page_type = PageType::Interface(interface_number))
                         },
                         span { class: "icon is_small", i { class: "fa-solid fa-pen" } }
                     }
@@ -83,7 +81,7 @@ fn TableLine<'a>(
                         onclick: move |_| {
                             app_data
                                 .with_mut(|data| {
-                                    data.get_mut_model().interfaces.remove(*interface_number);
+                                    data.get_mut_model().interfaces.remove(interface_number);
                                     data.register_undo("remove interface")
                                 })
                         },
@@ -92,12 +90,12 @@ fn TableLine<'a>(
                 }
             }
         }
-    })
+    }
 }
 
 /// Whole page for the project top level
-#[inline_props]
-pub fn Content<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element<'a> {
+#[component]
+pub fn Content(app_data: Signal<HdlWizardApp>) -> Element {
     let project_name = app_data.read().data.model.name.clone();
 
     // extract a list of interfaces and types
@@ -124,13 +122,13 @@ pub fn Content<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element
         )
     });
 
-    cx.render(rsx! {
+    rsx! {
         div { class: "container",
             h1 { class: "title page-title", "HDL Register Wizard Project" }
             div { class: "m-4",
                 gui_blocks::TextGeneric {
                     app_data: app_data,
-                    update_model: callback(|model, value: &String| model.name = value.clone()),
+                    update_model: callback_model(app_data, |model, value| model.name = value) ,
                     gui_label: "Name",
                     undo_label: "change project name",
                     value: project_name
@@ -145,7 +143,7 @@ pub fn Content<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element
                         th {}
                     }
                 }
-                tbody { int_items }
+                tbody { {int_items} }
             }
             div { class: "buttons",
                 button {
@@ -162,5 +160,5 @@ pub fn Content<'a>(cx: Scope<'a>, app_data: &'a UseRef<HdlWizardApp>) -> Element
                 }
             }
         }
-    })
+    }
 }
