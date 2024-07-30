@@ -1,18 +1,11 @@
 <html>
 
 <head>
-	<title>HDL Register Wizard</title>
+	<title>HDL Register Wizarddioxus | ⛺</title>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link rel="modulepreload" href="hdl-register-wizard/hdl_register_wizard-739b77be236a294a.js" crossorigin=anonymous integrity="sha384-FgWkTRIkGOhThvkmE4w1Ewq7Us+4raa6R/VeYszkgD6lDqJGNENcJnxbuzn3gst4">
-<link rel="modulepreload" href="hdl-register-wizard/snippets/dioxus-interpreter-js-7e2aed97ebee2c55/inline0.js" crossorigin=anonymous integrity="sha384-SMNyRPEg9qj8twfZUfFBogImM8LQPhK6NrtGp2K6K7aaQZ07fW8zu+zObmwxM5AA">
-<link rel="modulepreload" href="hdl-register-wizard/snippets/dioxus-interpreter-js-7e2aed97ebee2c55/src/js/common.js" crossorigin=anonymous integrity="sha384-lNXbLTw7Z18z5HtM0HV3R7/8J+II5Ei18I53QeIZolR+l1nGEBr27UjMtT/DJpiC">
-<link rel="modulepreload" href="hdl-register-wizard/snippets/dioxus-web-10186f9fcc0b4418/inline0.js" crossorigin=anonymous integrity="sha384-xqSmg18C2FmchYWi9fb4cSqOW4ZNNo4b7NWZK1eW+fOqg4no+2F+zETwKUf1PJy3">
-<link rel="modulepreload" href="hdl-register-wizard/snippets/dioxus-web-10186f9fcc0b4418/inline1.js" crossorigin=anonymous integrity="sha384-2v8X0XAeO26J0vmoLhIbIeAjVzFnrY9iLhlYJcksTMp7Ip2tbDcoX4vD/hCan7M7">
-<link rel="modulepreload" href="hdl-register-wizard/snippets/dioxus-interpreter-js-7e2aed97ebee2c55/src/js/eval.js" crossorigin=anonymous integrity="sha384-ks/r+y1kY4du0z2hvNElbl2lGiYIMKyoewBMNJVdOl1CNoiOC+EC5U+GTT5bdpZ9">
-<link rel="preload" href="hdl-register-wizard/hdl_register_wizard-739b77be236a294a_bg.wasm" crossorigin=anonymous integrity="sha384-GPIsLmX5UjtP5hWgS9l+8Rhp5QX7Tuuq6Er+c719zl5UUYQ8dwc+oYZIzRyVUPzy" as="fetch" type="application/wasm"></head>
+</head>
 
 <body>
     <div id="main"> </div>
@@ -25,17 +18,14 @@
       });
     </script>
   
-
-<script type="module" nonce="pgR6xh/Je79xqXKizb/CaQ==">
-import init, * as bindings from 'hdl-register-wizard/hdl_register_wizard-739b77be236a294a.js';
-const wasm = await init('hdl-register-wizard/hdl_register_wizard-739b77be236a294a_bg.wasm');
-
-
-window.wasmBindings = bindings;
-
-
-dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
-
-</script></body>
+<script type="module">
+    import init from "/./assets/dioxus/name.js";
+    init("/./assets/dioxus/name_bg.wasm").then(wasm => {
+      if (wasm.__wbindgen_start == undefined) {
+        wasm.main();
+      }
+    });
+    </script>
+    </body>
 
 </html>
