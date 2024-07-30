@@ -3,26 +3,29 @@
 #![warn(clippy::all, rust_2018_idioms)]
 #![allow(non_snake_case)]
 
+use hdl_register_wizard::app;
 #[cfg(not(target_arch = "wasm32"))]
 use dioxus_desktop::{Config, WindowBuilder};
-use hdl_register_wizard::app;
+#[cfg(target_arch = "wasm32")]
+use dioxus::prelude::*;
 
 /// When compiling natively, open a window and launch the application
 #[cfg(not(target_arch = "wasm32"))]
 fn main() {
     let app_settings = app::HdlWizardApp::try_load();
-    let window_pos = app_settings.data.target.window_pos;
-    let window_size = app_settings.data.target.window_size;
+    let window_pos = app_settings.data.target.window_pos.borrow();
+    let window_size = app_settings.data.target.window_size.borrow();
 
-    dioxus_desktop::launch_cfg(
+    dioxus_desktop::launch::launch(
         app::App,
+        Vec::new(),
         Config::default().with_window(
             WindowBuilder::new()
                 .with_resizable(true)
-                .with_inner_size(window_size)
-                .with_position(window_pos)
-                .with_title("HDL Register Wizard"),
-        ),
+                .with_inner_size(window_size.to_owned())
+                .with_position(window_pos.to_owned())
+                .with_title("HDL Register Wizard")
+            ).with_menu(None),
     );
 }
 
@@ -30,5 +33,5 @@ fn main() {
 #[cfg(target_arch = "wasm32")]
 fn main() {
     // launch the web app
-    dioxus_web::launch(app::App);
+    launch(app::App);
 }

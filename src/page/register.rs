@@ -4,12 +4,12 @@
 use crate::app::HdlWizardApp;
 use crate::file_formats::mdf;
 use crate::gui_blocks;
-use crate::gui_blocks::callback;
+use crate::gui_blocks::callback_register;
+use crate::gui_blocks::callback_field;
 use crate::gui_types::Validable;
 use crate::page::PageType;
 use crate::utils;
 use dioxus::prelude::*;
-use std::cell::RefCell;
 use std::default::Default;
 use std::str::FromStr;
 
@@ -44,26 +44,25 @@ fn default_fields(interface_width: u32, register: &mut mdf::Register) {
 }
 
 /// properties for the address stride widget
-#[derive(Props)]
-struct GuiAddressStrideProps<'a> {
-    app_data: &'a UseRef<HdlWizardApp>,
+#[derive(Props, Clone, PartialEq)]
+struct GuiAddressStrideProps {
+    app_data: Signal<HdlWizardApp>,
     #[props(!optional)]
     value: Option<mdf::AddressStride>,
-    update_reg:
-        Option<RefCell<Box<dyn FnMut(&mut mdf::Register, &Option<mdf::AddressStride>) -> () + 'a>>>,
+    update_reg: Option<EventHandler<(usize,usize,Option<mdf::AddressStride>)>>,
 }
 
 /// widget for the address stride
-fn AddressStride<'a>(cx: Scope<'a, GuiAddressStrideProps<'a>>) -> Element<'a> {
+fn AddressStride(props: GuiAddressStrideProps) -> Element {
     // variables to help generate the html
     let validate_pattern = utils::VectorValue::validate_pattern();
-    let value = &cx.props.value;
+    let value = props.value;
     let is_stride = value.is_some();
-    let has_increment = match value {
+    let has_increment = match value.clone() {
         Some(addrstr) => addrstr.increment.is_some(),
         _ => false,
     };
-    let count = match value {
+    let count = match value.clone() {
         Some(addrstr) => addrstr.count,
         _ => Default::default(),
     };
@@ -72,7 +71,7 @@ fn AddressStride<'a>(cx: Scope<'a, GuiAddressStrideProps<'a>>) -> Element<'a> {
     } else {
         Default::default()
     };
-    let increment_field = match value {
+    let increment_field = match value.clone() {
         Some(addrstr) => addrstr.increment,
         _ => Default::default(),
     };
@@ -84,8 +83,11 @@ fn AddressStride<'a>(cx: Scope<'a, GuiAddressStrideProps<'a>>) -> Element<'a> {
     };
     let label_class = if is_stride { "" } else { "has-text-grey-light" };
 
+    let app_data = props.app_data;
+    let update_reg = props.update_reg;
+
     // render widget
-    cx.render(rsx!{
+    rsx!{
         div { class: "field is-horizontal",
             div { class: "field-label is-normal", label { class: "label", " " } }
             div { class: "field-body",
@@ -107,13 +109,13 @@ fn AddressStride<'a>(cx: Scope<'a, GuiAddressStrideProps<'a>>) -> Element<'a> {
                                         })
                                     };
                                     gui_blocks::apply_function(
-                                        &cx.props.app_data,
+                                        app_data,
                                         new_value,
                                         "change address stride status",
-                                        &None,
-                                        &None,
-                                        &cx.props.update_reg,
-                                        &None,
+                                        None,
+                                        None,
+                                        update_reg,
+                                        None,
                                     );
                                 },
                                 checked: "{is_stride}"
@@ -129,19 +131,19 @@ fn AddressStride<'a>(cx: Scope<'a, GuiAddressStrideProps<'a>>) -> Element<'a> {
                             placeholder: "count",
                             pattern: "{validate_pattern}",
                             onchange: move |evt| {
-                                if let Ok(new_value) = utils::VectorValue::from_str(&evt.value) {
+                                if let Ok(new_value) = utils::VectorValue::from_str(&evt.value()) {
                                     let new_stride = mdf::AddressStride {
                                         count: new_value,
                                         increment: increment_field,
                                     };
                                     gui_blocks::apply_function(
-                                        &cx.props.app_data,
+                                        app_data,
                                         Some(new_stride),
                                         "change stride count",
-                                        &None,
-                                        &None,
-                                        &cx.props.update_reg,
-                                        &None,
+                                        None,
+                                        None,
+                                        update_reg,
+                                        None,
                                     );
                                 }
                             },
@@ -167,13 +169,13 @@ fn AddressStride<'a>(cx: Scope<'a, GuiAddressStrideProps<'a>>) -> Element<'a> {
                                             })
                                         };
                                         gui_blocks::apply_function(
-                                            &cx.props.app_data,
+                                            app_data,
                                             new_value,
                                             "change address stride increment option",
-                                            &None,
-                                            &None,
-                                            &cx.props.update_reg,
-                                            &None,
+                                            None,
+                                            None,
+                                            update_reg,
+                                            None,
                                         );
                                     }
                                 },
@@ -191,19 +193,19 @@ fn AddressStride<'a>(cx: Scope<'a, GuiAddressStrideProps<'a>>) -> Element<'a> {
                                 placeholder: "auto",
                                 pattern: "{validate_pattern}",
                                 onchange: move |evt| {
-                                    if let Ok(new_value) = utils::VectorValue::from_str(&evt.value) {
+                                    if let Ok(new_value) = utils::VectorValue::from_str(&evt.value()) {
                                         let new_stride = mdf::AddressStride {
                                             count: count,
                                             increment: Some(new_value),
                                         };
                                         gui_blocks::apply_function(
-                                            &cx.props.app_data,
+                                            app_data,
                                             Some(new_stride),
                                             "change stride increment value",
-                                            &None,
-                                            &None,
-                                            &cx.props.update_reg,
-                                            &None,
+                                            None,
+                                            None,
+                                            update_reg,
+                                            None,
                                         );
                                     }
                                 },
@@ -215,64 +217,59 @@ fn AddressStride<'a>(cx: Scope<'a, GuiAddressStrideProps<'a>>) -> Element<'a> {
                 }
             }
         }
-    })
+    }
 }
 
 // props for the core properties widget
-#[derive(Props)]
-struct GuiCoreProps<'a> {
-    app_data: &'a UseRef<HdlWizardApp>,
+#[derive(Props, Clone, PartialEq)]
+struct GuiCoreProps {
+    app_data: Signal<HdlWizardApp>,
     #[props(!optional)]
     value: mdf::CoreSignalProperties,
     is_register: bool,
 }
 
 // widget for the core properties
-fn CoreProperties<'a>(cx: Scope<'a, GuiCoreProps<'a>>) -> Element<'a> {
+fn CoreProperties(props: GuiCoreProps) -> Element {
     // variables to help generate the html
-    let value = &cx.props.value;
+    let value = props.value;
     let use_read_enable = value.use_read_enable.unwrap_or(false);
     let use_write_enable = value.use_write_enable.unwrap_or(false);
 
-    let read_update_function_reg: Option<
-        RefCell<Box<dyn FnMut(&mut mdf::Register, &bool) -> () + 'a>>,
-    > = if cx.props.is_register {
-        Some(callback(|register, value| {
-            register.core_signal_properties.use_read_enable = Some(*value)
+    let app_data = props.app_data;
+    let is_register = props.is_register;
+
+    let read_update_function_reg: Option<EventHandler<(usize,usize,bool)>> = if is_register {
+        Some(callback_register(app_data, |register, value| {
+            register.core_signal_properties.use_read_enable = Some(value)
         }))
     } else {
         None
     };
-    let write_update_function_reg: Option<
-        RefCell<Box<dyn FnMut(&mut mdf::Register, &bool) -> () + 'a>>,
-    > = if cx.props.is_register {
-        Some(callback(|register, value| {
-            register.core_signal_properties.use_write_enable = Some(*value)
+    let write_update_function_reg: Option<EventHandler<(usize,usize,bool)>> = if is_register {
+        Some(callback_register(app_data, |register, value| {
+            register.core_signal_properties.use_write_enable = Some(value)
         }))
     } else {
         None
     };
-    let read_update_function_field: Option<
-        RefCell<Box<dyn FnMut(&mut mdf::Field, &bool) -> () + 'a>>,
-    > = if !cx.props.is_register {
-        Some(callback(|field, value| {
-            field.core_signal_properties.use_read_enable = Some(*value)
+    let read_update_function_field: Option<EventHandler<(usize,usize,usize, bool)>> = if !is_register {
+        Some(callback_field(app_data, |field, value| {
+            field.core_signal_properties.use_read_enable = Some(value)
         }))
     } else {
         None
     };
-    let write_update_function_field: Option<
-        RefCell<Box<dyn FnMut(&mut mdf::Field, &bool) -> () + 'a>>,
-    > = if !cx.props.is_register {
-        Some(callback(|field, value| {
-            field.core_signal_properties.use_write_enable = Some(*value)
+    let write_update_function_field: Option<EventHandler<(usize,usize,usize, bool)>> = if !is_register {
+        Some(callback_field(app_data, |field, value| {
+            field.core_signal_properties.use_write_enable = Some(value)
         }))
     } else {
         None
     };
 
     // render the html
-    cx.render(rsx! {
+    rsx! {
         div { class: "field is-horizontal",
             div { class: "field-label is-normal", label { class: "label", "Core Properties" } }
             div { class: "field-body",
@@ -283,13 +280,13 @@ fn CoreProperties<'a>(cx: Scope<'a, GuiCoreProps<'a>>) -> Element<'a> {
                                 r#type: "checkbox",
                                 onclick: move |_| {
                                     gui_blocks::apply_function(
-                                        &cx.props.app_data,
+                                        app_data,
                                         !use_read_enable,
                                         "change read enable core property",
-                                        &None,
-                                        &None,
-                                        &read_update_function_reg,
-                                        &read_update_function_field,
+                                        None,
+                                        None,
+                                        read_update_function_reg,
+                                        read_update_function_field,
                                     )
                                 },
                                 checked: "{use_read_enable}"
@@ -303,13 +300,13 @@ fn CoreProperties<'a>(cx: Scope<'a, GuiCoreProps<'a>>) -> Element<'a> {
                                 r#type: "checkbox",
                                 onclick: move |_| {
                                     gui_blocks::apply_function(
-                                        &cx.props.app_data,
+                                        app_data,
                                         !use_write_enable,
                                         "change write enable core property",
-                                        &None,
-                                        &None,
-                                        &write_update_function_reg,
-                                        &write_update_function_field,
+                                        None,
+                                        None,
+                                        write_update_function_reg,
+                                        write_update_function_field,
                                     )
                                 },
                                 checked: "{use_write_enable}"
@@ -320,50 +317,49 @@ fn CoreProperties<'a>(cx: Scope<'a, GuiCoreProps<'a>>) -> Element<'a> {
                 }
             }
         }
-    })
+    }
 }
 
 /// builds a line in the table with all the fields
-#[inline_props]
-fn TableLine<'a>(
-    cx: Scope<'a>,
-    app_data: &'a UseRef<HdlWizardApp>,
+#[component]
+fn TableLine(
+    app_data: Signal<HdlWizardApp>,
     field_number: usize,
     field_name: String,
     field_position: mdf::FieldPosition,
     field_access: mdf::AccessType,
     field_type: utils::SignalType,
     is_selected: bool,
-) -> Element<'a> {
-    if let PageType::Register(interface_number, register_number, _) = app_data.read().page_type {
+) -> Element {
+    let page_type = app_data.read().page_type.clone();
+    if let PageType::Register(interface_number, register_number, _) = page_type {
         // variables to help generate the html
         let num_of_fields = app_data.read().data.model.interfaces[interface_number].registers
             [register_number]
             .fields
             .len();
-        let up_disabled = *field_number == 0;
-        let down_disabled = *field_number == num_of_fields - 1;
+        let up_disabled = field_number == 0;
+        let down_disabled = field_number == num_of_fields - 1;
 
         let display_name = if field_name.is_empty() {
-            "(empty)"
+            "(empty)".to_owned()
         } else {
             field_name
         };
 
-        let tr_class = if *is_selected { "is-selected" } else { "" };
+        let tr_class = if is_selected { "is-selected" } else { "" };
 
-        // rneder html
-        cx.render(rsx! {
+        // render html
+        rsx! {
             tr { class: "{tr_class}",
                 td {
                     a { onclick: move |_| {
                             app_data
                                 .with_mut(|data| {
-                                    data
-                                        .page_type = PageType::Register(
+                                    data.page_type = PageType::Register(
                                         interface_number,
                                         register_number,
-                                        Some(*field_number),
+                                        Some(field_number),
                                     );
                                 })
                         },
@@ -386,7 +382,7 @@ fn TableLine<'a>(
                                                 .interfaces[interface_number]
                                                 .registers[register_number]
                                                 .fields
-                                                .swap(*field_number - 1, *field_number);
+                                                .swap(field_number - 1, field_number);
                                             data.register_undo("move field up")
                                         })
                                 }
@@ -404,7 +400,7 @@ fn TableLine<'a>(
                                                 .interfaces[interface_number]
                                                 .registers[register_number]
                                                 .fields
-                                                .swap(*field_number, *field_number + 1);
+                                                .swap(field_number, field_number + 1);
                                             data.register_undo("move field down")
                                         })
                                 }
@@ -420,7 +416,7 @@ fn TableLine<'a>(
                                             .page_type = PageType::Register(
                                             interface_number,
                                             register_number,
-                                            Some(*field_number),
+                                            Some(field_number),
                                         );
                                     })
                             },
@@ -435,7 +431,7 @@ fn TableLine<'a>(
                                             .interfaces[interface_number]
                                             .registers[register_number]
                                             .fields
-                                            .remove(*field_number);
+                                            .remove(field_number);
                                         data.register_undo("remove field")
                                     })
                             },
@@ -444,24 +440,24 @@ fn TableLine<'a>(
                     }
                 }
             }
-        })
+        }
     } else {
-        cx.render(rsx!( p { "error.... not in a interface page" } ))
+        rsx!{ p { "error.... not in a interface page" } }
     }
 }
 
 // props for the bitfield position widget
-#[derive(Props)]
-struct GuiBitFieldPositionProps<'a> {
-    app_data: &'a UseRef<HdlWizardApp>,
+#[derive(Props, Clone, PartialEq)]
+struct GuiBitFieldPositionProps {
+    app_data: Signal<HdlWizardApp>,
     value: mdf::FieldPosition,
-    update_field: Option<RefCell<Box<dyn FnMut(&mut mdf::Field, &mdf::FieldPosition) -> () + 'a>>>,
+    update_field: Option<EventHandler<(usize,usize,usize,mdf::FieldPosition)>>,
 }
 
 // widget for the bitfield position
-fn FieldPosition<'a>(cx: Scope<'a, GuiBitFieldPositionProps<'a>>) -> Element<'a> {
+fn FieldPosition(props: GuiBitFieldPositionProps) -> Element {
     let validate_pattern = u32::validate_pattern();
-    let value = &cx.props.value;
+    let value = props.value;
     let pos_high = match value {
         mdf::FieldPosition::Single(pos) => pos.to_string(),
         mdf::FieldPosition::Field(high, _) => high.to_string(),
@@ -471,7 +467,13 @@ fn FieldPosition<'a>(cx: Scope<'a, GuiBitFieldPositionProps<'a>>) -> Element<'a>
         mdf::FieldPosition::Field(_, low) => low.to_string(),
     };
 
-    cx.render(rsx!{
+    let app_data = props.app_data;
+    let update_field = props.update_field;
+
+    let value_1 = value.clone();
+    let value_2 = value;
+
+    rsx!{
         div { class: "field is-horizontal",
             div { class: "field-label is-normal", label { class: "label", "Position" } }
             div { class: "field-body",
@@ -483,21 +485,21 @@ fn FieldPosition<'a>(cx: Scope<'a, GuiBitFieldPositionProps<'a>>) -> Element<'a>
                             placeholder: "MSB",
                             pattern: "{validate_pattern}",
                             onchange: move |evt| {
-                                if let Ok(new_value) = u32::from_str(&evt.value) {
-                                    let new_pos = match &value {
+                                if let Ok(new_value) = u32::from_str(&evt.value()) {
+                                    let new_pos = match value_1 {
                                         mdf::FieldPosition::Single(_) => mdf::FieldPosition::Single(new_value),
                                         mdf::FieldPosition::Field(_, low) => {
-                                            mdf::FieldPosition::Field(new_value, *low)
+                                            mdf::FieldPosition::Field(new_value, low)
                                         }
                                     };
                                     gui_blocks::apply_function(
-                                        &cx.props.app_data,
+                                        app_data,
                                         new_pos,
                                         "change bitfield position msb",
-                                        &None,
-                                        &None,
-                                        &None,
-                                        &cx.props.update_field,
+                                        None,
+                                        None,
+                                        None,
+                                        update_field,
                                     );
                                 }
                             },
@@ -513,37 +515,37 @@ fn FieldPosition<'a>(cx: Scope<'a, GuiBitFieldPositionProps<'a>>) -> Element<'a>
                                 placeholder: "single",
                                 pattern: "{validate_pattern}",
                                 onchange: move |evt| {
-                                    if let Ok(new_value) = u32::from_str(&evt.value) {
-                                        let new_pos = match &value {
+                                    if let Ok(new_value) = u32::from_str(&evt.value()) {
+                                        let new_pos = match value_2 {
                                             mdf::FieldPosition::Single(high) => {
-                                                mdf::FieldPosition::Field(*high, new_value)
+                                                mdf::FieldPosition::Field(high, new_value)
                                             }
                                             mdf::FieldPosition::Field(high, _) => {
-                                                mdf::FieldPosition::Field(*high, new_value)
+                                                mdf::FieldPosition::Field(high, new_value)
                                             }
                                         };
                                         gui_blocks::apply_function(
-                                            &cx.props.app_data,
+                                            app_data,
                                             new_pos,
                                             "change bitfield position lsb",
-                                            &None,
-                                            &None,
-                                            &None,
-                                            &cx.props.update_field,
+                                            None,
+                                            None,
+                                            None,
+                                            update_field,
                                         );
                                     } else {
-                                        let new_pos = match &value {
-                                            mdf::FieldPosition::Single(high) => mdf::FieldPosition::Single(*high),
-                                            mdf::FieldPosition::Field(high, _) => mdf::FieldPosition::Single(*high),
+                                        let new_pos = match value_2 {
+                                            mdf::FieldPosition::Single(high) => mdf::FieldPosition::Single(high),
+                                            mdf::FieldPosition::Field(high, _) => mdf::FieldPosition::Single(high),
                                         };
                                         gui_blocks::apply_function(
-                                            &cx.props.app_data,
+                                            app_data,
                                             new_pos,
                                             "change bitfield position lsb",
-                                            &None,
-                                            &None,
-                                            &None,
-                                            &cx.props.update_field,
+                                            None,
+                                            None,
+                                            None,
+                                            update_field,
                                         );
                                     }
                                 },
@@ -554,7 +556,7 @@ fn FieldPosition<'a>(cx: Scope<'a, GuiBitFieldPositionProps<'a>>) -> Element<'a>
                 }
             }
         }
-    })
+    }
 }
 
 /// status of a single bit within the displayed bitmap
@@ -590,9 +592,9 @@ fn update_status(
 }
 
 /// props for page contents
-#[derive(Props)]
-pub struct ContentProps<'a> {
-    app_data: &'a UseRef<HdlWizardApp>,
+#[derive(Props, Clone, PartialEq)]
+pub struct ContentProps {
+    app_data: Signal<HdlWizardApp>,
     interface_num: usize,
     register_num: usize,
     #[props(!optional)]
@@ -600,16 +602,16 @@ pub struct ContentProps<'a> {
 }
 
 /// page contents
-pub fn Content<'a>(cx: Scope<'a, ContentProps<'a>>) -> Element<'a> {
-    let app_data = &cx.props.app_data;
-    if let Some(interface) = app_data
-        .read()
-        .data
-        .model
-        .interfaces
-        .get(cx.props.interface_num)
+pub fn Content(props: ContentProps) -> Element {
+    let mut app_data = props.app_data;
+    let readappdata = app_data.read();
+    let interface_num = props.interface_num;
+    let register_num = props.register_num;
+
+    let get_interface = readappdata.data.model.interfaces.get(interface_num);
+    if let Some(interface) = get_interface
     {
-        if let Some(register) = interface.registers.get(cx.props.register_num) {
+        if let Some(register) = interface.registers.get(register_num) {
             let interface_data_width = interface.data_width.unwrap_or(32);
 
             // extract a list of fields, positions, access and types
@@ -641,7 +643,7 @@ pub fn Content<'a>(cx: Scope<'a, ContentProps<'a>>) -> Element<'a> {
                                 field_position: fld_pos.clone(),
                                 field_access: fld_access.clone(),
                                 field_type: fld_signal.clone(),
-                                is_selected: cx.props.field_num == Some(*n),
+                                is_selected: props.field_num == Some(*n),
                                 key: "{fld_name}{n}"
                             }
                         )
@@ -656,7 +658,7 @@ pub fn Content<'a>(cx: Scope<'a, ContentProps<'a>>) -> Element<'a> {
                     mdf::FieldPosition::Single(bit) => {
                         if (bit as usize) < field_width {
                             bit_statuses[bit as usize] =
-                                update_status(&bit_statuses[bit as usize], i, cx.props.field_num);
+                                update_status(&bit_statuses[bit as usize], i, props.field_num);
                         }
                     }
                     mdf::FieldPosition::Field(msb, lsb) => {
@@ -665,7 +667,7 @@ pub fn Content<'a>(cx: Scope<'a, ContentProps<'a>>) -> Element<'a> {
                                 bit_statuses[bit as usize] = update_status(
                                     &bit_statuses[bit as usize],
                                     i,
-                                    cx.props.field_num,
+                                    props.field_num,
                                 );
                             }
                         }
@@ -704,14 +706,14 @@ pub fn Content<'a>(cx: Scope<'a, ContentProps<'a>>) -> Element<'a> {
                 }
             });
 
-            cx.render(rsx! {
+            rsx! {
                 div {
                     a {
                         class: "button is-link is-outlined ext-return-button",
                         onclick: move |_| {
                             app_data
                                 .with_mut(|app| {
-                                    app.page_type = PageType::Interface(cx.props.interface_num);
+                                    app.page_type = PageType::Interface(interface_num);
                                 })
                         },
                         span { class: "icon ", i { class: "fa-solid fa-caret-left" } }
@@ -721,14 +723,14 @@ pub fn Content<'a>(cx: Scope<'a, ContentProps<'a>>) -> Element<'a> {
                 div { class: "m-4",
                     gui_blocks::TextGeneric {
                         app_data: app_data,
-                        update_reg: callback(|register, value: &String| register.name = value.clone()),
+                        update_reg: callback_register(app_data, |register, value| register.name = value),
                         gui_label: "Name",
                         undo_label: "change register name",
                         value: register.name.clone()
                     }
                     gui_blocks::TextArea {
                         app_data: app_data,
-                        update_reg: callback(|register, value| register.summary = value.clone()),
+                        update_reg: callback_register(app_data, |register, value| register.summary = value),
                         gui_label: "Summary",
                         undo_label: "change register summary",
                         rows: 1,
@@ -736,14 +738,14 @@ pub fn Content<'a>(cx: Scope<'a, ContentProps<'a>>) -> Element<'a> {
                     }
                     gui_blocks::TextArea {
                         app_data: app_data,
-                        update_reg: callback(|register, value| register.description = value.clone()),
+                        update_reg: callback_register(app_data, |register, value| register.description = value),
                         gui_label: "Description",
                         undo_label: "change register description",
                         value: register.description.clone()
                     }
                     gui_blocks::AutoManuText {
                         app_data: app_data,
-                        update_reg: callback(|register, value| register.address.value = *value),
+                        update_reg: callback_register(app_data, |register, value| register.address.value = value),
                         gui_label: "Address",
                         field_class: "ext-vector-field",
                         undo_label: "change register base address",
@@ -751,218 +753,224 @@ pub fn Content<'a>(cx: Scope<'a, ContentProps<'a>>) -> Element<'a> {
                     }
                     AddressStride {
                         app_data: app_data,
-                        update_reg: callback(|register, value| register.address.stride = value.clone()),
+                        update_reg: callback_register(app_data, |register, value| register.address.stride = value),
                         value: register.address.stride.clone()
                     }
                     gui_blocks::OptionEnumWidget {
                         app_data: app_data,
-                        update_reg: callback(move |register, value| {
-                            register.signal = *value;
+                        update_reg: callback_register(app_data, move |register, value| {
+                            register.signal = value;
                             default_fields(interface_data_width, register);
                         }),
                         gui_label: "Signal type",
                         field_for_none: "(bitfield)",
                         undo_label: "change register signal type",
                         value: register.signal
-                    }
-                    if register.signal.is_some() {
+                    },
+                    {
+                        if register.signal.is_some() {
 
-                        rsx! {
-                            gui_blocks::OptionEnumWidget {
-                                app_data: app_data,
-                                gui_label: "Location",
-                                value: register.location,
-                                undo_label: "change register locatione",
-                                update_reg : callback( |register, value | register.location = *value)
-                            },
-                            gui_blocks::TextGeneric {
-                                app_data: app_data,
-                                update_reg: callback( |register, value | register.width = Some(*value)),
-                                gui_label: "Width",
-                                field_class: "ext-vector-field",
-                                undo_label: "change register name",
-                                value: register.width.unwrap_or_default(),
-                            },
-                            gui_blocks::OptionEnumWidget {
-                                app_data: app_data,
-                                gui_label: "Access",
-                                value: register.access,
-                                undo_label: "change register access mode",
-                                update_reg : callback( |register, value | register.access = *value)
-                            },
-                            gui_blocks::TextGeneric {
-                                app_data: app_data,
-                                update_reg: callback( |register, value | register.reset = Some(*value)),
-                                gui_label: "Reset value",
-                                field_class: "ext-vector-field",
-                                undo_label: "change reset value",
-                                value: register.reset.unwrap_or_default(),
-                            },
-                            CoreProperties {
-                                app_data: app_data,
-                                value: register.core_signal_properties.clone(),
-                                is_register: true
-                            },
-                        }
-                    } else { // signal is bitfield
+                            rsx! {
+                                gui_blocks::OptionEnumWidget {
+                                    app_data: app_data,
+                                    gui_label: "Location",
+                                    value: register.location,
+                                    undo_label: "change register locatione",
+                                    update_reg : callback_register(app_data, |register, value| register.location = value)
+                                },
+                                gui_blocks::TextGeneric {
+                                    app_data: app_data,
+                                    update_reg: callback_register(app_data, |register, value | register.width = Some(value)),
+                                    gui_label: "Width",
+                                    field_class: "ext-vector-field",
+                                    undo_label: "change register name",
+                                    value: register.width.unwrap_or_default(),
+                                },
+                                gui_blocks::OptionEnumWidget {
+                                    app_data: app_data,
+                                    gui_label: "Access",
+                                    value: register.access,
+                                    undo_label: "change register access mode",
+                                    update_reg : callback_register(app_data, |register, value | register.access = value)
+                                },
+                                gui_blocks::TextGeneric {
+                                    app_data: app_data,
+                                    update_reg: callback_register(app_data, |register, value | register.reset = Some(value)),
+                                    gui_label: "Reset value",
+                                    field_class: "ext-vector-field",
+                                    undo_label: "change reset value",
+                                    value: register.reset.unwrap_or_default(),
+                                },
+                                CoreProperties {
+                                    app_data: app_data,
+                                    value: register.core_signal_properties.clone(),
+                                    is_register: true
+                                },
+                            }
+                        } else { // signal is bitfield
 
-                        rsx! {
-                            gui_blocks::OptionEnumWidget {
-                                app_data: app_data,
-                                gui_label: "Location",
-                                field_for_none : "define per field"
-                                value: register.location,
-                                undo_label: "change register locatione",
-                                update_reg : callback( |register, value | {
-                                    register.location = *value;
-                                    if register.location.is_some() {
-                                        for field in register.fields.iter_mut() {
-                                            field.location = None
+                            rsx! {
+                                gui_blocks::OptionEnumWidget {
+                                    app_data: app_data,
+                                    gui_label: "Location",
+                                    field_for_none : "define per field",
+                                    value: register.location,
+                                    undo_label: "change register locatione",
+                                    update_reg : callback_register(app_data, |register, value | {
+                                        register.location = value;
+                                        if register.location.is_some() {
+                                            for field in register.fields.iter_mut() {
+                                                field.location = None
+                                            }
+                                        }
+                                    })
+                                },
+                                h2 { class:"subtitle page-title", "Fields"},
+                                table {
+                                    class: "ext-bitfield-table",
+                                    style: "min-width: 100%;",
+                                    thead {
+                                        tr {
+                                            { table_header }
                                         }
                                     }
-                                })
-                            },
-                            h2 { class:"subtitle page-title", "Fields"},
-                            table {
-                                class: "ext-bitfield-table",
-                                style: "min-width: 100%;",
-                                thead {
-                                    tr {
-                                        table_header
+                                    tbody {
+                                        tr {
+                                            { table_content }
+                                        }
                                     }
                                 }
-                                tbody {
-                                    tr {
-                                        table_content
-                                    }
-                                }
-                            }
 
-                            table {
-                                class:"table is-striped is-hoverable is-fullwidth",
-                                thead {
-                                    tr {
-                                        th { "Name"},
-                                        th { "Bits"},
-                                        th { "Access"},
-                                        th { "Type"},
-                                        th {}
+                                table {
+                                    class:"table is-striped is-hoverable is-fullwidth",
+                                    thead {
+                                        tr {
+                                            th { "Name"},
+                                            th { "Bits"},
+                                            th { "Access"},
+                                            th { "Type"},
+                                            th {}
+                                        }
+                                    },
+                                    tbody {
+                                        { fld_items }
                                     }
-                                },
-                                tbody {
-                                    fld_items
                                 }
-                            }
-                            div { class:"buttons",
-                                button { class:"button is-primary",
-                                    onclick: move |_| app_data.with_mut(|app| {
-                                        app.get_mut_model().interfaces[cx.props.interface_num].registers[cx.props.register_num].fields.push(mdf::Field::new());
-                                        app.page_type = PageType::Register(cx.props.interface_num, cx.props.register_num, Some(app.data.model.interfaces[cx.props.interface_num].registers[cx.props.register_num].fields.len()-1));
-                                        app.register_undo("create field")
+                                div { class:"buttons",
+                                    button { class:"button is-primary",
+                                        onclick: move |_| app_data.with_mut(|app| {
+                                            app.get_mut_model().interfaces[interface_num].registers[register_num].fields.push(mdf::Field::new());
+                                            app.page_type = PageType::Register(interface_num, register_num, Some(app.data.model.interfaces[interface_num].registers[register_num].fields.len()-1));
+                                            app.register_undo("create field")
+                                            }),
+                                        "New field"
+                                    },
+                                    button { class:"button is-dark",
+                                        onclick: move |_| app_data.with_mut(|app| {
+                                            app.page_type = PageType::Register(interface_num, register_num, None);
+                                            }),
+                                        "Deselect field"
+                                    },
+                                    button { class:"button is-primary",
+                                        onclick: move |_| app_data.with_mut(|app| {
+                                            let result = app.get_mut_model().interfaces[interface_num].registers[register_num].assign_fields();
+                                            app.test_result(result);
+                                            app.register_undo("assign bitfields")
                                         }),
-                                    "New field"
-                                },
-                                button { class:"button is-dark",
-                                    onclick: move |_| app_data.with_mut(|app| {
-                                        app.page_type = PageType::Register(cx.props.interface_num, cx.props.register_num, None);
+                                        "Assign bits"
+                                    },
+                                    button { class:"button is-danger",
+                                        onclick: move |_| app_data.with_mut(|app| {
+                                            let result = app.get_mut_model().interfaces[interface_num].registers[register_num].deassign_fields();
+                                            app.test_result(result);
+                                            app.register_undo("unassign bitfields")
                                         }),
-                                    "Deselect field"
+                                        "Unassign bits"
+                                    },
                                 },
-                                button { class:"button is-primary",
-                                    onclick: move |_| app_data.with_mut(|app| {
-                                        let result = app.get_mut_model().interfaces[cx.props.interface_num].registers[cx.props.register_num].assign_fields();
-                                        app.test_result(result);
-                                        app.register_undo("assign bitfields")
-                                    }),
-                                    "Assign bits"
-                                },
-                                button { class:"button is-danger",
-                                    onclick: move |_| app_data.with_mut(|app| {
-                                        let result = app.get_mut_model().interfaces[cx.props.interface_num].registers[cx.props.register_num].deassign_fields();
-                                        app.test_result(result);
-                                        app.register_undo("unassign bitfields")
-                                    }),
-                                    "Unassign bits"
-                                },
-                            }
-                            if let Some(field_num) = cx.props.field_num {
-                                if let Some(field) = register.fields.get(field_num) {
-                                    let location_disabled = register.location.is_some();
-                                    let location_value = if location_disabled {
-                                        register.location
+                                {
+                                    if let Some(field_num) = props.field_num {
+                                        if let Some(field) = register.fields.get(field_num) {
+                                            let location_disabled = register.location.is_some();
+                                            let location_value = if location_disabled {
+                                                register.location
+                                            } else {
+                                                field.location
+                                            };
+                                            rsx!(
+                                                gui_blocks::TextGeneric {
+                                                    app_data: app_data,
+                                                    update_field: callback_field(app_data, |field, value | field.name = value),
+                                                    gui_label: "Field Name",
+                                                    undo_label: "change field name",
+                                                    value: field.name.clone()
+                                                },
+                                                FieldPosition {
+                                                    app_data: app_data,
+                                                    update_field: callback_field(app_data, |field, value | field.position = value),
+                                                    value: field.position.clone()
+                                                },
+                                                gui_blocks::TextArea {
+                                                    app_data: app_data,
+                                                    update_field: callback_field(app_data, |field, value | field.description = value),
+                                                    gui_label: "Description",
+                                                    undo_label: "change field description",
+                                                    value: field.description.clone()
+                                                },
+                                                gui_blocks::EnumWidget {
+                                                    app_data: app_data,
+                                                    gui_label: "Access",
+                                                    value: field.access,
+                                                    undo_label: "change field access mode",
+                                                    update_field : callback_field(app_data, |field, value | field.access = value)
+                                                },
+                                                gui_blocks::EnumWidget {
+                                                    app_data: app_data,
+                                                    gui_label: "Type",
+                                                    value: field.signal,
+                                                    undo_label: "change field signal type",
+                                                    update_field : callback_field(app_data, |field, value | field.signal = value)
+                                                },
+                                                gui_blocks::TextGeneric {
+                                                    app_data: app_data,
+                                                    update_field: callback_field(app_data, |field, value | field.reset = value),
+                                                    gui_label: "Reset value",
+                                                    field_class: "ext-vector-field",
+                                                    undo_label: "change reset value",
+                                                    value: field.reset
+                                                },
+                                                gui_blocks::OptionEnumWidget {
+                                                    app_data: app_data,
+                                                    gui_label: "Location",
+                                                    disabled: location_disabled,
+                                                    value: location_value,
+                                                    undo_label: "change field location",
+                                                    update_field : callback_field(app_data, |field, value | field.location = value)
+                                                },
+                                                CoreProperties {
+                                                    app_data: app_data,
+                                                    value: field.core_signal_properties.clone(),
+                                                    is_register: false
+                                                },
+                                            )
+                                        } else {
+                                            rsx!(
+                                                p {}
+                                            )
+                                        }
                                     } else {
-                                        field.location
-                                    };
-                                    rsx!(
-                                        gui_blocks::TextGeneric {
-                                            app_data: app_data,
-                                            update_field: callback( |field, value : &String| field.name = value.clone()),
-                                            gui_label: "Field Name",
-                                            undo_label: "change field name",
-                                            value: field.name.clone()
-                                        },
-                                        FieldPosition {
-                                            app_data: app_data,
-                                            update_field: callback( |field, value : &mdf::FieldPosition | field.position = value.clone()),
-                                            value: field.position.clone()
-                                        },
-                                        gui_blocks::TextArea {
-                                            app_data: app_data,
-                                            update_field: callback( |field, value | field.description = value.clone()),
-                                            gui_label: "Description",
-                                            undo_label: "change field description",
-                                            value: field.description.clone()
-                                        },
-                                        gui_blocks::EnumWidget {
-                                            app_data: app_data,
-                                            gui_label: "Access",
-                                            value: field.access,
-                                            undo_label: "change field access mode",
-                                            update_field : callback( |field, value | field.access = *value)
-                                        },
-                                        gui_blocks::EnumWidget {
-                                            app_data: app_data,
-                                            gui_label: "Type",
-                                            value: field.signal,
-                                            undo_label: "change field signal type",
-                                            update_field : callback( |field, value | field.signal = *value)
-                                        },
-                                        gui_blocks::TextGeneric {
-                                            app_data: app_data,
-                                            update_field: callback( |field, value | field.reset = *value),
-                                            gui_label: "Reset value",
-                                            field_class: "ext-vector-field",
-                                            undo_label: "change reset value",
-                                            value: field.reset
-                                        },
-                                        gui_blocks::OptionEnumWidget {
-                                            app_data: app_data,
-                                            gui_label: "Location",
-                                            disabled: location_disabled,
-                                            value: location_value,
-                                            undo_label: "change field location",
-                                            update_field : callback( |field, value | field.location = *value)
-                                        },
-                                        CoreProperties {
-                                            app_data: app_data,
-                                            value: field.core_signal_properties.clone(),
-                                            is_register: false
-                                        },
-                                    )
-                                } else {
-                                    rsx!(
-                                        p {}
-                                    )
+                                        None
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            })
+            }
         } else {
-            cx.render(rsx! { p { "bad register number" } })
+            rsx! { p { "bad register number" } }
         }
     } else {
-        cx.render(rsx! { p { "bad interface number" } })
+        rsx! { p { "bad interface number" } }
     }
 }
