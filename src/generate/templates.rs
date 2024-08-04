@@ -1,5 +1,4 @@
 use tera::{Tera,Result};
-use lazy_static::lazy_static;
 use std::collections::HashMap;
 
 fn escape_markdown(value : &tera::Value, _args : &HashMap<String, tera::Value>) -> tera::Result<tera::Value> {
@@ -10,7 +9,10 @@ fn escape_markdown(value : &tera::Value, _args : &HashMap<String, tera::Value>) 
     Ok(tera::to_value(star_replaced)?)
 }
 
-fn fill_templates(tera: &mut Tera) -> Result<()> {
+pub fn gen_templates() -> Result<Tera> {
+    let mut tera = Tera::default();
+
+    tera.autoescape_on(vec![]);
     tera.register_filter("escape_markdown", escape_markdown);
 
     // documentation template
@@ -53,19 +55,5 @@ fn fill_templates(tera: &mut Tera) -> Result<()> {
         ("gf_write_enable_description", "signals that {full_name} is being written")
         ])?;
     
-    Ok(())
-}
-
-lazy_static! {
-    pub static ref TEMPLATES: Tera = {
-        let mut tera = Tera::default();
-        if let Err(e) = fill_templates(&mut tera)
-        {
-                println!("Parsing error(s): {}", e);
-                ::std::process::exit(1);
-        };
-        tera.autoescape_on(vec![]);
-        //tera.register_filter("do_nothing", do_nothing_filter);
-        tera
-    };
+    Ok(tera)
 }

@@ -9,16 +9,17 @@ use crate::generate::genmodel;
 use crate::generate::documentation;
 use crate::file_formats::mdf;
 use crate::settings;
+use tera::Tera;
 
 // generate the documentation as a string from the given model
-fn generate_html(model : Arc<mdf::Mdf>, settings: &settings::Settings) -> Result<String, Box<dyn Error>> {
-    let model = genmodel::GenModel::from_model(model.as_ref(), settings)?;
-    documentation::generate_doc(&model)
+fn generate_html(model : Arc<mdf::Mdf>, settings: &settings::Settings, templates: &Tera) -> Result<String, Box<dyn Error>> {
+    let model = genmodel::GenModel::from_model(model.as_ref(), settings, templates)?;
+    documentation::generate_doc(&model, templates)
 }
 
 // Whole page for the project top level
 #[component]
-pub fn Content(app_data: Signal<HdlWizardApp>) -> Element {
+pub fn Content(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>>) -> Element {
 
     // the preview generation itself is done in a future, so we share the result through this state, holding
     // a result with the generated html or an error message as a string
@@ -30,11 +31,12 @@ pub fn Content(app_data: Signal<HdlWizardApp>) -> Element {
     if app_data.read().generate_preview {
         app_data.with_mut(|data| data.generate_preview = false);
         spawn({
+            let templates = templates.peek().as_ref().unwrap().to_owned();
             let mut preview_status = preview_status.clone();
             preview_status.set(None);
 
             async move {
-                preview_status.set(Some(generate_html(model_to_save, &settings).map_err(|err| err.to_string())));
+                preview_status.set(Some(generate_html(model_to_save, &settings, &templates).map_err(|err| err.to_string())));
             }
         });
     }

@@ -4,6 +4,7 @@ use crate::app::HdlWizardApp;
 use dioxus::prelude::*;
 use futures_timer::Delay;
 use std::time::Duration;
+use tera::{Tera,Result};
 
 #[derive(PartialEq, Clone)]
 pub enum PageType {
@@ -95,7 +96,7 @@ pub fn FileSave(app_data: Signal<HdlWizardApp>) -> Element {
 
 /// main contents
 #[component]
-pub fn Content(app_data: Signal<HdlWizardApp>) -> Element {
+pub fn Content(app_data: Signal<HdlWizardApp>, templates: Signal<Result<Tera>>) -> Element {
     let mut notification_timer = use_signal(|| false);
 
     let page_type = app_data.read().page_type.to_owned();
@@ -211,7 +212,7 @@ pub fn Content(app_data: Signal<HdlWizardApp>) -> Element {
             },
             PageType::Preview => {
                 rsx! {
-                    preview::Content { app_data: app_data}
+                    preview::Content { app_data: app_data, templates: templates}
                 }
             },
         },

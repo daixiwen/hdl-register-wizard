@@ -15,7 +15,7 @@ use crate::utils;
 use crate::page::PageType;  
 use crate::generate::generror::GenError;
 use super::signal_list;
-use super::templates::TEMPLATES;
+use tera::Tera;
 
 /// Project model for generation
 #[derive(Serialize)]
@@ -41,7 +41,7 @@ pub struct GenModel {
 
 impl GenModel {
     /// take a Mdf model and convert it to a GenModel
-    pub fn from_model(model: &mdf::Mdf, settings: &Settings) -> Result<Self, Box<dyn Error>> {
+    pub fn from_model(model: &mdf::Mdf, settings: &Settings, templates: &Tera) -> Result<Self, Box<dyn Error>> {
         let mut token_list = TokenList::new();
 
         let name = model.name.clone();
@@ -53,15 +53,15 @@ impl GenModel {
         let mut context = tera::Context::new();
         context.insert("project", &token_name);
 
-        let top_name = token_list.generate_token(&TEMPLATES.render("gm_top_name", &context)?);
-        let core_name = token_list.generate_token(&TEMPLATES.render("gm_core_name", &context)?);
-        let core_instance = token_list.generate_token(&TEMPLATES.render("gm_core_instance", &context)?);
-        let pkg_name = token_list.generate_token(&TEMPLATES.render("gm_pkg_name", &context)?);
+        let top_name = token_list.generate_token(&templates.render("gm_top_name", &context)?);
+        let core_name = token_list.generate_token(&templates.render("gm_core_name", &context)?);
+        let core_instance = token_list.generate_token(&templates.render("gm_core_instance", &context)?);
+        let pkg_name = token_list.generate_token(&templates.render("gm_pkg_name", &context)?);
 
         // apply a conversion to each interface
         let interfaces = model.interfaces.iter().enumerate().map(
             |(n, interface)| GenInterface::from_interface(
-                interface, PageType::Interface(n), settings, &token_name, 
+                interface, PageType::Interface(n), settings, templates, &token_name, 
                 &single_interface, &mut token_list)
         ).collect::<Result<Vec<GenInterface>, Box<dyn Error>>>()?;
     
@@ -147,7 +147,7 @@ pub struct GenIntPort {
 
 impl GenInterface {
     /// take a Mdf interface and convert it to a GenInterface
-    pub fn from_interface(interface: &mdf::Interface, page: PageType, settings: &Settings, project_token_name : &String, single_interface : &bool, general_token_list : &mut TokenList) -> Result<Self, Box<dyn Error>> {
+    pub fn from_interface(interface: &mdf::Interface, page: PageType, settings: &Settings, templates: &Tera, project_token_name : &String, single_interface : &bool, general_token_list : &mut TokenList) -> Result<Self, Box<dyn Error>> {
 
         // duplicate the interface and assign an address to all registers
         let mut interface = interface.clone();
@@ -182,15 +182,15 @@ impl GenInterface {
         context.insert("project", project_token_name);
         context.insert("interface", &token_name);
 
-        let pif_name = general_token_list.generate_token(&TEMPLATES.render("gi_pif_name", &context)?);
-        let pif_instance = general_token_list.generate_token(&TEMPLATES.render("gi_pif_instance", &context)?); 
-        let core2pif_name = general_token_list.generate_token(&TEMPLATES.render("gi_core2pif_name", &context)?);
-        let pif2core_name = general_token_list.generate_token(&TEMPLATES.render("gi_pif2core_name", &context)?); 
-        let register_enum_name = general_token_list.generate_token(&TEMPLATES.render("gi_register_enum_name", &context)?); 
-        let address_decoder_name = general_token_list.generate_token(&TEMPLATES.render("gi_address_decoder_name", &context)?);
-        let address_stride_func_name = general_token_list.generate_token(&TEMPLATES.render("gi_address_stride_func_name", &context)?); 
-        let address_width_const_name = general_token_list.generate_token(&TEMPLATES.render("gi_address_width_const_name", &context)?); 
-        let data_width_const_name = general_token_list.generate_token(&TEMPLATES.render("gi_data_width_const_name", &context)?); 
+        let pif_name = general_token_list.generate_token(&templates.render("gi_pif_name", &context)?);
+        let pif_instance = general_token_list.generate_token(&templates.render("gi_pif_instance", &context)?); 
+        let core2pif_name = general_token_list.generate_token(&templates.render("gi_core2pif_name", &context)?);
+        let pif2core_name = general_token_list.generate_token(&templates.render("gi_pif2core_name", &context)?); 
+        let register_enum_name = general_token_list.generate_token(&templates.render("gi_register_enum_name", &context)?); 
+        let address_decoder_name = general_token_list.generate_token(&templates.render("gi_address_decoder_name", &context)?);
+        let address_stride_func_name = general_token_list.generate_token(&templates.render("gi_address_stride_func_name", &context)?); 
+        let address_width_const_name = general_token_list.generate_token(&templates.render("gi_address_width_const_name", &context)?); 
+        let data_width_const_name = general_token_list.generate_token(&templates.render("gi_data_width_const_name", &context)?); 
 
 
         let mut port_context = tera::Context::new();
@@ -213,7 +213,7 @@ impl GenInterface {
 
                 interface.registers.iter().enumerate().map(|(n, register)| GenRegister::from_register(
                     register, PageType::Register(int_num,n, None),
-                    settings, project_token_name, &token_name, data_width,
+                    settings, templates, project_token_name, &token_name, data_width,
                     general_token_list, &mut corfe2pif_token_list, &mut pif2core_token_list))
                     .collect::<Result<Vec<GenRegister>,  Box<dyn Error>>>()?},
             _ => Err(GenError::new(&page, "wrong value for the page parameter in register call"))?
@@ -362,10 +362,10 @@ pub struct GenStructSignal {
 }
 
 /// create a GenStructSignal using the given templates
-pub fn gen_registersignal(function: &str, name_template : &str, full_type : &str, description_template : &str, context: &tera::Context, token_list: &mut TokenList) -> Result<GenStructSignal, Box<dyn Error>>
+pub fn gen_registersignal(templates: &Tera, function: &str, name_template : &str, full_type : &str, description_template : &str, context: &tera::Context, token_list: &mut TokenList) -> Result<GenStructSignal, Box<dyn Error>>
 {
-    let name = token_list.generate_token(&TEMPLATES.render(name_template, context)?);
-    let description = TEMPLATES.render(description_template, context)?; 
+    let name = token_list.generate_token(&templates.render(name_template, context)?);
+    let description = templates.render(description_template, context)?; 
 
     Ok(GenStructSignal { 
         function: function.to_owned(), 
@@ -381,7 +381,7 @@ pub fn gen_names_map(signals: &[GenStructSignal]) -> HashMap<String, String> {
 
 impl GenRegister {
     /// take a Mdf register and convert it to a GenRegister
-    pub fn from_register(register: &mdf::Register, page: PageType, settings: &Settings, project_token_name : &String, interface_token_name : &String, interface_data_width: u32, general_token_list : &mut TokenList, corfe2pif_token_list : &mut TokenList, pif2core_token_list : &mut TokenList) -> Result<Self, Box<dyn Error>> {
+    pub fn from_register(register: &mdf::Register, page: PageType, settings: &Settings, templates: &Tera, project_token_name : &String, interface_token_name : &String, interface_data_width: u32, general_token_list : &mut TokenList, corfe2pif_token_list : &mut TokenList, pif2core_token_list : &mut TokenList) -> Result<Self, Box<dyn Error>> {
 
         let name = register.name.clone();
         let token_name = to_vhdl_token(&name);
@@ -411,7 +411,7 @@ impl GenRegister {
             } else {
                 format!("{}..0", width-1)};
 
-            let width_const_name = general_token_list.generate_token(&TEMPLATES.render("gr_width_const_name", &context)?);
+            let width_const_name = general_token_list.generate_token(&templates.render("gr_width_const_name", &context)?);
 
             let rw_mode = register.access.ok_or(GenError::new(&page,"access type needed for register"))?;
             let is_read = rw_mode != mdf::AccessType::WO;
@@ -459,16 +459,16 @@ impl GenRegister {
             let mut pif2core : Vec<GenStructSignal> = Default::default();
             
             if core2pif_has_data {
-                core2pif.push(gen_registersignal("data", "gr_data_name", &sig_type_complete, "gr_data_description", &context, corfe2pif_token_list)?);
+                core2pif.push(gen_registersignal(templates, "data", "gr_data_name", &sig_type_complete, "gr_data_description", &context, corfe2pif_token_list)?);
             }
             if pif2core_has_data {
-                pif2core.push(gen_registersignal("data", "gr_data_name", &sig_type_complete, "gr_data_description", &context, pif2core_token_list)?);
+                pif2core.push(gen_registersignal(templates, "data", "gr_data_name", &sig_type_complete, "gr_data_description", &context, pif2core_token_list)?);
             }
             if core_read_enable {
-                pif2core.push(gen_registersignal("read_enable","gr_read_enable_name", "boolean", "gr_read_enable_description", &context, pif2core_token_list)?);
+                pif2core.push(gen_registersignal(templates, "read_enable","gr_read_enable_name", "boolean", "gr_read_enable_description", &context, pif2core_token_list)?);
             }
             if core_write_enable {
-                pif2core.push(gen_registersignal("write_enable", "gr_write_enable_name", "boolean", "gr_write_enable_description", &context, pif2core_token_list)?);
+                pif2core.push(gen_registersignal(templates, "write_enable", "gr_write_enable_name", "boolean", "gr_write_enable_description", &context, pif2core_token_list)?);
             }
 
             let core2pif_names = gen_names_map(&core2pif);
@@ -511,7 +511,7 @@ impl GenRegister {
                 PageType::Register(int_num, reg_num, None) => 
                     register.fields.iter().enumerate().map(|(n, field)| GenField::from_field(
                         register, field, PageType::Register(int_num,reg_num, Some(n)),
-                        settings, project_token_name, interface_token_name, interface_data_width,
+                        settings, templates, project_token_name, interface_token_name, interface_data_width,
                         &token_name, general_token_list, corfe2pif_token_list,
                         pif2core_token_list)).collect::<Result<Vec<GenField>,  Box<dyn Error>>>()?,
                 _ => Err(GenError::new(&page, "wrong value for the page parameter in register call"))?
@@ -541,10 +541,10 @@ impl GenRegister {
         };
         let stride_continuous = stride_increment == (interface_data_width + 7)/8;
 
-        let address_const_name = general_token_list.generate_token(&TEMPLATES.render("gr_address_const_name", &context)?);
-        let stride_count_const_name = general_token_list.generate_token(&TEMPLATES.render("gr_stride_count_const_name", &context)?);
-        let stride_offset_const_name = general_token_list.generate_token(&TEMPLATES.render("gr_stride_offset_const_name", &context)?);
-        let stride_array_type = general_token_list.generate_token(&TEMPLATES.render("gr_stride_array_type", &context)?);
+        let address_const_name = general_token_list.generate_token(&templates.render("gr_address_const_name", &context)?);
+        let stride_count_const_name = general_token_list.generate_token(&templates.render("gr_stride_count_const_name", &context)?);
+        let stride_offset_const_name = general_token_list.generate_token(&templates.render("gr_stride_offset_const_name", &context)?);
+        let stride_array_type = general_token_list.generate_token(&templates.render("gr_stride_array_type", &context)?);
 
         Ok(GenRegister { 
             name, 
@@ -570,7 +570,7 @@ impl GenRegister {
 
 impl GenField {
     /// take a Mdf field and convert it to a GenField
-    pub fn from_field(register: &mdf::Register, field: &mdf::Field, page: PageType, _settings: &Settings, project_token_name : &String, interface_token_name : &String, interface_data_width: u32, register_token_name : &String, general_token_list : &mut TokenList, corfe2pif_token_list : &mut TokenList, pif2core_token_list : &mut TokenList) -> Result<Self, Box<dyn Error>> {
+    pub fn from_field(register: &mdf::Register, field: &mdf::Field, page: PageType, _settings: &Settings, templates: &Tera, project_token_name : &String, interface_token_name : &String, interface_data_width: u32, register_token_name : &String, general_token_list : &mut TokenList, corfe2pif_token_list : &mut TokenList, pif2core_token_list : &mut TokenList) -> Result<Self, Box<dyn Error>> {
 
 
         let name = field.name.clone();
@@ -602,8 +602,8 @@ impl GenField {
         context.insert("full_name", &name);
         context.insert("data_width", &interface_data_width);
 
-        let width_const_name = general_token_list.generate_token(&TEMPLATES.render("gf_width_const_name", &context)?);
-        let offset_const_name = general_token_list.generate_token(&TEMPLATES.render("gf_offset_const_name", &context)?);
+        let width_const_name = general_token_list.generate_token(&templates.render("gf_width_const_name", &context)?);
+        let offset_const_name = general_token_list.generate_token(&templates.render("gf_offset_const_name", &context)?);
 
         let rw_mode = field.access;
         let is_read = rw_mode != mdf::AccessType::WO;
@@ -650,16 +650,16 @@ impl GenField {
         let mut pif2core : Vec<GenStructSignal> = Default::default();
         
         if core2pif_has_data {
-            core2pif.push(gen_registersignal("data", "gf_data_name", &sig_type_complete, "gf_data_description", &context, corfe2pif_token_list)?);
+            core2pif.push(gen_registersignal(templates, "data", "gf_data_name", &sig_type_complete, "gf_data_description", &context, corfe2pif_token_list)?);
         }
         if pif2core_has_data {
-            pif2core.push(gen_registersignal("data", "gf_data_name", &sig_type_complete, "gf_data_description", &context, pif2core_token_list)?);
+            pif2core.push(gen_registersignal(templates, "data", "gf_data_name", &sig_type_complete, "gf_data_description", &context, pif2core_token_list)?);
         }
         if core_read_enable {
-            pif2core.push(gen_registersignal("read_enable", "gf_read_enable_name", "boolean", "gf_read_enable_description", &context, pif2core_token_list)?);
+            pif2core.push(gen_registersignal(templates, "read_enable", "gf_read_enable_name", "boolean", "gf_read_enable_description", &context, pif2core_token_list)?);
         }
         if core_write_enable {
-            pif2core.push(gen_registersignal("write_enable", "gf_write_enable_name", "boolean", "gf_write_enable_description", &context, pif2core_token_list)?);
+            pif2core.push(gen_registersignal(templates, "write_enable", "gf_write_enable_name", "boolean", "gf_write_enable_description", &context, pif2core_token_list)?);
         }
 
         let core2pif_names = gen_names_map(&core2pif);

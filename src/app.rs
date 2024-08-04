@@ -10,6 +10,7 @@ use crate::navigation;
 use crate::page;
 use crate::settings;
 use crate::undo;
+use crate::generate::templates;
 
 #[cfg(not(target_arch = "wasm32"))]
 use std::cell::RefCell;
@@ -372,6 +373,9 @@ pub fn App() -> Element {
         app
     });
   
+    let templates = use_signal( || {templates::gen_templates()});
+    let templates_ok = templates.peek().is_ok();
+
     // There is no clean way to get an event when the window size or position is changed. The tao WindowEvent is dropped
     // in dioxus-desktop/launch.rs launch_virtual_dom_blocking(). So we just get the position and size at each re-render
     // we a using Refcells to be able to change them without triggering a redraw
@@ -399,30 +403,69 @@ pub fn App() -> Element {
     let page_type = app_data.read().page_type.to_owned();
     let live_help_setting = app_data.read().live_help.to_owned();
 
+    const CSS_PATH : &str = "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css";
+
     // page render
     rsx! {
         link {
-            href: "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css",
+            href: CSS_PATH,
             rel: "stylesheet"
         }
         script { src: "https://kit.fontawesome.com/e5a7832160.js", crossorigin: "anonymous" }
         div {
             style { {STYLE_CSS} }
-            navigation::NavBar { app_data: app_data }
-            div { class: "columns",
-                navigation::SideBar {
-                    app_data: app_data 
-                }
-                div { 
-                    class: "column ext-sticky mr-4", 
-                    page::Content { 
-                        app_data: app_data 
-                    } 
-                }
-                LiveHelp {
-                    app_data: app_data,
-                    page_type: page_type,
-                    live_help_setting: live_help_setting
+            {
+                if templates_ok {
+                    rsx! {
+                        navigation::NavBar { 
+                            app_data: app_data,
+                            templates: templates
+                        }
+                        div { class: "columns",
+                            navigation::SideBar {
+                                app_data: app_data 
+                            }
+                            div { 
+                                class: "column ext-sticky mr-4", 
+                                page::Content { 
+                                    app_data: app_data,
+                                    templates: templates
+                                } 
+                            }
+                            LiveHelp {
+                                app_data: app_data,
+                                page_type: page_type,
+                                live_help_setting: live_help_setting
+                            }
+                        }    
+                    }        
+                } else {
+                    let error_message = templates.peek().as_ref().unwrap_err().to_string();
+
+                    rsx! {
+                        div {
+                            class: "modal is-active",
+                            div {
+                                class:"modal-background"
+                            },
+                            div {
+                                class:"modal-content",
+                                article {
+                                    class: "message is-danger",
+                                    div {
+                                        class:"message-header",
+                                        p {
+                                            "Template parsing error"
+                                        },
+                                    }
+                                    div {
+                                        class: "message-body",
+                                        "{error_message}"
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

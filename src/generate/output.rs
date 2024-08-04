@@ -7,6 +7,7 @@ use crate::file_formats::mdf::Mdf;
 use std::sync::Arc;
 use crate::settings::Settings;
 use crate::page::PageType;
+use tera::Tera;
 
 #[cfg(not(target_arch = "wasm32"))]
 use rfd::AsyncFileDialog;
@@ -19,7 +20,7 @@ use std::io::Write;
 
 #[cfg(not(target_arch = "wasm32"))]
 /// Called from the menu to generate the files
-async fn gen_all(model: Arc<Mdf>, settings: Settings, mut status: Signal<Option<Result<(), String>>>, _gen_doc : bool, _gen_code : bool) {
+async fn gen_all(model: Arc<Mdf>, settings: Settings, templates: Tera, mut status: Signal<Option<Result<(), String>>>, _gen_doc : bool, _gen_code : bool) {
     // open file dialog to choose file name
     let file = AsyncFileDialog::new()
         .add_filter("word document", &["html"])
@@ -35,9 +36,9 @@ async fn gen_all(model: Arc<Mdf>, settings: Settings, mut status: Signal<Option<
             Ok(mut file) => {
 
                 // create the generation model and write it directly for now
-                match GenModel::from_model(&model, &settings) {
+                match GenModel::from_model(&model, &settings, &templates) {
                     Ok(model) => {
-                        match documentation::generate_doc(&model) {
+                        match documentation::generate_doc(&model, &templates) {
                             Ok(result_doc) => match file.write_all(result_doc.as_bytes()) {
                                 Ok(_) => status.set(Some(Ok(()))),
                                 Err(error) => status.set(Some(Err(error.to_string())))
@@ -67,7 +68,7 @@ async fn gen_all(_model: Arc<Mdf>, _settings: Settings, mut status: Signal<Optio
 
 /// Generate menu
 #[component]
-pub fn Menu(app_data: Signal<HdlWizardApp>) -> Element {
+pub fn Menu(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>>) -> Element {
     // the save operation itself is done in a future, so we share the result through this state, holding
     // just the result. Either an OK or an error message as a string
     let mut save_status: Signal<Option<Result<(), String>>> = use_signal(|| None);
@@ -95,7 +96,7 @@ pub fn Menu(app_data: Signal<HdlWizardApp>) -> Element {
         // future not running, or not completed yet
         None => (),
     }
-    
+
     rsx! {
         div { class: "navbar-item has-dropdown is-hoverable",
             a { class: "navbar-link", "Generate" }
@@ -118,9 +119,10 @@ pub fn Menu(app_data: Signal<HdlWizardApp>) -> Element {
                         let save_status = save_status.to_owned();
                         let model = app_data.read().data.model.clone();
                         let settings = app_data.read().data.settings.clone();
+                        let templates = templates.peek().as_ref().unwrap().to_owned();
 
                         spawn({
-                            gen_all(model, settings, save_status, true, false)
+                            gen_all(model, settings, templates, save_status, true, false)
                         });
                     },
                     i { class: "fa-solid fa-industry mr-1" }
@@ -132,9 +134,10 @@ pub fn Menu(app_data: Signal<HdlWizardApp>) -> Element {
                         let save_status = save_status.to_owned();
                         let model = app_data.read().data.model.clone();
                         let settings = app_data.read().data.settings.clone();
+                        let templates = templates.peek().as_ref().unwrap().to_owned();
 
                         spawn({
-                            gen_all(model, settings, save_status, false, true)
+                            gen_all(model, settings, templates, save_status, false, true)
                         });
                     },
                     i { class: "fa-solid fa-industry mr-1" }
@@ -146,9 +149,10 @@ pub fn Menu(app_data: Signal<HdlWizardApp>) -> Element {
                         let save_status = save_status.to_owned();
                         let model = app_data.read().data.model.clone();
                         let settings = app_data.read().data.settings.clone();
+                        let templates = templates.peek().as_ref().unwrap().to_owned();
 
                         spawn({
-                            gen_all(model, settings, save_status, true, true)
+                            gen_all(model, settings, templates, save_status, true, true)
                         });
                     },
                     i { class: "fa-solid fa-industry mr-1" }

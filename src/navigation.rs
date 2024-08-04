@@ -6,6 +6,7 @@ use crate::file_io;
 use crate::page::PageType;
 use dioxus::prelude::*;
 use crate::generate;
+use tera::Tera;
 
 /// quit menu item for the desktop application
 #[cfg(not(target_arch = "wasm32"))]
@@ -34,7 +35,7 @@ pub fn Quit() -> Element {
 
 /// Menu bar
 #[component]
-pub fn NavBar(app_data: Signal<HdlWizardApp>) -> Element {
+pub fn NavBar(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>>) -> Element {
     let burger_menu = app_data.read().burger_menu;
     let live_help = app_data.read().live_help;
 
@@ -177,7 +178,8 @@ pub fn NavBar(app_data: Signal<HdlWizardApp>) -> Element {
 
                     // Generate menu
                     generate::output::Menu {
-                        app_data : app_data
+                        app_data : app_data,
+                        templates : templates
                     }
                 }
                 div { class: "navbar-end",
