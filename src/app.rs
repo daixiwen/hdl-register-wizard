@@ -15,13 +15,11 @@ use crate::generate::templates;
 #[cfg(not(target_arch = "wasm32"))]
 use std::cell::RefCell;
 #[cfg(not(target_arch = "wasm32"))]
-use directories_next::ProjectDirs;
-#[cfg(not(target_arch = "wasm32"))]
 use std::fs::File;
 #[cfg(not(target_arch = "wasm32"))]
 use std::io::{BufReader, BufWriter};
 #[cfg(not(target_arch = "wasm32"))]
-use std::path::PathBuf;
+use crate::assets;
 
 #[cfg(target_arch = "wasm32")]
 // name of the storage key for app configuration
@@ -150,19 +148,10 @@ impl Default for HdlWizardApp {
     }
 }
 
-/// path used for the settings and state save file
-#[cfg(not(target_arch = "wasm32"))]
-fn data_file_path() -> Option<PathBuf> {
-    match ProjectDirs::from("", "Sylvain Tertois", "HDL Register Wizard") {
-        Some(proj) => Some(proj.config_dir().to_path_buf()),
-        _ => None,
-    }
-}
-
 /// load the application state from the save file
 #[cfg(not(target_arch = "wasm32"))]
 fn load_app_data() -> Result<HdlWizardAppSaveData, std::io::Error> {
-    if let Some(path) = data_file_path() {
+    if let Some(path) = assets::data_file_path() {
         // read the settings
         let file = File::open(path)?;
         let reader = BufReader::new(file);
@@ -191,7 +180,7 @@ fn load_app_data() -> Result<HdlWizardAppSaveData, std::io::Error> {
 /// save the application state to the save file
 #[cfg(not(target_arch = "wasm32"))]
 fn save_app_data(data: &HdlWizardAppSaveData) -> Result<(), std::io::Error> {
-    if let Some(path) = data_file_path() {
+    if let Some(path) = assets::data_file_path() {
         // check that the parent dir exists
         if let Some(parent) = path.parent() {
             if !parent.exists() {

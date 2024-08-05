@@ -9,6 +9,16 @@ fn escape_markdown(value : &tera::Value, _args : &HashMap<String, tera::Value>) 
     Ok(tera::to_value(star_replaced)?)
 }
 
+pub fn load_template(tera: &mut Tera, name : &str) -> Result<()> {
+    let rel_fname = format!("templates/{name}");
+    if let Some(template_path) = crate::assets::find_asset(&rel_fname) {
+        tera.add_template_file(template_path, Some(name))?;
+        Ok(())
+    } else {
+        Err(tera::Error::msg(format!("template file not found: {name}")))
+    }
+}
+
 pub fn gen_templates() -> Result<Tera> {
     let mut tera = Tera::default();
 
@@ -16,7 +26,8 @@ pub fn gen_templates() -> Result<Tera> {
     tera.register_filter("escape_markdown", escape_markdown);
 
     // documentation template
-    tera.add_raw_template("documentation.md", include_str!("templates/documentation.md"))?;
+    //tera.add_raw_template("documentation.md", include_str!("../templates/documentation.md"))?;
+    load_template(&mut tera, "documentation.md")?;
 
     // genmodel templates. The templates used to generate tokens have the special * character which is used by the tokenlist object to
     // know where it can insert a number
