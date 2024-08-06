@@ -62,7 +62,7 @@ async fn gen_all(model: Arc<Mdf>, settings: Settings, templates: Tera, mut statu
 
 #[cfg(target_arch = "wasm32")]
 /// Called from the menu to generate the files
-async fn gen_all(_model: Arc<Mdf>, _settings: Settings, mut status: Signal<Option<Result<(), String>>>, _gen_doc : bool, _gen_code : bool) {
+async fn gen_all(_model: Arc<Mdf>, _settings: Settings, _templates: Tera, mut status: Signal<Option<Result<(), String>>>, _gen_doc : bool, _gen_code : bool) {
     status.set(Some(Ok(())));
 }
 
