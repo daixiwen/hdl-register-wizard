@@ -9,6 +9,7 @@ fn escape_markdown(value : &tera::Value, _args : &HashMap<String, tera::Value>) 
     Ok(tera::to_value(star_replaced)?)
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 pub fn load_template(tera: &mut Tera, name : &str) -> Result<()> {
     let rel_fname = format!("templates/{name}");
     if let Some(template_path) = crate::assets::find_asset(&rel_fname) {
@@ -19,6 +20,19 @@ pub fn load_template(tera: &mut Tera, name : &str) -> Result<()> {
     }
 }
 
+// the way templates are loaded depends on the target. We define a macro for this
+//- for the desktop app: load the file with the load_template function
+#[cfg(not(target_arch = "wasm32"))]
+macro_rules! template {
+    ($t: ident, $n:literal) => { load_template(&mut $t, $n)?; }
+}
+
+//- for the web app, include the template as a string in the executable
+#[cfg(target_arch = "wasm32")]
+macro_rules! template {
+    ($t: ident, $n:literal) => { $t.add_raw_template($n, include_str!(concat!("../templates/", $n)))?; }
+}
+
 pub fn gen_templates() -> Result<Tera> {
     let mut tera = Tera::default();
 
@@ -27,7 +41,8 @@ pub fn gen_templates() -> Result<Tera> {
 
     // documentation template
     //tera.add_raw_template("documentation.md", include_str!("../templates/documentation.md"))?;
-    load_template(&mut tera, "documentation.md")?;
+    //load_template(&mut tera, "documentation.md")?;
+    template!(tera,"documentation.md");
 
     // genmodel templates. The templates used to generate tokens have the special * character which is used by the tokenlist object to
     // know where it can insert a number
