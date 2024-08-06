@@ -389,18 +389,50 @@ pub fn App() -> Element {
         println!("Error while writing application configuration: {}", error);
     }
 
+    // main stylesheet
+    //- on the webapp, get it from the web
+    #[cfg(target_arch = "wasm32")]
+    let css_path : &str = "https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css";
+
+    //- on the desktop app, use a local file
+    #[cfg(not(target_arch = "wasm32"))]
+    let css_path : String = assets::find_asset("css/bulma.css")
+        .expect("didn't find bulma css file").into_os_string().into_string().unwrap();
+
+    // fontawesome import
+    //- on the webapp, use the kit from fontawesome.com. Maybe should change this at one point
+    #[cfg(target_arch = "wasm32")]
+    let fontawesome_import : Element = rsx!(
+        script { src: "https://kit.fontawesome.com/e5a7832160.js", crossorigin: "anonymous" }
+    );
+
+    //- on the desktop app, use local files
+    #[cfg(not(target_arch = "wasm32"))]
+    let fontawesome_import : Element = {
+        let fontawesome_path : String = assets::find_asset("css/fontawesome.css")
+            .expect("didn't find fontawesome css file").into_os_string().into_string().unwrap();
+        let brands_path : String = assets::find_asset("css/brands.css")
+            .expect("didn't find fontawesome brands css file").into_os_string().into_string().unwrap();
+        let solid_path : String = assets::find_asset("css/solid.css")
+            .expect("didn't find fontawesome solid css file").into_os_string().into_string().unwrap();
+
+        rsx!(
+            link { href: brands_path, rel: "stylesheet" }
+            link { href: solid_path, rel: "stylesheet" }
+            link { href: fontawesome_path, rel: "stylesheet" }
+    )};
+
+    // general variables for page
     let page_type = app_data.read().page_type.to_owned();
     let live_help_setting = app_data.read().live_help.to_owned();
-
-    const CSS_PATH : &str = "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css";
-
+    
     // page render
     rsx! {
         link {
-            href: CSS_PATH,
+            href: css_path,
             rel: "stylesheet"
         }
-        script { src: "https://kit.fontawesome.com/e5a7832160.js", crossorigin: "anonymous" }
+        {fontawesome_import}
         div {
             style { {STYLE_CSS} }
             {
