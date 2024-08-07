@@ -44,6 +44,7 @@ getrandom = "0.2.3"
 directories-next = "2.0.0"
 tao = { version = "0.26.2", features = ["serde"]}
 url = "2.5.2"
+image = { version = "0.25.2", default-features = false, features = ["png"]}
 
 [target.'cfg(unix)'.dependencies]
 xdg = "2.5.2"
