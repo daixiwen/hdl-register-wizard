@@ -14,6 +14,7 @@ edition = "2021"
 
 [build-dependencies]
 mini_markdown = "0.3.5"
+winresource = "0.1.17"
 
 [dependencies]
 futures-timer = "3.0.2"
