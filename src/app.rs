@@ -369,8 +369,8 @@ fn convert_url(orig_path: &str) -> String {
 /// for unix, no convertion needs to be done, the URL are in the form dioxus://{path} so
 /// all paths are accessible without modification
 #[cfg(unix)]
-fn convert_url(orig_path: &str) -> &str {
-    orig_path
+fn convert_url(orig_path: &str) -> String {
+    orig_path.to_owned()
 }
 
 /// application main function, for both web and desktop
