@@ -3,3 +3,6 @@
 Cargo.lock
 /dist
 /live_help/translated
+install/hdlregisterwizard.wixpdb
+install/hdlregisterwizard.wixobj
+install/hdlregisterwizard.msi

@@ -42,6 +42,10 @@ fn main() {
         }
     };
     
+    // Webview2 needs a folder for its data
+    #[cfg(windows)]
+    std::env::set_var("WEBVIEW2_USER_DATA_FOLDER",assets::webview_data_path().expect("no data path for webview").into_os_string());
+
     dioxus_desktop::launch::launch(
         app::App,
         Vec::new(),

@@ -18,6 +18,18 @@ pub fn data_file_path() -> Option<PathBuf> {
     }
 }
 
+/// path used for webview data files on Windows
+pub fn webview_data_path() -> Option<PathBuf> {
+    match ProjectDirs::from(PDIR_QUALIFIER, PDIR_ORGANIZATION, PDIR_PROJNAME) {
+        Some(proj) => {
+            let path = proj.data_local_dir();
+            std::fs::create_dir_all(path).expect("couldn't create data dir for Webview2");
+            Some(path.to_path_buf())
+        },
+        _ => None,
+    }
+}
+/// 
 // in debug build, just look in the src folder
 #[cfg(debug_assertions)]
 pub fn find_asset(rel_path : &str) -> Option<std::path::PathBuf> {

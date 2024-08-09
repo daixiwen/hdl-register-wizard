@@ -353,6 +353,26 @@ pub fn LiveHelp(app_data: Signal<HdlWizardApp>, page_type: page::PageType, live_
 
 const STYLE_CSS : &str = include_str!("./style.css");
 
+/// for windows, convert an url to a filesystem one
+/// We need to use the custom resolver from Dioxus, because the webview2 from Microsoft
+/// doesn't allow to use the file:// URL from a webapp with a custom protocol. For that the
+/// URL needs to be of the form http://dioxus.{path}.
+#[cfg(windows)]
+fn convert_url(orig_path: &str) -> String {
+    let converted = orig_path.to_owned().to_lowercase();
+    let converted = converted.replace(":", "");
+    let converted = converted.replace("\\", "/");
+
+    format!("http://dioxus.{converted}")
+}
+
+/// for unix, no convertion needs to be done, the URL are in the form dioxus://{path} so
+/// all paths are accessible without modification
+#[cfg(unix)]
+fn convert_url(orig_path: &str) -> &str {
+    orig_path
+}
+
 /// application main function, for both web and desktop
 pub fn App() -> Element {
     // this structure holds all the application data and will be sent over all the GUI modules
@@ -396,8 +416,8 @@ pub fn App() -> Element {
 
     //- on the desktop app, use a local file
     #[cfg(not(target_arch = "wasm32"))]
-    let css_path : String = assets::find_asset("css/bulma.css")
-        .expect("didn't find bulma css file").into_os_string().into_string().unwrap();
+    let css_path : String = convert_url(&assets::find_asset("css/bulma.css")
+        .expect("didn't find bulma css file").into_os_string().into_string().unwrap());
 
     // fontawesome import
     //- on the webapp, use the kit from fontawesome.com. Maybe should change this at one point
@@ -409,12 +429,12 @@ pub fn App() -> Element {
     //- on the desktop app, use local files
     #[cfg(not(target_arch = "wasm32"))]
     let fontawesome_import : Element = {
-        let fontawesome_path : String = assets::find_asset("css/fontawesome.css")
-            .expect("didn't find fontawesome css file").into_os_string().into_string().unwrap();
-        let brands_path : String = assets::find_asset("css/brands.css")
-            .expect("didn't find fontawesome brands css file").into_os_string().into_string().unwrap();
-        let solid_path : String = assets::find_asset("css/solid.css")
-            .expect("didn't find fontawesome solid css file").into_os_string().into_string().unwrap();
+        let fontawesome_path : String = convert_url(&assets::find_asset("css/fontawesome.css")
+            .expect("didn't find fontawesome css file").into_os_string().into_string().unwrap());
+        let brands_path : String = convert_url(&assets::find_asset("css/brands.css")
+            .expect("didn't find fontawesome brands css file").into_os_string().into_string().unwrap());
+        let solid_path : String = convert_url(&assets::find_asset("css/solid.css")
+            .expect("didn't find fontawesome solid css file").into_os_string().into_string().unwrap());
 
         rsx!(
             link { href: brands_path, rel: "stylesheet" }
