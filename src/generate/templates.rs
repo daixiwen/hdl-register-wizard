@@ -1,5 +1,4 @@
 use tera::{Tera,Result};
-use lazy_static::lazy_static;
 use std::collections::HashMap;
 
 fn escape_markdown(value : &tera::Value, _args : &HashMap<String, tera::Value>) -> tera::Result<tera::Value> {
@@ -10,11 +9,40 @@ fn escape_markdown(value : &tera::Value, _args : &HashMap<String, tera::Value>) 
     Ok(tera::to_value(star_replaced)?)
 }
 
-fn fill_templates(tera: &mut Tera) -> Result<()> {
+#[cfg(not(target_arch = "wasm32"))]
+pub fn load_template(tera: &mut Tera, name : &str) -> Result<()> {
+    let rel_fname = format!("templates/{name}");
+    if let Some(template_path) = crate::assets::find_asset(&rel_fname) {
+        tera.add_template_file(template_path, Some(name))?;
+        Ok(())
+    } else {
+        Err(tera::Error::msg(format!("template file not found: {name}")))
+    }
+}
+
+// the way templates are loaded depends on the target. We define a macro for this
+//- for the desktop app: load the file with the load_template function
+#[cfg(not(target_arch = "wasm32"))]
+macro_rules! template {
+    ($t: ident, $n:literal) => { load_template(&mut $t, $n)?; }
+}
+
+//- for the web app, include the template as a string in the executable
+#[cfg(target_arch = "wasm32")]
+macro_rules! template {
+    ($t: ident, $n:literal) => { $t.add_raw_template($n, include_str!(concat!("../templates/", $n)))?; }
+}
+
+pub fn gen_templates() -> Result<Tera> {
+    let mut tera = Tera::default();
+
+    tera.autoescape_on(vec![]);
     tera.register_filter("escape_markdown", escape_markdown);
 
     // documentation template
-    tera.add_raw_template("documentation.md", include_str!("templates/documentation.md"))?;
+    //tera.add_raw_template("documentation.md", include_str!("../templates/documentation.md"))?;
+    //load_template(&mut tera, "documentation.md")?;
+    template!(tera,"documentation.md");
 
     // genmodel templates. The templates used to generate tokens have the special * character which is used by the tokenlist object to
     // know where it can insert a number
@@ -53,19 +81,5 @@ fn fill_templates(tera: &mut Tera) -> Result<()> {
         ("gf_write_enable_description", "signals that {full_name} is being written")
         ])?;
     
-    Ok(())
-}
-
-lazy_static! {
-    pub static ref TEMPLATES: Tera = {
-        let mut tera = Tera::default();
-        if let Err(e) = fill_templates(&mut tera)
-        {
-                println!("Parsing error(s): {}", e);
-                ::std::process::exit(1);
-        };
-        tera.autoescape_on(vec![]);
-        //tera.register_filter("do_nothing", do_nothing_filter);
-        tera
-    };
+    Ok(tera)
 }

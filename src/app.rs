@@ -10,17 +10,16 @@ use crate::navigation;
 use crate::page;
 use crate::settings;
 use crate::undo;
+use crate::generate::templates;
 
 #[cfg(not(target_arch = "wasm32"))]
 use std::cell::RefCell;
-#[cfg(not(target_arch = "wasm32"))]
-use directories_next::ProjectDirs;
 #[cfg(not(target_arch = "wasm32"))]
 use std::fs::File;
 #[cfg(not(target_arch = "wasm32"))]
 use std::io::{BufReader, BufWriter};
 #[cfg(not(target_arch = "wasm32"))]
-use std::path::PathBuf;
+use crate::assets;
 
 #[cfg(target_arch = "wasm32")]
 // name of the storage key for app configuration
@@ -149,19 +148,10 @@ impl Default for HdlWizardApp {
     }
 }
 
-/// path used for the settings and state save file
-#[cfg(not(target_arch = "wasm32"))]
-fn data_file_path() -> Option<PathBuf> {
-    match ProjectDirs::from("", "Sylvain Tertois", "HDL Register Wizard") {
-        Some(proj) => Some(proj.config_dir().to_path_buf()),
-        _ => None,
-    }
-}
-
 /// load the application state from the save file
 #[cfg(not(target_arch = "wasm32"))]
 fn load_app_data() -> Result<HdlWizardAppSaveData, std::io::Error> {
-    if let Some(path) = data_file_path() {
+    if let Some(path) = assets::data_file_path() {
         // read the settings
         let file = File::open(path)?;
         let reader = BufReader::new(file);
@@ -190,7 +180,7 @@ fn load_app_data() -> Result<HdlWizardAppSaveData, std::io::Error> {
 /// save the application state to the save file
 #[cfg(not(target_arch = "wasm32"))]
 fn save_app_data(data: &HdlWizardAppSaveData) -> Result<(), std::io::Error> {
-    if let Some(path) = data_file_path() {
+    if let Some(path) = assets::data_file_path() {
         // check that the parent dir exists
         if let Some(parent) = path.parent() {
             if !parent.exists() {
@@ -363,6 +353,26 @@ pub fn LiveHelp(app_data: Signal<HdlWizardApp>, page_type: page::PageType, live_
 
 const STYLE_CSS : &str = include_str!("./style.css");
 
+/// for windows, convert an url to a filesystem one
+/// We need to use the custom resolver from Dioxus, because the webview2 from Microsoft
+/// doesn't allow to use the file:// URL from a webapp with a custom protocol. For that the
+/// URL needs to be of the form http://dioxus.{path}.
+#[cfg(windows)]
+fn convert_url(orig_path: &str) -> String {
+    let converted = orig_path.to_owned().to_lowercase();
+    let converted = converted.replace(":", "");
+    let converted = converted.replace("\\", "/");
+
+    format!("http://dioxus.{converted}")
+}
+
+/// for unix, no convertion needs to be done, the URL are in the form dioxus://{path} so
+/// all paths are accessible without modification
+#[cfg(unix)]
+fn convert_url(orig_path: &str) -> String {
+    orig_path.to_owned()
+}
+
 /// application main function, for both web and desktop
 pub fn App() -> Element {
     // this structure holds all the application data and will be sent over all the GUI modules
@@ -372,6 +382,9 @@ pub fn App() -> Element {
         app
     });
   
+    let templates = use_signal( || {templates::gen_templates()});
+    let templates_ok = templates.peek().is_ok();
+
     // There is no clean way to get an event when the window size or position is changed. The tao WindowEvent is dropped
     // in dioxus-desktop/launch.rs launch_virtual_dom_blocking(). So we just get the position and size at each re-render
     // we a using Refcells to be able to change them without triggering a redraw
@@ -396,33 +409,104 @@ pub fn App() -> Element {
         println!("Error while writing application configuration: {}", error);
     }
 
+    // main stylesheet
+    //- on the webapp, get it from the web
+    #[cfg(target_arch = "wasm32")]
+    let css_path : &str = "https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css";
+
+    //- on the desktop app, use a local file
+    #[cfg(not(target_arch = "wasm32"))]
+    let css_path : String = convert_url(&assets::find_asset("css/bulma.css")
+        .expect("didn't find bulma css file").into_os_string().into_string().unwrap());
+
+    // fontawesome import
+    //- on the webapp, use the kit from fontawesome.com. Maybe should change this at one point
+    #[cfg(target_arch = "wasm32")]
+    let fontawesome_import : Element = rsx!(
+        script { src: "https://kit.fontawesome.com/e5a7832160.js", crossorigin: "anonymous" }
+    );
+
+    //- on the desktop app, use local files
+    #[cfg(not(target_arch = "wasm32"))]
+    let fontawesome_import : Element = {
+        let fontawesome_path : String = convert_url(&assets::find_asset("css/fontawesome.css")
+            .expect("didn't find fontawesome css file").into_os_string().into_string().unwrap());
+        let brands_path : String = convert_url(&assets::find_asset("css/brands.css")
+            .expect("didn't find fontawesome brands css file").into_os_string().into_string().unwrap());
+        let solid_path : String = convert_url(&assets::find_asset("css/solid.css")
+            .expect("didn't find fontawesome solid css file").into_os_string().into_string().unwrap());
+
+        rsx!(
+            link { href: brands_path, rel: "stylesheet" }
+            link { href: solid_path, rel: "stylesheet" }
+            link { href: fontawesome_path, rel: "stylesheet" }
+    )};
+
+    // general variables for page
     let page_type = app_data.read().page_type.to_owned();
     let live_help_setting = app_data.read().live_help.to_owned();
-
+    
     // page render
     rsx! {
         link {
-            href: "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css",
+            href: css_path,
             rel: "stylesheet"
         }
-        script { src: "https://kit.fontawesome.com/e5a7832160.js", crossorigin: "anonymous" }
+        {fontawesome_import}
         div {
             style { {STYLE_CSS} }
-            navigation::NavBar { app_data: app_data }
-            div { class: "columns",
-                navigation::SideBar {
-                    app_data: app_data 
-                }
-                div { 
-                    class: "column ext-sticky mr-4", 
-                    page::Content { 
-                        app_data: app_data 
-                    } 
-                }
-                LiveHelp {
-                    app_data: app_data,
-                    page_type: page_type,
-                    live_help_setting: live_help_setting
+            {
+                if templates_ok {
+                    rsx! {
+                        navigation::NavBar { 
+                            app_data: app_data,
+                            templates: templates
+                        }
+                        div { class: "columns",
+                            navigation::SideBar {
+                                app_data: app_data 
+                            }
+                            div { 
+                                class: "column ext-sticky mr-4", 
+                                page::Content { 
+                                    app_data: app_data,
+                                    templates: templates
+                                } 
+                            }
+                            LiveHelp {
+                                app_data: app_data,
+                                page_type: page_type,
+                                live_help_setting: live_help_setting
+                            }
+                        }    
+                    }        
+                } else {
+                    let error_message = templates.peek().as_ref().unwrap_err().to_string();
+
+                    rsx! {
+                        div {
+                            class: "modal is-active",
+                            div {
+                                class:"modal-background"
+                            },
+                            div {
+                                class:"modal-content",
+                                article {
+                                    class: "message is-danger",
+                                    div {
+                                        class:"message-header",
+                                        p {
+                                            "Template parsing error"
+                                        },
+                                    }
+                                    div {
+                                        class: "message-body",
+                                        "{error_message}"
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
