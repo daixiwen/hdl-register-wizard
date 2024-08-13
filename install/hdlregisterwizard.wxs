@@ -13,7 +13,7 @@
       <Directory Id='ProgramFilesFolder' Name='PFiles'>
         <Directory Id='HDLRWINSTALLDIR' Name='HDL Register Wizard'>
           <Component Id='MainExecutable' Guid='C9AA4B99-72C8-456C-A627-C25F462891E9'>
-            <File Id='HDLRWEXE' Name='hdl_register_wizard.exe' DiskId='1' Source='..\target\release\hdl_register_wizard.exe' KeyPath='yes'>
+            <File Id='HDLRWEXE' Name='hdl_register_wizard.exe' DiskId='1' Source='..\target\x86_64-pc-windows-msvc\release\hdl_register_wizard.exe' KeyPath='yes'>
               <Shortcut Id="startmenuhdlrw" Directory="ProgramMenuDir" Name="HDL Register Wizard" WorkingDirectory='INSTALLDIR' 
                 Icon="icon.ico" IconIndex="0" Advertise="yes" />
             </File>
