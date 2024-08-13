@@ -37,6 +37,8 @@ pub mod settings;
 pub mod undo;
 pub mod utils;
 pub mod generate;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod assets;
 
 #[cfg(test)]
 mod tests;

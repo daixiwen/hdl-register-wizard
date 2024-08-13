@@ -28,5 +28,12 @@ fn main() {
         }
     }
 
+    if env::var_os("CARGO_CFG_WINDOWS").is_some() {
+        winresource::WindowsResource::new()
+            .set_icon("install/icon.ico")
+            .compile()
+            .expect("error compiling icon");
+    }
+
     println!("cargo:rerun-if-changed=./src/live_help/*");
 }

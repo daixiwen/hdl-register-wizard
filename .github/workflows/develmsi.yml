@@ -1,9 +1,6 @@
-name: compile
+name: develmsi
 
-on:
-  push:
-    tags:
-      - '*'
+on: workflow_dispatch
 
 jobs:
   build-win:
@@ -24,12 +21,14 @@ jobs:
         run: cargo build --all --release --target x86_64-pc-windows-msvc --verbose
 
       - name: MSI
-        run: createmsi.bat
+        run: 
+          createmsi.bat
+          mkdir dist
+          copy hdlregisterwizard.msi dist
         working-directory: ./install
 
-      - name: Release
-        uses: softprops/action-gh-release@v1
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          files: install/hdlregisterwizard.msi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./install/dist
