@@ -1,6 +1,9 @@
 name: compile
 
-on: workflow_dispatch
+on:
+  push:
+    tags:
+      - '*'
 
 jobs:
   build-win:
@@ -20,9 +23,13 @@ jobs:
       - name: Build
         run: cargo build --all --release --target x86_64-pc-windows-msvc --verbose
 
+      - name: MSI
+        run: createmsi.bat
+        working-directory: ./install
+
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: target/x86_64-pc-windows-msvc/release/hdl_register_wizard.exe
+          files: install/hdlregisterwizard.msi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
