@@ -1,0 +1,23 @@
+<html>
+
+<head>
+	<title>HDL Register Wizard</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+    <div id="main"> </div>
+
+<script type="module">
+    import init from "/hdl-register-wizard/assets/dioxus/HDL Register Wizard.js";
+    init("/hdl-register-wizard/assets/dioxus/HDL Register Wizard_bg.wasm").then(wasm => {
+      if (wasm.__wbindgen_start == undefined) {
+        wasm.main();
+      }
+    });
+    </script>
+    </body>
+
+</html>
