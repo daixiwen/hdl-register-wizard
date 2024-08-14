@@ -6,7 +6,7 @@
     Language='1033' Codepage='1252' Version='0.1.4'>
     <Package Id='*' Keywords='Installer' Description="HDL Register Wizard installer"
       Comments='Opensource, MIT license' Manufacturer='Sylvain Tertois'
-      InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
+      InstallerVersion='200' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
     <Media Id='1' Cabinet='HDLRW.cab' EmbedCab='yes' DiskPrompt='Archive' />
     <Property Id='DiskPrompt' Value="HDL Register Wizard installation archive 1" />
     <Directory Id='TARGETDIR' Name='SourceDir'>
