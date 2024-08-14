@@ -6,3 +6,6 @@ Cargo.lock
 install/hdlregisterwizard.wixpdb
 install/hdlregisterwizard.wixobj
 install/hdlregisterwizard.msi
+install/hdlregisterwizard-user.wixpdb
+install/hdlregisterwizard-user.wixobj
+install/hdlregisterwizard-user.msi
