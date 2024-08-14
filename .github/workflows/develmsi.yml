@@ -18,6 +18,9 @@ jobs:
           override: true
 
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "winbuild"
+          
       - name: Build
         run: cargo build --all --release --target x86_64-pc-windows-msvc --verbose
 
