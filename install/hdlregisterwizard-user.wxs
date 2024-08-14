@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+  <Product Name='HDL Register Wizard 0.1.4' Manufacturer='Sylvain Tertois'
+    Id='CDDB0089-467E-4A8F-9521-BD25C1044A2B' 
+    UpgradeCode='A9135172-7CCF-4330-9319-F8F1BBC2FA31'
+    Language='1033' Codepage='1252' Version='0.1.4'>
+    <Package Id='*' Keywords='Installer' Description="HDL Register Wizard installer"
+      Comments='Opensource, MIT license' Manufacturer='Sylvain Tertois'
+      InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' 
+      InstallScope='perUser'/>
+    <Media Id='1' Cabinet='HDLRW.cab' EmbedCab='yes' DiskPrompt='Archive' />
+    <Property Id='DiskPrompt' Value="HDL Register Wizard installation archive 1" />
+    <Directory Id='TARGETDIR' Name='SourceDir'>
+      <Directory Id='ProgramFilesFolder' Name='PFiles'>
+        <Directory Id='HDLRWINSTALLDIR' Name='HDL Register Wizard'>
+          <Component Id='MainExecutable' Guid='C9AA4B99-72C8-456C-A627-C25F462891E9'>
+            <File Id='HDLRWEXE' Name='hdl_register_wizard.exe' DiskId='1' Source='..\target\x86_64-pc-windows-msvc\release\hdl_register_wizard.exe' KeyPath='yes'>
+              <Shortcut Id="startmenuhdlrw" Directory="ProgramMenuDir" Name="HDL Register Wizard" WorkingDirectory='INSTALLDIR' 
+                Icon="icon.ico" IconIndex="0" Advertise="yes" />
+            </File>
+          </Component>
+          <Directory Id='templates' Name='templates'>
+            <Component Id='Templates' Guid='A6B6B0B2-891D-41CB-AB4E-210A9805428A'>
+              <File Id='DocTemplate' Name='documentation.md' DiskId='1' Source='..\src\templates\documentation.md' KeyPath='yes'/>
+            </Component>
+          </Directory>
+          <Directory Id='css' Name='css'>
+            <Component Id='cssbulma' Guid='6DE5BFC5-2B34-4B4B-BF09-5B0C50115CD9'>
+              <File Id='bulma' Name='bulma.css' DiskId='1' Source='..\src\css\bulma.css' KeyPath='yes'/>
+            </Component>
+            <Component Id='cssbulmamap' Guid='C899CBEC-0F0F-4D38-A5CD-8B6A581152BA'>
+              <File Id='bulmamap' Name='bulma.css.map' DiskId='1' Source='..\src\css\bulma.css.map' KeyPath='yes'/>
+            </Component>
+            <Component Id='cssfontawesome' Guid='90917D2D-B64A-498B-BE5E-3296803B7A2B'>
+              <File Id='fontawesome' Name='fontawesome.css' DiskId='1' Source='..\src\css\fontawesome.css' KeyPath='yes'/>
+            </Component>
+            <Component Id='cssbrands' Guid='38F8D17C-7771-4B40-9F63-17DC547405DE'>
+              <File Id='brands' Name='brands.css' DiskId='1' Source='..\src\css\brands.css' KeyPath='yes'/>
+            </Component>
+            <Component Id='csssolid' Guid='0E3EFE66-09E5-4A73-8E84-2893E26BA8F9'>
+              <File Id='solid' Name='solid.css' DiskId='1' Source='..\src\css\solid.css' KeyPath='yes'/>
+            </Component>
+            <Component Id='cssbrandsfont' Guid='5C095086-059B-47BF-8EF2-A05D362142CB'>
+              <File Id='brandsfont' Name='fa-brands-400.woff2' DiskId='1' Source='..\src\css\fa-brands-400.woff2' KeyPath='yes'/>
+            </Component>
+            <Component Id='csssolidfont' Guid='4358B792-96DC-4AFB-BEAD-ED8BEC76A2EF'>
+              <File Id='solidfont' Name='fa-solid-900.woff2' DiskId='1' Source='..\src\css\fa-solid-900.woff2' KeyPath='yes'/>
+            </Component>
+          </Directory>
+          <Component Id='icon' Guid='D61AA41A-37B3-4993-9663-7EC48B8D438B'>
+            <File Id='mainicon' Name='icon.png' DiskId='1' Source='..\src\icon.png' KeyPath='yes'/>
+          </Component>
+        </Directory>
+      </Directory>
+        
+      <Directory Id="ProgramMenuFolder" Name="Programs">
+        <Directory Id="ProgramMenuDir" Name="HDL Register Wizard">
+          <Component Id="ProgramMenuDir" Guid="D58825DA-339B-4CCF-8FEA-338D40574CDE">
+            <RemoveFolder Id='ProgramMenuDir' On='uninstall' />
+            <RegistryValue Root='HKCU' Key='Software\Sylvain Tertois\HDL Register Wizard' Type='string' Value='' KeyPath='yes' />
+          </Component>
+        </Directory>
+      </Directory>
+    </Directory>
+    
+    <Feature Id='Complete' Level='1'>
+      <ComponentRef Id='MainExecutable' />
+      <ComponentRef Id='Templates' />
+      <ComponentRef Id='cssbulma' />
+      <ComponentRef Id='cssbulmamap' />
+      <ComponentRef Id='cssfontawesome' />
+      <ComponentRef Id='cssbrands' />
+      <ComponentRef Id='csssolid' />
+      <ComponentRef Id='cssbrandsfont' />
+      <ComponentRef Id='csssolidfont' />
+      <ComponentRef Id='icon' />
+      <ComponentRef Id='ProgramMenuDir' />
+    </Feature>
+    
+    <Icon Id="icon.ico" SourceFile="icon.ico" />
+    
+    <Property Id="WIXUI_INSTALLDIR" Value="HDLRWINSTALLDIR" />
+    <WixVariable Id="WixUILicenseRtf" Value="LICENSE.rtf" />
+    <UIRef Id="WixUI_InstallDir" />
+  </Product>
+</Wix>
