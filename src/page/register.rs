@@ -356,10 +356,10 @@ fn TableLine(
                     a { onclick: move |_| {
                             app_data
                                 .with_mut(|data| {
-                                    data.page_type = PageType::Register(
+                                    data.page_type = PageType::ChangeRegisterField(
                                         interface_number,
                                         register_number,
-                                        Some(field_number),
+                                        field_number,
                                     );
                                 })
                         },
@@ -413,10 +413,10 @@ fn TableLine(
                                 app_data
                                     .with_mut(|data| {
                                         data
-                                            .page_type = PageType::Register(
+                                            .page_type = PageType::ChangeRegisterField(
                                             interface_number,
                                             register_number,
-                                            Some(field_number),
+                                            field_number,
                                         );
                                     })
                             },
@@ -860,7 +860,7 @@ pub fn Content(props: ContentProps) -> Element {
                                     button { class:"button is-primary",
                                         onclick: move |_| app_data.with_mut(|app| {
                                             app.get_mut_model().interfaces[interface_num].registers[register_num].fields.push(mdf::Field::new());
-                                            app.page_type = PageType::Register(interface_num, register_num, Some(app.data.model.interfaces[interface_num].registers[register_num].fields.len()-1));
+                                            app.page_type = PageType::ChangeRegisterField(interface_num, register_num, app.data.model.interfaces[interface_num].registers[register_num].fields.len()-1);
                                             app.register_undo("create field")
                                             }),
                                         "New field"

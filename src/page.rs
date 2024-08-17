@@ -11,6 +11,7 @@ pub enum PageType {
     Project,
     Interface(usize),
     Register(usize, usize, Option<usize>),
+    ChangeRegisterField(usize, usize, usize),
     Preview
 }
 
@@ -210,6 +211,12 @@ pub fn Content(app_data: Signal<HdlWizardApp>, templates: Signal<Result<Tera>>) 
                     }
                 }
             },
+            PageType::ChangeRegisterField(interface_num, register_num, field_num) => {
+                // work around issue #10. When switching field we change to this page type first
+                // to clear the screen and then switch the page to register
+                app_data.with_mut(|app_data| app_data.page_type = PageType::Register(interface_num, register_num, Some(field_num)));
+                None
+            }
             PageType::Preview => {
                 rsx! {
                     preview::Content { app_data: app_data, templates: templates}
