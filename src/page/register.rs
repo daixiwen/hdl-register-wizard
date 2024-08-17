@@ -40,6 +40,8 @@ fn default_fields(interface_width: u32, register: &mut mdf::Register) {
         if register.reset.is_none() {
             register.reset = Some(utils::VectorValue::new());
         }
+        // clear any fields that were there if the register was a bitfield before
+        register.fields = Vec::new();
     }
 }
 
