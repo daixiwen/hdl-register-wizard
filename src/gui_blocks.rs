@@ -112,7 +112,9 @@ pub fn apply_function<F : 'static>(
         },
         // preview... should never happen
         PageType::Preview => {
-
+        },
+        // change register field... should never happen either
+        PageType::ChangeRegisterField(_,_,_) => {
         }
     }
 }
