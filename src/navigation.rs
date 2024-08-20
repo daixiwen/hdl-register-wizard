@@ -82,7 +82,7 @@ pub fn NavBar(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Ter
                                 div { class:"dropdown-menu", id:"dropdown-menu-undo", role:"menu",
                                     div { class:"dropdown-content",
                                         div { class:"dropdown-item",
-                                            p { class:"has-text-black is-size-7", "undo {undo}"}
+                                            p { class:"has-text-current is-size-7", "undo {undo}"}
                                         }
                                     }
                                 }
@@ -116,7 +116,7 @@ pub fn NavBar(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Ter
                                 div { class:"dropdown-menu", id:"dropdown-menu-redo", role:"menu",
                                     div { class:"dropdown-content",
                                         div { class:"dropdown-item",
-                                            p { class:"has-text-black is-size-7", "redo {redo}"}
+                                            p { class:"has-text-current is-size-7", "redo {redo}"}
                                         }
                                     }
                                 }
@@ -307,7 +307,7 @@ pub fn SideBar(app_data: Signal<HdlWizardApp>) -> Element {
         },
     };
     rsx! {
-        aside { class: "panel ext-sticky m-5",
+        aside { class: "panel ext-sticky m-5 is-link",
             p { class: "panel-heading", "Registers" }
             div { class: "panel-block",
                 nav { class: "menu",
