@@ -77,7 +77,7 @@ fn TableLine(app_data: Signal<HdlWizardApp>,
                         span { class: "icon is_small", i { class: "fa-solid fa-pen" } }
                     }
                     button {
-                        class: "button is-danger",
+                        class: "button is-danger has-text-white",
                         onclick: move |_| {
                             app_data
                                 .with_mut(|data| {

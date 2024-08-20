@@ -337,7 +337,7 @@ pub fn LiveHelp(app_data: Signal<HdlWizardApp>, page_type: page::PageType, live_
             page::PageType::ChangeRegisterField(_,_,_) => ("", String::new())
         };
         rsx!(
-            aside { class: "panel ext-sticky m-5 ext-livehelp",
+            aside { class: "panel ext-sticky m-5 is-link ext-livehelp",
                 p { class: "panel-heading", "{title}" }
                 div { 
                     class: "panel-block content",

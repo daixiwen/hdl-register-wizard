@@ -349,7 +349,7 @@ fn TableLine(
             field_name
         };
 
-        let tr_class = if is_selected { "is-selected" } else { "" };
+        let tr_class = if is_selected { "has-background-info-soft" } else { "" };
 
         // render html
         rsx! {
@@ -425,7 +425,7 @@ fn TableLine(
                             span { class: "icon is_small", i { class: "fa-solid fa-pen" } }
                         }
                         button {
-                            class: "button is-danger",
+                            class: "button is-danger has-text-white",
                             onclick: move |_| {
                                 app_data
                                     .with_mut(|data| {

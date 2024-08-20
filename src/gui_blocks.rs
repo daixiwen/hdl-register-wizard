@@ -322,7 +322,7 @@ pub fn AutoManuText<F: Default + Clone + PartialEq + gui_types::Validable + std:
             div { class: "field-body",
                 div { class: "field is-grouped is-align-items-center",
                     div { class: "control",
-                        label { class: "radio",
+                        label { class: "radio mr-4",
                             input {
                                 r#type: "radio",
                                 name: "{gui_label}",
