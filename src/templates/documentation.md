@@ -70,7 +70,7 @@ bitfield | -
 {%- if register.is_bitfield %}
 | Position | Name | Type | Access | Description |
 | :----: | :----: | :----: | :----: | :----: |
-{% for field in fields -%}
+{%- for field in register.fields %}
 | {{ field.position }} | `{{ field.name | escape_markdown }}` | `{{ field.sig_type | escape_markdown }}` | {{ field.rw_mode }} | {{ field.description | escape_markdown }} |
 {%- endfor %}
 

@@ -1,3 +1,9 @@
+/* remove the Segoe UI font from the list, which looks weird for titles */
+:root {
+  --bulma-family-primary: Inter, SF Pro, Roboto, Oxygen, Ubuntu, Helvetica Neue, Helvetica, Arial, sans-serif;
+  --bulma-family-secondary: Inter, SF Pro, Roboto, Oxygen, Ubuntu, Helvetica Neue, Helvetica, Arial, sans-serif;
+}
+
 .ext-sticky {
     position: sticky;
     display: inline-block;

@@ -40,6 +40,8 @@ fn default_fields(interface_width: u32, register: &mut mdf::Register) {
         if register.reset.is_none() {
             register.reset = Some(utils::VectorValue::new());
         }
+        // clear any fields that were there if the register was a bitfield before
+        register.fields = Vec::new();
     }
 }
 
@@ -347,7 +349,7 @@ fn TableLine(
             field_name
         };
 
-        let tr_class = if is_selected { "is-selected" } else { "" };
+        let tr_class = if is_selected { "has-background-info-soft" } else { "" };
 
         // render html
         rsx! {
@@ -356,10 +358,10 @@ fn TableLine(
                     a { onclick: move |_| {
                             app_data
                                 .with_mut(|data| {
-                                    data.page_type = PageType::Register(
+                                    data.page_type = PageType::ChangeRegisterField(
                                         interface_number,
                                         register_number,
-                                        Some(field_number),
+                                        field_number,
                                     );
                                 })
                         },
@@ -413,17 +415,17 @@ fn TableLine(
                                 app_data
                                     .with_mut(|data| {
                                         data
-                                            .page_type = PageType::Register(
+                                            .page_type = PageType::ChangeRegisterField(
                                             interface_number,
                                             register_number,
-                                            Some(field_number),
+                                            field_number,
                                         );
                                     })
                             },
                             span { class: "icon is_small", i { class: "fa-solid fa-pen" } }
                         }
                         button {
-                            class: "button is-danger",
+                            class: "button is-danger has-text-white",
                             onclick: move |_| {
                                 app_data
                                     .with_mut(|data| {
@@ -860,7 +862,7 @@ pub fn Content(props: ContentProps) -> Element {
                                     button { class:"button is-primary",
                                         onclick: move |_| app_data.with_mut(|app| {
                                             app.get_mut_model().interfaces[interface_num].registers[register_num].fields.push(mdf::Field::new());
-                                            app.page_type = PageType::Register(interface_num, register_num, Some(app.data.model.interfaces[interface_num].registers[register_num].fields.len()-1));
+                                            app.page_type = PageType::ChangeRegisterField(interface_num, register_num, app.data.model.interfaces[interface_num].registers[register_num].fields.len()-1);
                                             app.register_undo("create field")
                                             }),
                                         "New field"

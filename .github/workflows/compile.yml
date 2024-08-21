@@ -20,6 +20,10 @@ jobs:
           default: true
           override: true
 
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "winbuild"
+          
       - name: Build
         run: cargo build --all --release --target x86_64-pc-windows-msvc --verbose
 
@@ -30,6 +34,8 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: install/hdlregisterwizard.msi
+          files: |
+            install/hdlregisterwizard.msi
+            install/hdlregisterwizard-user.msi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

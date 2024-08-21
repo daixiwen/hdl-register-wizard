@@ -17,18 +17,19 @@ jobs:
           default: true
           override: true
 
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "winbuild"
+          
       - name: Build
         run: cargo build --all --release --target x86_64-pc-windows-msvc --verbose
 
       - name: MSI
-        run: 
-          createmsi.bat
-          mkdir dist
-          copy hdlregisterwizard.msi dist
+        run: ./createmsi.bat
         working-directory: ./install
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        uses: actions/upload-artifact@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./install/dist
+          name: dist-msi
+          path: ./install/*.msi

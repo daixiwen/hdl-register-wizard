@@ -112,7 +112,9 @@ pub fn apply_function<F : 'static>(
         },
         // preview... should never happen
         PageType::Preview => {
-
+        },
+        // change register field... should never happen either
+        PageType::ChangeRegisterField(_,_,_) => {
         }
     }
 }
@@ -320,7 +322,7 @@ pub fn AutoManuText<F: Default + Clone + PartialEq + gui_types::Validable + std:
             div { class: "field-body",
                 div { class: "field is-grouped is-align-items-center",
                     div { class: "control",
-                        label { class: "radio",
+                        label { class: "radio mr-4",
                             input {
                                 r#type: "radio",
                                 name: "{gui_label}",

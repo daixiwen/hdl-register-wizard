@@ -332,11 +332,12 @@ pub fn LiveHelp(app_data: Signal<HdlWizardApp>, page_type: page::PageType, live_
 
                 ("Register", text)
             },
-            page::PageType::Preview => ("Prreview", include_str!(concat!(env!("OUT_DIR"), "/live_help/preview.html")).to_owned()),
+            page::PageType::Preview => ("Preview", include_str!(concat!(env!("OUT_DIR"), "/live_help/preview.html")).to_owned()),
 //                _ => ("WIP","<p>Not written yet</p>".to_owned()) 
+            page::PageType::ChangeRegisterField(_,_,_) => ("", String::new())
         };
         rsx!(
-            aside { class: "panel ext-sticky m-5 ext-livehelp",
+            aside { class: "panel ext-sticky m-5 is-link ext-livehelp",
                 p { class: "panel-heading", "{title}" }
                 div { 
                     class: "panel-block content",
