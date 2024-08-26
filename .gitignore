@@ -9,3 +9,5 @@ install/hdlregisterwizard.msi
 install/hdlregisterwizard-user.wixpdb
 install/hdlregisterwizard-user.wixobj
 install/hdlregisterwizard-user.msi
+.flatpak-builder
+
