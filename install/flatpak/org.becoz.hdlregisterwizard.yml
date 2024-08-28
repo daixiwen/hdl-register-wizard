@@ -7,9 +7,7 @@ sdk: org.gnome.Sdk
 command: hdl_register_wizard  
 sdk-extensions: 
   - org.freedesktop.Sdk.Extension.rust-stable
-rename-icon: src/icon.png
-rename-desktop-file: install/flatpak/org.becoz.hdlregisterwizard.desktop
-rename-appdata-file: install/flatpak/org.becoz.hdlregisterwizard.metainfo.xml
+rename-icon: hdlregisterwizard
 finish-args:
   - --share=ipc
   - --socket=fallback-x11
@@ -18,24 +16,25 @@ finish-args:
 build-options:
   append-path: /usr/lib/sdk/rust-stable/bin
 modules:
-  - install/flatpak/xdotool.json
+  - xdotool.json
   - name: hdlregisterwizard
     buildsystem: simple
     config-opts:
       - CARGO_HOME: /run/build/hdlregisterwizard/cargo
+      - CARGO_TARGET_DIR: /run/build/hdlregisterwizard/target
     build-options:
      build-args:
        - --share=network
     build-commands:
-#      - cargo --offline fetch --manifest-path Cargo.toml --verbose
-#      - cargo --offline build --release --verbose
-      - ls -l /app/lib
-      - RUSTFLAGS='-L /app/lib' cargo build --release --verbose
-      - install/install-linux.sh
+      - RUSTFLAGS='-L /app/lib' cargo build --release --verbose --target x86_64-unknown-linux-gnu
+      - ls -l /run/build/hdlregisterwizard/target/release
+      - mkdir -pv /app/bin /app/share/icons/hicolor/512x512/apps /app/share/hdlregisterwizard /app/share/applications
+      - cp -v /run/build/hdlregisterwizard/target/release/hdl_register_wizard /app/bin
+      - cp -v src/icon.png /app/share/icons/hicolor/512x512/apps/hdlregisterwizard.png
+      - cp -rv src/css src/templates src/icon.png /app/share/hdlregisterwizard
+      - cp -v install/flatpak/org.becoz.hdlregisterwizard.desktop /app/share/applications
+# /app/share
     sources:
       - type: dir
-        path: "."      
-#      - install/flatpak/cargo-sources.json
-    cleanup: 
-      - target
+        path: "../.."      
 
