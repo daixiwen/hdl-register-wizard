@@ -1,0 +1,23 @@
+name: flatpak
+
+on: workflow_dispatch
+
+jobs:
+  build-flatpak:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install flatpak
+        run: sudo apt-get install flatpak-builder
+
+      - name: create flatpak
+        run: install/flatpak/build.sh ${{ github.ref_name }}
+
+      - name: Deploy
+        uses: actions/upload-artifact@v4
+        with:
+          name: flatpak-x64
+          path: *.flatpak

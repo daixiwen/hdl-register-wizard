@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.becoz.hdlregisterwizard</id>
+  
+  <name>HDL Register Wizard</name>
+  <summary>VHDL code generation for memory mapped registers</summary>
+  
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  
+  <description>
+    <p>
+      This is both a webapp and a desktop application that can generate VHDL code and documentation to create hardware registers accessible on a memory mapped bus. It can load and save files in the Model Description Format developped by Bitvis for its (now defunct) [Register Wizard](https://bitvis.no/dev-tools/register-wizard/). Files saved by this webapp should be usable by Bitvis&apos; tool.
+    </p>
+  </description>
+  
+  <launchable type="desktop-id">org.becoz.hdlregisterwizard.desktop</launchable>
+</component>
