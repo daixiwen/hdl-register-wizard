@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+
+Name=HDL Register Wizard
+Comment=VHDL code generation for memory mapped registers
+Categories=Development;Electronics;
+
+Icon=hdlregisterwizard
+Exec=hdl_register_wizard
+Terminal=false
