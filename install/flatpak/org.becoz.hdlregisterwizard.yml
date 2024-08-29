@@ -8,6 +8,7 @@ command: hdl_register_wizard
 sdk-extensions: 
   - org.freedesktop.Sdk.Extension.rust-stable
 rename-icon: hdlregisterwizard
+rename-appdata-file: org.becoz.hdlregisterwizard.metainfo.xml
 finish-args:
   - --share=ipc
   - --socket=fallback-x11
