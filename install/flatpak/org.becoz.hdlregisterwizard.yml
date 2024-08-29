@@ -28,9 +28,9 @@ modules:
        - --share=network
     build-commands:
       - RUSTFLAGS='-L /app/lib' cargo build --release --verbose --target x86_64-unknown-linux-gnu
-      - ls -l /run/build/hdlregisterwizard/target/release
+      - ls -l /run/build/hdlregisterwizard/target
       - mkdir -pv /app/bin /app/share/icons/hicolor/512x512/apps /app/share/hdlregisterwizard /app/share/applications
-      - cp -v /run/build/hdlregisterwizard/target/release/hdl_register_wizard /app/bin
+      - cp -v /run/build/hdlregisterwizard/target/x86_64-unknown-linux-gnu/release/hdl_register_wizard /app/bin
       - cp -v src/icon.png /app/share/icons/hicolor/512x512/apps/hdlregisterwizard.png
       - cp -rv src/css src/templates src/icon.png /app/share/hdlregisterwizard
       - cp -v install/flatpak/org.becoz.hdlregisterwizard.desktop /app/share/applications
