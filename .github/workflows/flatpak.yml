@@ -1,6 +1,9 @@
 name: flatpak
 
-on: workflow_dispatch
+on:
+  push:
+    tags:
+      - '*'
 
 jobs:
   build-flatpak:
@@ -16,8 +19,10 @@ jobs:
       - name: create flatpak
         run: install/flatpak/build.sh ${{ github.ref_name }}
 
-      - name: Deploy
-        uses: actions/upload-artifact@v4
+      - name: Release
+        uses: softprops/action-gh-release@v1
         with:
-          name: flatpak-x64
-          path: ./*.flatpak
+          files: |
+            ./*.flatpak
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
