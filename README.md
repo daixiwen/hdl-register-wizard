@@ -22,7 +22,7 @@ The application requires Webview2, that should be installed on an up to date Win
 
 ### Linux
 
-The application requires WebKitGTK and the xdo library Most Linux distributions install WebKitGTK by default, and the xdo library is usually installed with a package called xdo-tool.
+The application requires WebKitGTK and the xdo library. Most Linux distributions install WebKitGTK by default, and the xdo library is usually installed with a package called xdo-tool.
 
 ## Installation
 

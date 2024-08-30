@@ -3,7 +3,7 @@
 
 ## Windows
 
-- Install rust, thenWindows SDK and the WiX toolset version 3
+- Install rust, then the Windows SDK and the WiX toolset version 3
 - `cargo build --release --target x86_64-pc-windows-msvc`
 - (Windows) install the WiX toolset and run the `createmsi` batch file in `install/` to create the installers
 
