@@ -74,3 +74,7 @@ input:invalid {
 .content pre {
   padding: 0
 }
+
+#maindiv:focus {
+  outline: none
+}

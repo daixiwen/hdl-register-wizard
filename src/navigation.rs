@@ -4,6 +4,7 @@ use crate::app::HdlWizardApp;
 use crate::file_formats::mdf;
 use crate::file_io;
 use crate::page::PageType;
+use crate::keys::KeyAction;
 use dioxus::prelude::*;
 use crate::generate;
 use tera::Tera;
@@ -35,7 +36,7 @@ pub fn Quit() -> Element {
 
 /// Menu bar
 #[component]
-pub fn NavBar(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>>) -> Element {
+pub fn NavBar(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>>, key_action : Signal<Option<KeyAction>>) -> Element {
     let burger_menu = app_data.read().burger_menu;
     let live_help = app_data.read().live_help;
 
@@ -166,7 +167,7 @@ pub fn NavBar(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Ter
                                 i { class: "fa-solid fa-file mr-1" }
                                 "New"
                             }
-                            file_io::Open { app_data: app_data }
+                            file_io::Open { app_data: app_data, key_action : key_action }
                             file_io::Save { app_data: app_data }
                             file_io::SaveAs { app_data: app_data }
                             Quit {}

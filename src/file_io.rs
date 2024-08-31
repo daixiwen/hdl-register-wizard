@@ -2,6 +2,7 @@
 #![allow(non_snake_case)]
 use crate::app::HdlWizardApp;
 use crate::file_formats::mdf;
+use crate::keys::{KeyAction,key_event_check};
 use dioxus::prelude::*;
 use rfd::AsyncFileDialog;
 #[cfg(not(target_arch = "wasm32"))]
@@ -21,7 +22,7 @@ fn file_name(handle : &rfd::FileHandle) -> (String, String) {
 
 /// Open/Load file menu item
 #[component]
-pub fn Open(app_data: Signal<HdlWizardApp>) -> Element {
+pub fn Open(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction>>) -> Element {
     // the load operation itself is done in a future, so we share the result through this state, holding:
     // - the file name (String)
     // - the file parent path (String)
@@ -60,7 +61,7 @@ pub fn Open(app_data: Signal<HdlWizardApp>) -> Element {
     let current_path = app_data.read().data.current_path.clone();
 
     // spawn a future when the open menu item is activated
-    let open_file = move |_| {
+    let open_file = move || {
         spawn({
             let mut open_status = open_status.to_owned();
             let current_path = current_path.to_owned();
@@ -84,12 +85,18 @@ pub fn Open(app_data: Signal<HdlWizardApp>) -> Element {
         });
     };
 
-    // render the menu item
-    rsx! {
-        a { class: "navbar-item", onclick: open_file,
-            i { class: "fa-solid fa-folder-open mr-1" }
-            "Open..."
+    if key_event_check(key_action, KeyAction::OpenFile) {
+        open_file();
+        None
+    } else {
+        // render the menu item
+        rsx! {
+            a { class: "navbar-item", onclick: move |_| open_file(),
+                i { class: "fa-solid fa-folder-open mr-1" }
+                "Open..."
+            }
         }
+
     }
 }
 
