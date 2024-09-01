@@ -78,3 +78,24 @@ input:invalid {
 #maindiv:focus {
   outline: none
 }
+
+.ext-menuitem {
+  display: flex;
+  justify-content: space-between;
+}
+
+div.navbar-dropdown a.navbar-item {
+  padding-inline-end: 1em;
+}
+
+a.navbar-item div {
+  width: 100%;
+}
+
+.ext-menuicon {
+  margin-right: 1em;
+}
+
+.ext-menukeybinding {
+  margin-left: 2em;
+}

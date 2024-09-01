@@ -92,8 +92,17 @@ pub fn Open(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction
         // render the menu item
         rsx! {
             a { class: "navbar-item", onclick: move |_| open_file(),
-                i { class: "fa-solid fa-folder-open mr-1" }
-                "Open..."
+                div {
+                    class: "ext-menuitem",
+                    span {
+                        i { class: "fa-solid fa-folder-open ext-menuicon" }
+                        "Open..."
+                    }
+                    span {
+                        class: "ext-menukeybinding", 
+                        "^O"
+                    }
+                }
             }
         }
 
