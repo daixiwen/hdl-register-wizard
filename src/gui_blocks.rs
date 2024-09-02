@@ -547,7 +547,7 @@ pub fn CheckBox(props: CheckBoxProps) -> Element {
 
 // entry for a menu
 #[component]
-pub fn MenuEntry(key_action : Signal<Option<KeyAction>>,
+pub fn MenuEntry(key_action : Option<Signal<Option<KeyAction>>>,
     binding: Option<KeyAction>, action: EventHandler, 
     label : String, key_name : String, key_modifiers: Modifiers) -> Element {
         let ctrl_modif = if key_modifiers.ctrl() {

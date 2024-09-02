@@ -89,7 +89,7 @@ pub fn Open(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction
     rsx! {
         gui_blocks::MenuEntry {
             key_action : key_action,
-            binding : Some(KeyAction::OpenFile),
+            binding : KeyAction::OpenFile,
             action : move |_| open_file(),
             label : "Open...",
             key_name: "O",

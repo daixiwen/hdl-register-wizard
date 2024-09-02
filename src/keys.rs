@@ -19,10 +19,9 @@ pub fn key_down_event(event: Event<KeyboardData>, key_action : Signal<Option<Key
     key_action.replace(new_action);
 }
 
-pub fn key_event_check(key_action : Signal<Option<KeyAction>>, wanted_action : Option<KeyAction>) -> bool {
-    match wanted_action {
-        None => false,
-        Some(wanted_action) => {
+pub fn key_event_check(key_action : Option<Signal<Option<KeyAction>>>, wanted_action : Option<KeyAction>) -> bool {
+    match (key_action,wanted_action) {
+        (Some(key_action),Some(wanted_action)) => {
             let action = key_action.read().clone();
             if action == Some(wanted_action) {
                 let mut key_action = key_action.clone();
@@ -32,6 +31,7 @@ pub fn key_event_check(key_action : Signal<Option<KeyAction>>, wanted_action : O
             } else {
                 false
             }        
-        }
+        },
+        _ => false,
     }
 }
