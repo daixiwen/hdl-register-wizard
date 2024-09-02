@@ -49,3 +49,12 @@ This application is written in Rust and built upon several components, and among
 ## Building
 
 See the [building](BUILDING.md) page for instructions
+
+# License
+
+```
+Copyright © 2020-2024 Sylvain Tertois
+This work is free. You can redistribute it and/or modify it under the
+terms of the Do What The Fuck You Want To Public License, Version 2,
+as published by Sam Hocevar. See the LICENSE file for more details.
+```
