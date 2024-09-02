@@ -2,7 +2,8 @@
 #![allow(non_snake_case)]
 use crate::app::HdlWizardApp;
 use crate::file_formats::mdf;
-use crate::keys::{KeyAction,key_event_check};
+use crate::keys::KeyAction;
+use crate::gui_blocks;
 use dioxus::prelude::*;
 use rfd::AsyncFileDialog;
 #[cfg(not(target_arch = "wasm32"))]
@@ -85,27 +86,15 @@ pub fn Open(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction
         });
     };
 
-    if key_event_check(key_action, KeyAction::OpenFile) {
-        open_file();
-        None
-    } else {
-        // render the menu item
-        rsx! {
-            a { class: "navbar-item", onclick: move |_| open_file(),
-                div {
-                    class: "ext-menuitem",
-                    span {
-                        i { class: "fa-solid fa-folder-open ext-menuicon" }
-                        "Open..."
-                    }
-                    span {
-                        class: "ext-menukeybinding", 
-                        "^O"
-                    }
-                }
-            }
+    rsx! {
+        gui_blocks::MenuEntry {
+            key_action : key_action,
+            binding : Some(KeyAction::OpenFile),
+            action : move |_| open_file(),
+            label : "Open...",
+            key_name: "O",
+            key_modifiers : Modifiers::CONTROL
         }
-
     }
 }
 

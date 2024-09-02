@@ -7,12 +7,7 @@ use crate::file_formats::mdf;
 use crate::gui_types;
 use crate::page::PageType;
 use crate::utils;
-use std::cell::RefCell;
-
-/// wraps a closure into a box and a refcell. Used to make widget instantiations a bit simpler
-pub fn callback<F>(f: F) -> RefCell<Box<F>> {
-    RefCell::new(Box::new(f))
-}
+use crate::keys::KeyAction;
 
 /// wraps a closure into an EventHandler that can be trnasmitted to Dioxus
 /// the closures work directly on the model or a part of it. It is safe to unwrap() here because apply_function() below already checks
@@ -548,4 +543,40 @@ pub fn CheckBox(props: CheckBoxProps) -> Element {
             }
         }
     }
+}
+
+// entry for a menu
+#[component]
+pub fn MenuEntry(key_action : Signal<Option<KeyAction>>,
+    binding: Option<KeyAction>, action: EventHandler, 
+    label : String, key_name : String, key_modifiers: Modifiers) -> Element {
+        let ctrl_modif = if key_modifiers.ctrl() {
+            rsx! {
+                i { class: "fa-solid fa-angle-up"}
+            }
+        } else { None };
+
+        if crate::keys::key_event_check(key_action, binding) {
+            action(());
+            None
+        } else {
+            // render the menu item
+            rsx! {
+                a { class: "navbar-item", onclick: move |_| action(()),
+                    div {
+                        class: "ext-menuitem",
+                        span {
+                            i { class: "fa-solid fa-folder-open ext-menuicon" }
+                            "{label}"
+                        }
+                        span {
+                            class: "ext-menukeybinding", 
+                            { ctrl_modif },
+                            "{key_name}"
+                        }
+                    }
+                }
+            }
+    
+        }    
 }
