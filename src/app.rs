@@ -11,6 +11,7 @@ use crate::page;
 use crate::settings;
 use crate::undo;
 use crate::generate::templates;
+use crate::keys::{KeyAction,key_down_event};
 
 #[cfg(not(target_arch = "wasm32"))]
 use std::cell::RefCell;
@@ -383,6 +384,8 @@ pub fn App() -> Element {
         app
     });
   
+    let key_action: Signal<Option<KeyAction>> = use_signal( || {None });
+
     let templates = use_signal( || {templates::gen_templates()});
     let templates_ok = templates.peek().is_ok();
 
@@ -448,20 +451,24 @@ pub fn App() -> Element {
     let live_help_setting = app_data.read().live_help.to_owned();
     
     // page render
-    rsx! {
+    let render = rsx! {
         link {
             href: css_path,
             rel: "stylesheet"
         }
         {fontawesome_import}
         div {
-            style { {STYLE_CSS} }
+            onkeydown: move |event | key_down_event(event, key_action),
+            tabindex: -1,
+            id: "mainwindow",
+            style { {STYLE_CSS} },
             {
                 if templates_ok {
                     rsx! {
                         navigation::NavBar { 
                             app_data: app_data,
-                            templates: templates
+                            templates: templates,
+                            key_action: key_action
                         }
                         div { class: "columns",
                             navigation::SideBar {
@@ -511,5 +518,7 @@ pub fn App() -> Element {
                 }
             }
         }
-    }
+    };
+
+    render
 }

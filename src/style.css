@@ -74,3 +74,32 @@ input:invalid {
 .content pre {
   padding: 0
 }
+
+#maindiv:focus {
+  outline: none
+}
+
+.ext-menuitem {
+  display: flex;
+  justify-content: space-between;
+}
+
+div.navbar-dropdown a.navbar-item {
+  padding-inline-end: 1em;
+}
+
+a.navbar-item div {
+  width: 100%;
+}
+
+.ext-menuicon {
+  margin-right: 1em;
+}
+
+.ext-menukeybinding {
+  margin-left: 2em;
+}
+
+.ext-menukeybinding i {
+  margin-right: 0.3em;
+}
