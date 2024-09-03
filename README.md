@@ -12,7 +12,7 @@ The project is under development and is not currently usable. The aim for the fi
 
 ## Project License
 
-The project uses an MIT license.
+The project uses a [WTFPL](http://www.wtfpl.net/) license (see below).
 
 ## Dependencies
 
