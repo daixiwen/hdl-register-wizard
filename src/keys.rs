@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum KeyAction {
-    OpenFile
+    New, OpenFile, SaveFile, SaveFileAs, Quit
 }
 
 pub fn key_down_event(event: Event<KeyboardData>, key_action : Signal<Option<KeyAction>>) {
@@ -10,7 +10,17 @@ pub fn key_down_event(event: Event<KeyboardData>, key_action : Signal<Option<Key
     let key = (keystring.as_str(), event.data.modifiers());
 
     let new_action = match key {
+        ("n", Modifiers::CONTROL) => Some(KeyAction::New),
         ("o", Modifiers::CONTROL) => Some(KeyAction::OpenFile),
+        ("s", Modifiers::CONTROL) => Some(KeyAction::SaveFile),
+        ("S", modifiers) =>  {
+            if modifiers == Modifiers::CONTROL | Modifiers::SHIFT {
+                Some(KeyAction::SaveFileAs)
+            } else {
+                None
+            }
+        },
+        ("q", Modifiers::CONTROL) => Some(KeyAction::Quit),
         _ => None
     };
 

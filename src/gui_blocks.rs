@@ -548,11 +548,16 @@ pub fn CheckBox(props: CheckBoxProps) -> Element {
 // entry for a menu
 #[component]
 pub fn MenuEntry(key_action : Option<Signal<Option<KeyAction>>>,
-    binding: Option<KeyAction>, action: EventHandler, 
+    binding: Option<KeyAction>, action: EventHandler, icon : String,
     label : String, key_name : String, key_modifiers: Modifiers) -> Element {
         let ctrl_modif = if key_modifiers.ctrl() {
             rsx! {
                 i { class: "fa-solid fa-angle-up"}
+            }
+        } else { None };
+        let shift_modif = if key_modifiers.shift() {
+            rsx! {
+                i { class: "fa-solid fa-arrow-up-from-bracket"}
             }
         } else { None };
 
@@ -566,12 +571,13 @@ pub fn MenuEntry(key_action : Option<Signal<Option<KeyAction>>>,
                     div {
                         class: "ext-menuitem",
                         span {
-                            i { class: "fa-solid fa-folder-open ext-menuicon" }
+                            i { class: "fa-solid {icon} ext-menuicon" }
                             "{label}"
                         }
                         span {
                             class: "ext-menukeybinding", 
                             { ctrl_modif },
+                            { shift_modif },
                             "{key_name}"
                         }
                     }
