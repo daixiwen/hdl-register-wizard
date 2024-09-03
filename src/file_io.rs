@@ -296,7 +296,7 @@ pub fn SaveAs(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyActi
 pub fn SaveAs(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction>>) -> Element {
 
     // function that performs the actual save, as an uri embedded in the html. It will be "displayed" on the next round
-    let save_file = move || {
+    let mut save_file = move || {
         let file_serialize = serde_json::to_string_pretty(&app_data.read().data.model);
         match file_serialize {
             Ok(file_text) => {
