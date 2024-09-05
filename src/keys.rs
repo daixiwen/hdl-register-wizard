@@ -5,6 +5,7 @@ pub enum KeyAction {
     New, OpenFile, SaveFile, SaveFileAs, Quit
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 pub fn key_down_event(event: Event<KeyboardData>, key_action : Signal<Option<KeyAction>>) {
     let keystring = event.data.key().to_string();
     let key = (keystring.as_str(), event.data.modifiers());
@@ -27,6 +28,10 @@ pub fn key_down_event(event: Event<KeyboardData>, key_action : Signal<Option<Key
     let mut key_action: Signal<Option<KeyAction>> = key_action.clone();
 
     key_action.replace(new_action);
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn key_down_event(_event: Event<KeyboardData>, _key_action : Signal<Option<KeyAction>>) {
 }
 
 pub fn key_event_check(key_action : Option<Signal<Option<KeyAction>>>, wanted_action : Option<KeyAction>) -> bool {

@@ -550,39 +550,51 @@ pub fn CheckBox(props: CheckBoxProps) -> Element {
 pub fn MenuEntry(key_action : Option<Signal<Option<KeyAction>>>,
     binding: Option<KeyAction>, action: EventHandler, icon : String,
     label : String, key_name : String, key_modifiers: Modifiers) -> Element {
-        let ctrl_modif = if key_modifiers.ctrl() {
-            rsx! {
-                i { class: "fa-solid fa-angle-up"}
-            }
-        } else { None };
-        let shift_modif = if key_modifiers.shift() {
-            rsx! {
-                i { class: "fa-solid fa-arrow-up-from-bracket"}
-            }
-        } else { None };
 
-        if crate::keys::key_event_check(key_action, binding) {
-            action(());
-            None
-        } else {
-            // render the menu item
-            rsx! {
-                a { class: "navbar-item", onclick: move |_| action(()),
-                    div {
-                        class: "ext-menuitem",
-                        span {
-                            i { class: "fa-solid {icon} ext-menuicon" }
-                            "{label}"
-                        }
-                        span {
-                            class: "ext-menukeybinding", 
-                            { ctrl_modif },
-                            { shift_modif },
-                            "{key_name}"
-                        }
+#[cfg(not(target_arch = "wasm32"))]
+    let ctrl_modif = if key_modifiers.ctrl() {
+        rsx! {
+            i { class: "fa-solid fa-angle-up"}
+        }
+    } else { None };
+#[cfg(not(target_arch = "wasm32"))]
+    let shift_modif = if key_modifiers.shift() {
+        rsx! {
+            i { class: "fa-solid fa-arrow-up-from-bracket"}
+        }
+    } else { None };
+
+    // do not provide key bindings for web as I haven't figured a way to
+    // make them work properly yet
+#[cfg(target_arch = "wasm32")]
+    let key_bindings: Element = None;
+#[cfg(not(target_arch = "wasm32"))]
+    let key_bindings = rsx! {
+        span {
+            class: "ext-menukeybinding", 
+            { ctrl_modif },
+            { shift_modif },
+            "{key_name}"
+        }
+    };
+ 
+    if crate::keys::key_event_check(key_action, binding) {
+        action(());
+        None
+    } else {
+        // render the menu item
+        rsx! {
+            a { class: "navbar-item", onclick: move |_| action(()),
+                div {
+                    class: "ext-menuitem",
+                    span {
+                        i { class: "fa-solid {icon} ext-menuicon" }
+                        "{label}"
                     }
+                    {key_bindings}
                 }
             }
-    
-        }    
+        }
+
+    }    
 }
