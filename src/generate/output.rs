@@ -7,6 +7,8 @@ use crate::file_formats::mdf::Mdf;
 use std::sync::Arc;
 use crate::settings::Settings;
 use crate::page::PageType;
+use crate::keys::KeyAction;
+use crate::gui_blocks;
 use tera::Tera;
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -68,7 +70,7 @@ async fn gen_all(_model: Arc<Mdf>, _settings: Settings, _templates: Tera, mut st
 
 /// Generate menu
 #[component]
-pub fn Menu(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>>) -> Element {
+pub fn Menu(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>>, key_action : Signal<Option<KeyAction>>) -> Element {
     // the save operation itself is done in a future, so we share the result through this state, holding
     // just the result. Either an OK or an error message as a string
     let mut save_status: Signal<Option<Result<(), String>>> = use_signal(|| None);
@@ -101,17 +103,20 @@ pub fn Menu(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>
         div { class: "navbar-item has-dropdown is-hoverable",
             a { class: "navbar-link", "Generate" }
             div { class: "navbar-dropdown",
-                a {
-                    class: "navbar-item",
-                    onclick: move |_| {
+                gui_blocks::MenuEntry {
+                    key_action : key_action,
+                    binding : KeyAction::Preview,
+                    action : move |_| {
                         app_data
-                            .with_mut(|app| {
-                                app.generate_preview = true;
-                                app.page_type = PageType::Preview;
+                            .with_mut(|data| {
+                                data.generate_preview = true;
+                                data.page_type = PageType::Preview;
                             })
                     },
-                    i { class: "fa-solid fa-book mr-1" }
-                    "Preview"
+                    icon: "fa-book",
+                    label : "Preview",
+                    key_name: "P",
+                    key_modifiers : Modifiers::CONTROL
                 }
                 a {
                     class: "navbar-item",
@@ -124,6 +129,7 @@ pub fn Menu(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>
                         spawn({
                             gen_all(model, settings, templates, save_status, true, false)
                         });
+
                     },
                     i { class: "fa-solid fa-industry mr-1" }
                     "Documentation"
