@@ -4,7 +4,7 @@ use crate::app::HdlWizardApp;
 use crate::file_formats::mdf;
 use crate::file_io;
 use crate::page::PageType;
-use crate::keys::KeyAction;
+use crate::keys::{KeyAction, key_event_check};
 use crate::gui_blocks;
 use dioxus::prelude::*;
 use crate::generate;
@@ -52,6 +52,13 @@ pub fn NavBar(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Ter
         false => "navbar-menu".to_owned(),
         true => "navbar-menu is-active".to_owned(),
     };
+
+    if key_event_check(Some(key_action), Some(KeyAction::Undo)) {
+        app_data.with_mut(|data| data.apply_undo());
+    }
+    if key_event_check(Some(key_action), Some(KeyAction::Redo)) {
+        app_data.with_mut(|data| data.apply_redo());
+    }
 
     rsx! {
         nav { class: "navbar is-link", role: "navigation", aria_label: "main navigation",
@@ -187,6 +194,7 @@ pub fn NavBar(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Ter
                     // Generate menu
                     generate::output::Menu {
                         app_data : app_data,
+                        key_action : key_action,
                         templates : templates
                     }
                 }
