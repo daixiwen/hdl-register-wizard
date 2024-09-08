@@ -25,7 +25,8 @@ impl fmt::Debug for GenError {
                 PageType::Interface(int) => format!("interface({})", int),
                 PageType::Register(int,reg, field) => format!("interface({}), register({}), field({:?})", int, reg, field),
                 PageType::Preview => "preview".to_owned(),
-                PageType::ChangeRegisterField(_,_,_) => String::new()
+                PageType::ChangeRegisterField(_,_,_) => String::new(),
+                PageType::Settings(_) => "settings".to_owned(),
             },
             self.message
         )

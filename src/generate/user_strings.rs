@@ -55,7 +55,7 @@ pub const USER_NAMES_SPECS : [UserStringSpec; 26] = [
     UserStringSpec { template_name: GI_ADDRESS_DECODER_NAME, label: "Address decoder", default_value: "f_{{ interface }}*_address_decode", description: "Name of the function decoding the address in the pif" },
     UserStringSpec { template_name: GI_ADDRESS_STRIDE_FUNC_NAME, label: "Address stride", default_value: "f_{{ interface }}*_address_stride", description: "Name of the function decoding the stride number for a register" },
     UserStringSpec { template_name: GI_ADDRESS_WIDTH_CONST_NAME, label: "Address width", default_value: "c_{{ interface }}*_address_width", description: "Name of the constant containing the size of the address bus" },
-    UserStringSpec { template_name: GI_DATA_WIDTH_CONST_NAME, label: "Data width", default_value: "c_{{ interface }}*_data_width", description: "" },
+    UserStringSpec { template_name: GI_DATA_WIDTH_CONST_NAME, label: "Data width", default_value: "c_{{ interface }}*_data_width", description: "Name of the constant containing the size of the data bus" },
     UserStringSpec { template_name: GR_ADDRESS_CONST_NAME, label: "Register address", default_value: "c_{{ project }}_{{ interface }}_{{ register }}*_addr", description: "Name of the constant containing the register address" },
     UserStringSpec { template_name: GR_STRIDE_COUNT_CONST_NAME, label: "Stride count", default_value: "c_{{ project }}_{{ interface }}_{{ register }}*_count", description: "Name of the constant containing the register stride number" },
     UserStringSpec { template_name: GR_STRIDE_OFFSET_CONST_NAME, label: "Stride offset", default_value: "c_{{ project }}_{{ interface }}_{{ register }}*_offset", description: "Name of the constant containing the register stride offset" },

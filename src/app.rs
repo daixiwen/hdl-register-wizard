@@ -338,7 +338,8 @@ pub fn LiveHelp(app_data: Signal<HdlWizardApp>, page_type: page::PageType, live_
             },
             page::PageType::Preview => ("Preview", include_str!(concat!(env!("OUT_DIR"), "/live_help/preview.html")).to_owned()),
 //                _ => ("WIP","<p>Not written yet</p>".to_owned()) 
-            page::PageType::ChangeRegisterField(_,_,_) => ("", String::new())
+            page::PageType::ChangeRegisterField(_,_,_) => ("", String::new()),
+            page::PageType::Settings(page::SettingsPageType::Strings) => ("WIP","<p>Not written yet</p>".to_owned()),
         };
         rsx!(
             aside { class: "panel ext-sticky m-5 is-link ext-livehelp",

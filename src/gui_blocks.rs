@@ -110,7 +110,10 @@ pub fn apply_function<F : 'static>(
         },
         // change register field... should never happen either
         PageType::ChangeRegisterField(_,_,_) => {
-        }
+        },
+        // settings... should never happen
+        PageType::Settings(_) => {
+        },
     }
 }
 
@@ -549,16 +552,16 @@ pub fn CheckBox(props: CheckBoxProps) -> Element {
 #[component]
 pub fn MenuEntry(key_action : Option<Signal<Option<KeyAction>>>,
     binding: Option<KeyAction>, action: EventHandler, icon : String,
-    label : String, key_name : String, key_modifiers: Modifiers) -> Element {
+    label : String, key_name : Option<String>, key_modifiers: Option<Modifiers>) -> Element {
 
 #[cfg(not(target_arch = "wasm32"))]
-    let ctrl_modif = if key_modifiers.ctrl() {
+    let ctrl_modif = if key_modifiers.is_some() && key_modifiers.unwrap().ctrl() {
         rsx! {
             i { class: "fa-solid fa-angle-up"}
         }
     } else { None };
 #[cfg(not(target_arch = "wasm32"))]
-    let shift_modif = if key_modifiers.shift() {
+    let shift_modif = if key_modifiers.is_some() && key_modifiers.unwrap().shift() {
         rsx! {
             i { class: "fa-solid fa-arrow-up-from-bracket"}
         }
@@ -569,14 +572,19 @@ pub fn MenuEntry(key_action : Option<Signal<Option<KeyAction>>>,
 #[cfg(target_arch = "wasm32")]
     let key_bindings: Element = None;
 #[cfg(not(target_arch = "wasm32"))]
-    let key_bindings = rsx! {
-        span {
-            class: "ext-menukeybinding", 
-            { ctrl_modif },
-            { shift_modif },
-            "{key_name}"
-        }
-    };
+    let key_bindings = 
+        if let Some(key_name) = key_name {
+            rsx! {
+                span {
+                    class: "ext-menukeybinding", 
+                    { ctrl_modif },
+                    { shift_modif },
+                    "{key_name}"
+                }
+            }
+        } else {
+            None
+        };
  
     if crate::keys::key_event_check(key_action, binding) {
         action(());
