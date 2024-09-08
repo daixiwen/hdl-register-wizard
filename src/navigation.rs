@@ -3,7 +3,7 @@
 use crate::app::HdlWizardApp;
 use crate::file_formats::mdf;
 use crate::file_io;
-use crate::page::PageType;
+use crate::page::{PageType, SettingsPageType};
 use crate::keys::{KeyAction, key_event_check};
 use crate::gui_blocks;
 use dioxus::prelude::*;
@@ -189,7 +189,21 @@ pub fn NavBar(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Ter
                     }
 
                     // Settings menu
-                    a { class: "navbar-item", "Settings" }
+                    div { class: "navbar-item has-dropdown is-hoverable",
+                        a { class: "navbar-link", "Settings" }
+                        div { class: "navbar-dropdown",
+                            gui_blocks::MenuEntry {
+                                action : move |_| {
+                                    app_data
+                                        .with_mut(|data| {
+                                            data.page_type = PageType::Settings(SettingsPageType::Strings);
+                                        })
+                                },
+                                icon: "fa-signature",
+                                label : "Strings",
+                            }
+                        }
+                    }
 
                     // Generate menu
                     generate::output::Menu {
