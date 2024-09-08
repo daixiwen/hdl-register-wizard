@@ -230,13 +230,16 @@ impl Drop for HdlWizardApp {
 impl HdlWizardApp {
     /// attempt to restore the state from a previous run and if not use a default state 
     pub fn try_load() -> Self {
-        let data = match load_app_data() {
+        let mut data = match load_app_data() {
             Ok(data) => data,
             Err(error) => {
                 println!("Error while reading application configuration: {}", error);
                 Default::default()
             }
         };
+
+        // load user templates with default values if some are missing
+        crate::generate::user_strings::load_defaults(&mut data.settings.user_templates);
 
         Self {
             data,
@@ -386,7 +389,7 @@ pub fn App() -> Element {
   
     let key_action: Signal<Option<KeyAction>> = use_signal( || {None });
 
-    let templates = use_signal( || {templates::gen_templates()});
+    let templates = use_signal( || {templates::gen_templates(&app_data.read().data.settings)});
     let templates_ok = templates.peek().is_ok();
 
     // There is no clean way to get an event when the window size or position is changed. The tao WindowEvent is dropped
