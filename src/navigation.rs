@@ -3,7 +3,9 @@
 use crate::app::HdlWizardApp;
 use crate::file_formats::mdf;
 use crate::file_io;
-use crate::page::PageType;
+use crate::page::{PageType, SettingsPageType};
+use crate::keys::{KeyAction, key_event_check};
+use crate::gui_blocks;
 use dioxus::prelude::*;
 use crate::generate;
 use tera::Tera;
@@ -11,16 +13,19 @@ use tera::Tera;
 /// quit menu item for the desktop application
 #[cfg(not(target_arch = "wasm32"))]
 #[component]
-pub fn Quit() -> Element {
+pub fn Quit(key_action : Signal<Option<KeyAction>>) -> Element {
     let desktop = consume_context::<dioxus_desktop::DesktopContext>();
 
     rsx! {
         hr { class: "navbar-divider" }
-        a { 
-            class: "navbar-item",
-            onclick: move |_| desktop.close(),
-            i { class: "fa-solid fa-person-walking-arrow-right mr-1" },
-            "Quit"
+        gui_blocks::MenuEntry {
+            key_action : key_action,
+            binding : KeyAction::Quit,
+            action : move |_| desktop.close(),
+            icon: "fa-person-walking-arrow-right",
+            label : "Quit",
+            key_name: "Q",
+            key_modifiers : Modifiers::CONTROL
         }
     }
 }
@@ -28,14 +33,14 @@ pub fn Quit() -> Element {
 /// quit menu item, not used for the webapp
 #[cfg(target_arch = "wasm32")]
 #[component]
-pub fn Quit() -> Element {
+pub fn Quit(key_action : Signal<Option<KeyAction>>) -> Element {
 
     rsx! {}
 }
 
 /// Menu bar
 #[component]
-pub fn NavBar(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>>) -> Element {
+pub fn NavBar(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>>, key_action : Signal<Option<KeyAction>>) -> Element {
     let burger_menu = app_data.read().burger_menu;
     let live_help = app_data.read().live_help;
 
@@ -47,6 +52,13 @@ pub fn NavBar(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Ter
         false => "navbar-menu".to_owned(),
         true => "navbar-menu is-active".to_owned(),
     };
+
+    if key_event_check(Some(key_action), Some(KeyAction::Undo)) {
+        app_data.with_mut(|data| data.apply_undo());
+    }
+    if key_event_check(Some(key_action), Some(KeyAction::Redo)) {
+        app_data.with_mut(|data| data.apply_redo());
+    }
 
     rsx! {
         nav { class: "navbar is-link", role: "navigation", aria_label: "main navigation",
@@ -152,9 +164,10 @@ pub fn NavBar(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Ter
                     div { class: "navbar-item has-dropdown is-hoverable",
                         a { class: "navbar-link", "File" }
                         div { class: "navbar-dropdown",
-                            a {
-                                class: "navbar-item",
-                                onclick: move |_| {
+                            gui_blocks::MenuEntry {
+                                key_action : key_action,
+                                binding : KeyAction::New,
+                                action : move |_| {
                                     app_data
                                         .with_mut(|data| {
                                             data.data.model = Default::default();
@@ -163,22 +176,39 @@ pub fn NavBar(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Ter
                                             data.register_undo("new project")
                                         })
                                 },
-                                i { class: "fa-solid fa-file mr-1" }
-                                "New"
+                                icon: "fa-file",
+                                label : "New",
+                                key_name: "N",
+                                key_modifiers : Modifiers::CONTROL
                             }
-                            file_io::Open { app_data: app_data }
-                            file_io::Save { app_data: app_data }
-                            file_io::SaveAs { app_data: app_data }
-                            Quit {}
+                            file_io::Open { app_data: app_data, key_action : key_action }
+                            file_io::Save { app_data: app_data, key_action : key_action }
+                            file_io::SaveAs { app_data: app_data, key_action : key_action }
+                            Quit { key_action : key_action }
                         }
                     }
 
                     // Settings menu
-                    a { class: "navbar-item", "Settings" }
+                    div { class: "navbar-item has-dropdown is-hoverable",
+                        a { class: "navbar-link", "Settings" }
+                        div { class: "navbar-dropdown",
+                            gui_blocks::MenuEntry {
+                                action : move |_| {
+                                    app_data
+                                        .with_mut(|data| {
+                                            data.page_type = PageType::Settings(SettingsPageType::Strings);
+                                        })
+                                },
+                                icon: "fa-signature",
+                                label : "Strings",
+                            }
+                        }
+                    }
 
                     // Generate menu
                     generate::output::Menu {
                         app_data : app_data,
+                        key_action : key_action,
                         templates : templates
                     }
                 }

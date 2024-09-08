@@ -2,6 +2,8 @@
 #![allow(non_snake_case)]
 use crate::app::HdlWizardApp;
 use crate::file_formats::mdf;
+use crate::keys::KeyAction;
+use crate::gui_blocks;
 use dioxus::prelude::*;
 use rfd::AsyncFileDialog;
 #[cfg(not(target_arch = "wasm32"))]
@@ -21,7 +23,7 @@ fn file_name(handle : &rfd::FileHandle) -> (String, String) {
 
 /// Open/Load file menu item
 #[component]
-pub fn Open(app_data: Signal<HdlWizardApp>) -> Element {
+pub fn Open(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction>>) -> Element {
     // the load operation itself is done in a future, so we share the result through this state, holding:
     // - the file name (String)
     // - the file parent path (String)
@@ -60,7 +62,7 @@ pub fn Open(app_data: Signal<HdlWizardApp>) -> Element {
     let current_path = app_data.read().data.current_path.clone();
 
     // spawn a future when the open menu item is activated
-    let open_file = move |_| {
+    let open_file = move || {
         spawn({
             let mut open_status = open_status.to_owned();
             let current_path = current_path.to_owned();
@@ -84,11 +86,15 @@ pub fn Open(app_data: Signal<HdlWizardApp>) -> Element {
         });
     };
 
-    // render the menu item
     rsx! {
-        a { class: "navbar-item", onclick: open_file,
-            i { class: "fa-solid fa-folder-open mr-1" }
-            "Open..."
+        gui_blocks::MenuEntry {
+            key_action : key_action,
+            binding : KeyAction::OpenFile,
+            action : move |_| open_file(),
+            icon: "fa-folder-open",
+            label : "Open...",
+            key_name: "O",
+            key_modifiers : Modifiers::CONTROL
         }
     }
 }
@@ -96,7 +102,7 @@ pub fn Open(app_data: Signal<HdlWizardApp>) -> Element {
 /// Save menu item
 #[cfg(not(target_arch = "wasm32"))]
 #[component]
-pub fn Save(app_data: Signal<HdlWizardApp>) -> Element {
+pub fn Save(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction>>) -> Element {
     // the save operation itself is done in a future, so we share the result through this state, holding
     // just the result. Either an OK or an error message as a string
     let mut save_status: Signal<Option<Result<(), String>>> = use_signal(|| None);
@@ -131,7 +137,7 @@ pub fn Save(app_data: Signal<HdlWizardApp>) -> Element {
     if let Some(current_file_name) = app_data.data.current_file_name.clone() {
 
         // spawn a future when the save menu item is selected
-        let save_file = move |_| {
+        let save_file = move || {
             spawn({
                 let mut save_status = save_status.to_owned();
                 let model_to_save = model_to_save.to_owned();
@@ -162,11 +168,16 @@ pub fn Save(app_data: Signal<HdlWizardApp>) -> Element {
     
         // render the save menu item
         rsx! {
-            a { class: "navbar-item", onclick: save_file,
-                i { class: "fa-solid fa-file-export mr-1" }
-                "Save"
+            gui_blocks::MenuEntry {
+                key_action : key_action,
+                binding : KeyAction::SaveFile,
+                action : move |_| save_file(),
+                icon: "fa-file-export",
+                label : "Save",
+                key_name: "S",
+                key_modifiers : Modifiers::CONTROL
             }
-        } 
+        }
     } else {
         // we don't have a file name, so we don't even need to display the Save menu item
         None
@@ -177,14 +188,14 @@ pub fn Save(app_data: Signal<HdlWizardApp>) -> Element {
 #[cfg(target_arch = "wasm32")]
 #[allow(unused)]
 #[component]
-pub fn Save(app_data: Signal<HdlWizardApp>) -> Element {
+pub fn Save(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction>>) -> Element {
     None
 }
 
 /// SaveAs menu item, desktop version
 #[cfg(not(target_arch = "wasm32"))]
 #[component]
-pub fn SaveAs(app_data: Signal<HdlWizardApp>) -> Element {
+pub fn SaveAs(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction>>) -> Element {
 
     // the save as operation itself is done in a future, so we share the result through this state, holding
     // a result with the file name or an error message as a string
@@ -224,7 +235,7 @@ pub fn SaveAs(app_data: Signal<HdlWizardApp>) -> Element {
 
 
     // spawn a future when the save menu item is selected
-    let save_file = move |_| {
+    let save_file = move || {
         spawn({
             let mut save_status = save_status.to_owned();
             let model_to_save = model_to_save.to_owned();
@@ -267,9 +278,14 @@ pub fn SaveAs(app_data: Signal<HdlWizardApp>) -> Element {
 
     // render the Save As menu item
     rsx! {
-        a { class: "navbar-item", onclick: save_file,
-            i { class: "fa-solid fa-file-export mr-1" }
-            "Save as..."
+        gui_blocks::MenuEntry {
+            key_action : key_action,
+            binding : KeyAction::SaveFileAs,
+            action : move |_| save_file(),
+            icon: "fa-file-export",
+            label : "Save as...",
+            key_name: "S",
+            key_modifiers : Modifiers::CONTROL | Modifiers::SHIFT
         }
     }
 }
@@ -277,10 +293,10 @@ pub fn SaveAs(app_data: Signal<HdlWizardApp>) -> Element {
 /// SaveAs menu item, web version
 #[cfg(target_arch = "wasm32")]
 #[component]
-pub fn SaveAs(app_data: Signal<HdlWizardApp>) -> Element {
+pub fn SaveAs(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction>>) -> Element {
 
     // function that performs the actual save, as an uri embedded in the html. It will be "displayed" on the next round
-    let save_file = move |_| {
+    let mut save_file = move || {
         let file_serialize = serde_json::to_string_pretty(&app_data.read().data.model);
         match file_serialize {
             Ok(file_text) => {
@@ -301,9 +317,14 @@ pub fn SaveAs(app_data: Signal<HdlWizardApp>) -> Element {
 
     // render the Save As menu item
     rsx! {
-        a { class: "navbar-item", onclick: save_file,
-            i { class: "fa-solid fa-file-export mr-1" }
-            "Save as..."
+        gui_blocks::MenuEntry {
+            key_action : key_action,
+            binding : KeyAction::SaveFile,
+            action : move |_| save_file(),
+            icon: "fa-file-export",
+            label : "Save as...",
+            key_name: "S",
+            key_modifiers : Modifiers::CONTROL
         }
     }
 }

@@ -7,12 +7,7 @@ use crate::file_formats::mdf;
 use crate::gui_types;
 use crate::page::PageType;
 use crate::utils;
-use std::cell::RefCell;
-
-/// wraps a closure into a box and a refcell. Used to make widget instantiations a bit simpler
-pub fn callback<F>(f: F) -> RefCell<Box<F>> {
-    RefCell::new(Box::new(f))
-}
+use crate::keys::KeyAction;
 
 /// wraps a closure into an EventHandler that can be trnasmitted to Dioxus
 /// the closures work directly on the model or a part of it. It is safe to unwrap() here because apply_function() below already checks
@@ -115,7 +110,10 @@ pub fn apply_function<F : 'static>(
         },
         // change register field... should never happen either
         PageType::ChangeRegisterField(_,_,_) => {
-        }
+        },
+        // settings... should never happen
+        PageType::Settings(_) => {
+        },
     }
 }
 
@@ -548,4 +546,63 @@ pub fn CheckBox(props: CheckBoxProps) -> Element {
             }
         }
     }
+}
+
+// entry for a menu
+#[component]
+pub fn MenuEntry(key_action : Option<Signal<Option<KeyAction>>>,
+    binding: Option<KeyAction>, action: EventHandler, icon : String,
+    label : String, key_name : Option<String>, key_modifiers: Option<Modifiers>) -> Element {
+
+#[cfg(not(target_arch = "wasm32"))]
+    let ctrl_modif = if key_modifiers.is_some() && key_modifiers.unwrap().ctrl() {
+        rsx! {
+            i { class: "fa-solid fa-angle-up"}
+        }
+    } else { None };
+#[cfg(not(target_arch = "wasm32"))]
+    let shift_modif = if key_modifiers.is_some() && key_modifiers.unwrap().shift() {
+        rsx! {
+            i { class: "fa-solid fa-arrow-up-from-bracket"}
+        }
+    } else { None };
+
+    // do not provide key bindings for web as I haven't figured a way to
+    // make them work properly yet
+#[cfg(target_arch = "wasm32")]
+    let key_bindings: Element = None;
+#[cfg(not(target_arch = "wasm32"))]
+    let key_bindings = 
+        if let Some(key_name) = key_name {
+            rsx! {
+                span {
+                    class: "ext-menukeybinding", 
+                    { ctrl_modif },
+                    { shift_modif },
+                    "{key_name}"
+                }
+            }
+        } else {
+            None
+        };
+ 
+    if crate::keys::key_event_check(key_action, binding) {
+        action(());
+        None
+    } else {
+        // render the menu item
+        rsx! {
+            a { class: "navbar-item", onclick: move |_| action(()),
+                div {
+                    class: "ext-menuitem",
+                    span {
+                        i { class: "fa-solid {icon} ext-menuicon" }
+                        "{label}"
+                    }
+                    {key_bindings}
+                }
+            }
+        }
+
+    }    
 }

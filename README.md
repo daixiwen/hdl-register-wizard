@@ -12,11 +12,17 @@ The project is under development and is not currently usable. The aim for the fi
 
 ## Project License
 
-The project uses an MIT license.
+The project uses a [WTFPL](http://www.wtfpl.net/) license (see below).
 
 ## Dependencies
 
-The application requires Webview2 on Windows and WebKitGTK on Linux. Webview2 should be installed on an up to date Windows 10/11, and most Linux distributions install WebKitGTK.
+### Windows
+
+The application requires Webview2, that should be installed on an up to date Windows 10/11.
+
+### Linux
+
+The application requires WebKitGTK and the xdo library. Most Linux distributions install WebKitGTK by default, and the xdo library is usually installed with a package called xdo-tool.
 
 ## Installation
 
@@ -28,7 +34,9 @@ The installer will automatically detect if Webview2 is not installed and will do
 
 ### Linux
 
-Currently for Linux the application needs to be built from source
+Binaries are distributed as flatpaks. Install flatpak first and download the flatpack in the releases page.
+
+To install the application natively currently you will have to build it from source.
 
 ## Libraries
 

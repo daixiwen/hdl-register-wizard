@@ -39,6 +39,7 @@ pub mod utils;
 pub mod generate;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod assets;
+pub mod keys;
 
 #[cfg(test)]
 mod tests;

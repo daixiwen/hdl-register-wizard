@@ -7,11 +7,17 @@ use std::time::Duration;
 use tera::{Tera,Result};
 
 #[derive(PartialEq, Clone)]
+pub enum SettingsPageType {
+    Strings
+}
+
+#[derive(PartialEq, Clone)]
 pub enum PageType {
     Project,
     Interface(usize),
     Register(usize, usize, Option<usize>),
     ChangeRegisterField(usize, usize, usize),
+    Settings(SettingsPageType),
     Preview
 }
 
@@ -19,6 +25,7 @@ pub mod interface;
 pub mod project;
 pub mod register;
 pub mod preview;
+pub mod settings_strings;
 
 /// when saving a file on the webapp, create an URI that the user can click to download 
 #[cfg(target_arch = "wasm32")]
@@ -222,6 +229,11 @@ pub fn Content(app_data: Signal<HdlWizardApp>, templates: Signal<Result<Tera>>) 
                     preview::Content { app_data: app_data, templates: templates}
                 }
             },
+            PageType::Settings(SettingsPageType::Strings) => {
+                rsx! {
+                    settings_strings::Content { app_data: app_data }
+                }
+            }
         },
     }
 }

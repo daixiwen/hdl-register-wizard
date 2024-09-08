@@ -1,11 +1,18 @@
 (work in progress)
 # Desktop
+
+## Windows
+
+- Install rust, then the Windows SDK and the WiX toolset version 3
+- `cargo build --release --target x86_64-pc-windows-msvc`
+- run the `createmsi` batch file in `install/` to create the installers
+
+## Linux
+
 - Install rust
-- Install the Dioxus CLI tool: `cargo install dioxus-cli`
-- (Linux) install the XDO developper library (`xdo-dev` or `xdo-tool`, depending on your distribution)
+- Install the XDO developper library (`xdo-dev` or `xdo-tool`, depending on your distribution)
 - `cargo build --release`
-- (Linux) use the `install-linux.sh` script in `install/` to install the application and the files it needs
-- (Windows) install the WiX toolset and run the `createmsi` batch file in `install/` to create the installers
+- Use the `install-linux.sh` script in `install/` to install the application and the files it needs
 
 # Web
 - Install rust

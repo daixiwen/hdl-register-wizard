@@ -11,6 +11,7 @@ use crate::page;
 use crate::settings;
 use crate::undo;
 use crate::generate::templates;
+use crate::keys::{KeyAction,key_down_event};
 
 #[cfg(not(target_arch = "wasm32"))]
 use std::cell::RefCell;
@@ -229,13 +230,16 @@ impl Drop for HdlWizardApp {
 impl HdlWizardApp {
     /// attempt to restore the state from a previous run and if not use a default state 
     pub fn try_load() -> Self {
-        let data = match load_app_data() {
+        let mut data = match load_app_data() {
             Ok(data) => data,
             Err(error) => {
                 println!("Error while reading application configuration: {}", error);
                 Default::default()
             }
         };
+
+        // load user templates with default values if some are missing
+        crate::generate::user_strings::load_defaults(&mut data.settings.user_templates);
 
         Self {
             data,
@@ -334,7 +338,8 @@ pub fn LiveHelp(app_data: Signal<HdlWizardApp>, page_type: page::PageType, live_
             },
             page::PageType::Preview => ("Preview", include_str!(concat!(env!("OUT_DIR"), "/live_help/preview.html")).to_owned()),
 //                _ => ("WIP","<p>Not written yet</p>".to_owned()) 
-            page::PageType::ChangeRegisterField(_,_,_) => ("", String::new())
+            page::PageType::ChangeRegisterField(_,_,_) => ("", String::new()),
+            page::PageType::Settings(page::SettingsPageType::Strings) => ("WIP","<p>Not written yet</p>".to_owned()),
         };
         rsx!(
             aside { class: "panel ext-sticky m-5 is-link ext-livehelp",
@@ -383,7 +388,9 @@ pub fn App() -> Element {
         app
     });
   
-    let templates = use_signal( || {templates::gen_templates()});
+    let key_action: Signal<Option<KeyAction>> = use_signal( || {None });
+
+    let templates = use_signal( || {templates::gen_templates(&app_data.read().data.settings)});
     let templates_ok = templates.peek().is_ok();
 
     // There is no clean way to get an event when the window size or position is changed. The tao WindowEvent is dropped
@@ -448,20 +455,24 @@ pub fn App() -> Element {
     let live_help_setting = app_data.read().live_help.to_owned();
     
     // page render
-    rsx! {
+    let render = rsx! {
         link {
             href: css_path,
             rel: "stylesheet"
         }
         {fontawesome_import}
         div {
-            style { {STYLE_CSS} }
+            onkeydown: move |event | key_down_event(event, key_action),
+            tabindex: -1,
+            id: "mainwindow",
+            style { {STYLE_CSS} },
             {
                 if templates_ok {
                     rsx! {
                         navigation::NavBar { 
                             app_data: app_data,
-                            templates: templates
+                            templates: templates,
+                            key_action: key_action
                         }
                         div { class: "columns",
                             navigation::SideBar {
@@ -511,5 +522,7 @@ pub fn App() -> Element {
                 }
             }
         }
-    }
+    };
+
+    render
 }
