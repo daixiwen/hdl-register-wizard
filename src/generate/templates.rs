@@ -33,7 +33,7 @@ macro_rules! template {
     ($t: ident, $n:literal) => { $t.add_raw_template($n, include_str!(concat!("../templates/", $n)))?; }
 }
 
-pub fn gen_templates(settings : &crate::settings::Settings) -> Result<Tera> {
+pub fn gen_templates(_settings : &crate::settings::Settings) -> Result<Tera> {
     let mut tera = Tera::default();
 
     tera.autoescape_on(vec![]);
@@ -41,10 +41,6 @@ pub fn gen_templates(settings : &crate::settings::Settings) -> Result<Tera> {
 
     // documentation template
     template!(tera,"documentation.md");
-
-    // genmodel templates. The templates used to generate tokens have the special * character which is used by the tokenlist object to
-    // know where it can insert a number
-    tera.add_raw_templates(settings.user_templates.clone())?;
     
     Ok(tera)
 }

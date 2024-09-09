@@ -1,6 +1,8 @@
 //! handling of user-specified strings
 use std::collections::BTreeMap;
 use core::slice::Iter;
+use tera::Tera;
+use crate::settings::Settings;
 
 pub struct UserStringSpec {
     pub template_name : &'static str,
@@ -94,4 +96,10 @@ fn load_defaults_from_iter(templates_list: &mut BTreeMap<String,String>, iter: I
 pub fn load_defaults(templates_list: &mut BTreeMap<String,String>) {
     load_defaults_from_iter(templates_list, USER_NAMES_SPECS.iter());
     load_defaults_from_iter(templates_list, USER_COMMENTS_SPECS.iter());
+}
+
+// update the template engine with user settings
+pub fn update_engine(engine: &mut Tera, settings: &Settings) -> Result<(),String> {
+    engine.add_raw_templates(settings.user_templates.clone())
+        .map_err(|error| format!("Error while parsing user string templates from settings: {}", error.to_string()))
 }
