@@ -17,7 +17,6 @@ use rfd::AsyncFileDialog;
 use super::genmodel::GenModel;
 #[cfg(not(target_arch = "wasm32"))]
 use super::documentation;
-#[cfg(not(target_arch = "wasm32"))]
 use std::io::Write;
 
 /// generate the documentation
