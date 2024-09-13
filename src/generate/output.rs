@@ -13,9 +13,7 @@ use tera::Tera;
 
 #[cfg(not(target_arch = "wasm32"))]
 use rfd::AsyncFileDialog;
-#[cfg(not(target_arch = "wasm32"))]
 use super::genmodel::GenModel;
-#[cfg(not(target_arch = "wasm32"))]
 use super::documentation;
 use std::io::Write;
 
