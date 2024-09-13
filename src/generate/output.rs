@@ -18,6 +18,7 @@ use super::documentation;
 use std::io::Write;
 
 /// generate the documentation
+#[allow(dead_code)]
 fn do_gen_doc(file: &mut std::fs::File, model: &Arc<Mdf>, settings: &Settings, templates: &mut Tera) -> Result<(), Box<dyn std::error::Error>> {
     
     super::user_strings::update_engine(templates, settings)?;
