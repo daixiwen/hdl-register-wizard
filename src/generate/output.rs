@@ -20,12 +20,25 @@ use super::documentation;
 #[cfg(not(target_arch = "wasm32"))]
 use std::io::Write;
 
+/// generate the documentation
+fn do_gen_doc(file: &mut std::fs::File, model: &Arc<Mdf>, settings: &Settings, templates: &mut Tera) -> Result<(), Box<dyn std::error::Error>> {
+    
+    super::user_strings::update_engine(templates, settings)?;
+
+    let model = GenModel::from_model(model, settings, templates)?;
+    let doc = documentation::generate_doc(&model, templates)?;
+
+    file.write_all(doc.as_bytes())?;
+
+    Ok(())
+}
+
 #[cfg(not(target_arch = "wasm32"))]
 /// Called from the menu to generate the files
-async fn gen_all(model: Arc<Mdf>, settings: Settings, templates: Tera, mut status: Signal<Option<Result<(), String>>>, _gen_doc : bool, _gen_code : bool) {
+async fn gen_all(model: Arc<Mdf>, settings: Settings, mut templates: Tera, mut status: Signal<Option<Result<(), String>>>, _gen_doc : bool, _gen_code : bool) {
     // open file dialog to choose file name
     let file = AsyncFileDialog::new()
-        .add_filter("word document", &["html"])
+        .add_filter("HTML", &["html"])
         .add_filter("any", &["*"])
 //        .set_directory(&current_path)
         .save_file()
@@ -37,20 +50,8 @@ async fn gen_all(model: Arc<Mdf>, settings: Settings, templates: Tera, mut statu
         match std::fs::File::create(file_path) {
             Ok(mut file) => {
 
-                // create the generation model and write it directly for now
-                match GenModel::from_model(&model, &settings, &templates) {
-                    Ok(model) => {
-                        match documentation::generate_doc(&model, &templates) {
-                            Ok(result_doc) => match file.write_all(result_doc.as_bytes()) {
-                                Ok(_) => status.set(Some(Ok(()))),
-                                Err(error) => status.set(Some(Err(error.to_string())))
-                            },
-                            Err(error) => status.set(Some(Err(error.to_string())))         
-                        }},
-                    Err(error) => {
-                        status.set(Some(Err(error.to_string())));
-                    }
-                }
+                // generate the requested files
+                status.set(Some(do_gen_doc(&mut file, &model, &settings, &mut templates).map_err(|error| error.to_string())));
             }
             Err(errormsg) => {
                 status.set(Some(Err(format!(

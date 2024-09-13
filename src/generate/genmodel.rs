@@ -15,6 +15,7 @@ use crate::utils;
 use crate::page::PageType;  
 use crate::generate::generror::GenError;
 use super::signal_list;
+use super::user_strings;
 use tera::Tera;
 
 /// Project model for generation
@@ -53,10 +54,10 @@ impl GenModel {
         let mut context = tera::Context::new();
         context.insert("project", &token_name);
 
-        let top_name = token_list.generate_token(&templates.render("gm_top_name", &context)?);
-        let core_name = token_list.generate_token(&templates.render("gm_core_name", &context)?);
-        let core_instance = token_list.generate_token(&templates.render("gm_core_instance", &context)?);
-        let pkg_name = token_list.generate_token(&templates.render("gm_pkg_name", &context)?);
+        let top_name = token_list.generate_token(&templates.render(user_strings::GM_TOP_NAME, &context)?);
+        let core_name = token_list.generate_token(&templates.render(user_strings::GM_CORE_NAME, &context)?);
+        let core_instance = token_list.generate_token(&templates.render(user_strings::GM_CORE_INSTANCE, &context)?);
+        let pkg_name = token_list.generate_token(&templates.render(user_strings::GM_PKG_NAME, &context)?);
 
         // apply a conversion to each interface
         let interfaces = model.interfaces.iter().enumerate().map(
@@ -182,15 +183,15 @@ impl GenInterface {
         context.insert("project", project_token_name);
         context.insert("interface", &token_name);
 
-        let pif_name = general_token_list.generate_token(&templates.render("gi_pif_name", &context)?);
-        let pif_instance = general_token_list.generate_token(&templates.render("gi_pif_instance", &context)?); 
-        let core2pif_name = general_token_list.generate_token(&templates.render("gi_core2pif_name", &context)?);
-        let pif2core_name = general_token_list.generate_token(&templates.render("gi_pif2core_name", &context)?); 
-        let register_enum_name = general_token_list.generate_token(&templates.render("gi_register_enum_name", &context)?); 
-        let address_decoder_name = general_token_list.generate_token(&templates.render("gi_address_decoder_name", &context)?);
-        let address_stride_func_name = general_token_list.generate_token(&templates.render("gi_address_stride_func_name", &context)?); 
-        let address_width_const_name = general_token_list.generate_token(&templates.render("gi_address_width_const_name", &context)?); 
-        let data_width_const_name = general_token_list.generate_token(&templates.render("gi_data_width_const_name", &context)?); 
+        let pif_name = general_token_list.generate_token(&templates.render(user_strings::GI_PIF_NAME, &context)?);
+        let pif_instance = general_token_list.generate_token(&templates.render(user_strings::GI_PIF_INSTANCE, &context)?); 
+        let core2pif_name = general_token_list.generate_token(&templates.render(user_strings::GI_CORE2PIF_NAME, &context)?);
+        let pif2core_name = general_token_list.generate_token(&templates.render(user_strings::GI_PIF2CORE_NAME, &context)?); 
+        let register_enum_name = general_token_list.generate_token(&templates.render(user_strings::GI_REGISTER_ENUM_NAME, &context)?); 
+        let address_decoder_name = general_token_list.generate_token(&templates.render(user_strings::GI_ADDRESS_DECODER_NAME, &context)?);
+        let address_stride_func_name = general_token_list.generate_token(&templates.render(user_strings::GI_ADDRESS_STRIDE_FUNC_NAME, &context)?); 
+        let address_width_const_name = general_token_list.generate_token(&templates.render(user_strings::GI_ADDRESS_WIDTH_CONST_NAME, &context)?); 
+        let data_width_const_name = general_token_list.generate_token(&templates.render(user_strings::GI_DATA_WIDTH_CONST_NAME, &context)?); 
 
 
         let mut port_context = tera::Context::new();
@@ -411,7 +412,7 @@ impl GenRegister {
             } else {
                 format!("{}..0", width-1)};
 
-            let width_const_name = general_token_list.generate_token(&templates.render("gr_width_const_name", &context)?);
+            let width_const_name = general_token_list.generate_token(&templates.render(user_strings::GR_WIDTH_CONST_NAME, &context)?);
 
             let rw_mode = register.access.ok_or(GenError::new(&page,"access type needed for register"))?;
             let is_read = rw_mode != mdf::AccessType::WO;
@@ -459,16 +460,16 @@ impl GenRegister {
             let mut pif2core : Vec<GenStructSignal> = Default::default();
             
             if core2pif_has_data {
-                core2pif.push(gen_registersignal(templates, "data", "gr_data_name", &sig_type_complete, "gr_data_description", &context, corfe2pif_token_list)?);
+                core2pif.push(gen_registersignal(templates, "data", user_strings::GR_DATA_NAME, &sig_type_complete, user_strings::GR_DATA_DESCRIPTION, &context, corfe2pif_token_list)?);
             }
             if pif2core_has_data {
-                pif2core.push(gen_registersignal(templates, "data", "gr_data_name", &sig_type_complete, "gr_data_description", &context, pif2core_token_list)?);
+                pif2core.push(gen_registersignal(templates, "data", user_strings::GR_DATA_NAME, &sig_type_complete, user_strings::GR_DATA_DESCRIPTION, &context, pif2core_token_list)?);
             }
             if core_read_enable {
-                pif2core.push(gen_registersignal(templates, "read_enable","gr_read_enable_name", "boolean", "gr_read_enable_description", &context, pif2core_token_list)?);
+                pif2core.push(gen_registersignal(templates, "read_enable",user_strings::GR_READ_ENABLE_NAME, "boolean", user_strings::GR_READ_ENABLE_DESCRIPTION, &context, pif2core_token_list)?);
             }
             if core_write_enable {
-                pif2core.push(gen_registersignal(templates, "write_enable", "gr_write_enable_name", "boolean", "gr_write_enable_description", &context, pif2core_token_list)?);
+                pif2core.push(gen_registersignal(templates, "write_enable", user_strings::GR_WRITE_ENABLE_NAME, "boolean", user_strings::GR_WRITE_ENABLE_DESCRIPTION, &context, pif2core_token_list)?);
             }
 
             let core2pif_names = gen_names_map(&core2pif);
@@ -541,10 +542,10 @@ impl GenRegister {
         };
         let stride_continuous = stride_increment == (interface_data_width + 7)/8;
 
-        let address_const_name = general_token_list.generate_token(&templates.render("gr_address_const_name", &context)?);
-        let stride_count_const_name = general_token_list.generate_token(&templates.render("gr_stride_count_const_name", &context)?);
-        let stride_offset_const_name = general_token_list.generate_token(&templates.render("gr_stride_offset_const_name", &context)?);
-        let stride_array_type = general_token_list.generate_token(&templates.render("gr_stride_array_type", &context)?);
+        let address_const_name = general_token_list.generate_token(&templates.render(user_strings::GR_ADDRESS_CONST_NAME, &context)?);
+        let stride_count_const_name = general_token_list.generate_token(&templates.render(user_strings::GR_STRIDE_COUNT_CONST_NAME, &context)?);
+        let stride_offset_const_name = general_token_list.generate_token(&templates.render(user_strings::GR_STRIDE_OFFSET_CONST_NAME, &context)?);
+        let stride_array_type = general_token_list.generate_token(&templates.render(user_strings::GR_STRIDE_ARRAY_TYPE, &context)?);
 
         Ok(GenRegister { 
             name, 
@@ -602,8 +603,8 @@ impl GenField {
         context.insert("full_name", &name);
         context.insert("data_width", &interface_data_width);
 
-        let width_const_name = general_token_list.generate_token(&templates.render("gf_width_const_name", &context)?);
-        let offset_const_name = general_token_list.generate_token(&templates.render("gf_offset_const_name", &context)?);
+        let width_const_name = general_token_list.generate_token(&templates.render(user_strings::GF_WIDTH_CONST_NAME, &context)?);
+        let offset_const_name = general_token_list.generate_token(&templates.render(user_strings::GF_OFFSET_CONST_NAME, &context)?);
 
         let rw_mode = field.access;
         let is_read = rw_mode != mdf::AccessType::WO;
@@ -650,16 +651,16 @@ impl GenField {
         let mut pif2core : Vec<GenStructSignal> = Default::default();
         
         if core2pif_has_data {
-            core2pif.push(gen_registersignal(templates, "data", "gf_data_name", &sig_type_complete, "gf_data_description", &context, corfe2pif_token_list)?);
+            core2pif.push(gen_registersignal(templates, "data", user_strings::GF_DATA_NAME, &sig_type_complete, user_strings::GF_DATA_DESCRIPTION, &context, corfe2pif_token_list)?);
         }
         if pif2core_has_data {
-            pif2core.push(gen_registersignal(templates, "data", "gf_data_name", &sig_type_complete, "gf_data_description", &context, pif2core_token_list)?);
+            pif2core.push(gen_registersignal(templates, "data", user_strings::GF_DATA_NAME, &sig_type_complete, user_strings::GF_DATA_DESCRIPTION, &context, pif2core_token_list)?);
         }
         if core_read_enable {
-            pif2core.push(gen_registersignal(templates, "read_enable", "gf_read_enable_name", "boolean", "gf_read_enable_description", &context, pif2core_token_list)?);
+            pif2core.push(gen_registersignal(templates, "read_enable", user_strings::GF_READ_ENABLE_NAME, "boolean", user_strings::GF_READ_ENABLE_DESCRIPTION, &context, pif2core_token_list)?);
         }
         if core_write_enable {
-            pif2core.push(gen_registersignal(templates, "write_enable", "gf_write_enable_name", "boolean", "gf_write_enable_description", &context, pif2core_token_list)?);
+            pif2core.push(gen_registersignal(templates, "write_enable", user_strings::GF_WRITE_ENABLE_NAME, "boolean", user_strings::GF_WRITE_ENABLE_DESCRIPTION, &context, pif2core_token_list)?);
         }
 
         let core2pif_names = gen_names_map(&core2pif);

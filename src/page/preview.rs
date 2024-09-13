@@ -5,8 +5,7 @@ use dioxus::prelude::*;
 use crate::app::HdlWizardApp;
 use std::sync::Arc;
 use std::error::Error;
-use crate::generate::genmodel;
-use crate::generate::documentation;
+use crate::generate::{genmodel,documentation,user_strings};
 use crate::file_formats::mdf;
 use crate::settings;
 use tera::Tera;
@@ -31,12 +30,17 @@ pub fn Content(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Te
     if app_data.read().generate_preview {
         app_data.with_mut(|data| data.generate_preview = false);
         spawn({
-            let templates = templates.peek().as_ref().unwrap().to_owned();
+            let mut templates = templates.peek().as_ref().unwrap().to_owned();
             let mut preview_status = preview_status.clone();
             preview_status.set(None);
 
             async move {
-                preview_status.set(Some(generate_html(model_to_save, &settings, &templates).map_err(|err| err.to_string())));
+                preview_status.set(
+                    match user_strings::update_engine(&mut templates, &settings) {
+                        Ok(_) => Some(generate_html(model_to_save, &settings, &templates).map_err(|err| err.to_string())),
+                        Err(e) => Some(Err(e))
+                    }
+                );
             }
         });
     }
