@@ -19,7 +19,7 @@ use std::io::Write;
 
 /// generate the documentation
 #[allow(dead_code)]
-fn do_gen_doc(file: &mut std::fs::File, model: &Arc<Mdf>, settings: &Settings, templates: &mut Tera) -> Result<(), Box<dyn std::error::Error>> {
+fn do_gen_all(file: &mut std::fs::File, model: &Arc<Mdf>, settings: &Settings, templates: &mut Tera, _gen_folder : bool) -> Result<(), Box<dyn std::error::Error>> {
     
     super::user_strings::update_engine(templates, settings)?;
 
@@ -33,7 +33,7 @@ fn do_gen_doc(file: &mut std::fs::File, model: &Arc<Mdf>, settings: &Settings, t
 
 #[cfg(not(target_arch = "wasm32"))]
 /// Called from the menu to generate the files
-async fn gen_all(model: Arc<Mdf>, settings: Settings, mut templates: Tera, mut status: Signal<Option<Result<(), String>>>, _gen_doc : bool, _gen_code : bool) {
+async fn menu_gen_all(model: Arc<Mdf>, settings: Settings, mut templates: Tera, mut status: Signal<Option<Result<(), String>>>, gen_folder : bool) {
     // open file dialog to choose file name
     let file = AsyncFileDialog::new()
         .add_filter("HTML", &["html"])
@@ -49,7 +49,7 @@ async fn gen_all(model: Arc<Mdf>, settings: Settings, mut templates: Tera, mut s
             Ok(mut file) => {
 
                 // generate the requested files
-                status.set(Some(do_gen_doc(&mut file, &model, &settings, &mut templates).map_err(|error| error.to_string())));
+                status.set(Some(do_gen_all(&mut file, &model, &settings, &mut templates, gen_folder).map_err(|error| error.to_string())));
             }
             Err(errormsg) => {
                 status.set(Some(Err(format!(
@@ -63,7 +63,7 @@ async fn gen_all(model: Arc<Mdf>, settings: Settings, mut templates: Tera, mut s
 
 #[cfg(target_arch = "wasm32")]
 /// Called from the menu to generate the files
-async fn gen_all(_model: Arc<Mdf>, _settings: Settings, _templates: Tera, mut status: Signal<Option<Result<(), String>>>, _gen_doc : bool, _gen_code : bool) {
+async fn menu_gen_all(model: Arc<Mdf>, settings: Settings, mut templates: Tera, mut status: Signal<Option<Result<(), String>>>, gen_folder : bool) {
     status.set(Some(Ok(())));
 }
 
@@ -98,6 +98,31 @@ pub fn Menu(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>
         None => (),
     }
 
+    // generate in a folder is only available on desktop
+#[cfg(not(target_arch = "wasm32"))]
+    let gen_folder = rsx!{
+        gui_blocks::MenuEntry {
+            key_action : key_action,
+            binding : KeyAction::GenerateFolder,
+            action : move |_| {
+                let save_status = save_status.to_owned();
+                let model = app_data.read().data.model.clone();
+                let settings = app_data.read().data.settings.clone();
+                let templates = templates.peek().as_ref().unwrap().to_owned();
+
+                spawn({
+                    menu_gen_all(model, settings, templates, save_status, true)
+                });
+            },
+            icon: "fa-industry",
+            label : "Generate folder",
+            key_name: "G",
+            key_modifiers : Modifiers::CONTROL
+        }
+    };
+#[cfg(target_arch = "wasm32")]
+    let gen_folder = None;
+
     rsx! {
         div { class: "navbar-item has-dropdown is-hoverable",
             a { class: "navbar-link", "Generate" }
@@ -117,51 +142,24 @@ pub fn Menu(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>
                     key_name: "P",
                     key_modifiers : Modifiers::CONTROL
                 }
-                a {
-                    class: "navbar-item",
-                    onclick: move |_| {
+                {gen_folder}
+                gui_blocks::MenuEntry {
+                    key_action : key_action,
+                    binding : KeyAction::GenerateFolder,
+                    action : move |_| {
                         let save_status = save_status.to_owned();
                         let model = app_data.read().data.model.clone();
                         let settings = app_data.read().data.settings.clone();
                         let templates = templates.peek().as_ref().unwrap().to_owned();
-
+        
                         spawn({
-                            gen_all(model, settings, templates, save_status, true, false)
-                        });
-
-                    },
-                    i { class: "fa-solid fa-industry mr-1" }
-                    "Documentation"
-                }
-                a {
-                    class: "navbar-item",
-                    onclick: move |_| {
-                        let save_status = save_status.to_owned();
-                        let model = app_data.read().data.model.clone();
-                        let settings = app_data.read().data.settings.clone();
-                        let templates = templates.peek().as_ref().unwrap().to_owned();
-
-                        spawn({
-                            gen_all(model, settings, templates, save_status, false, true)
+                            menu_gen_all(model, settings, templates, save_status, false)
                         });
                     },
-                    i { class: "fa-solid fa-industry mr-1" }
-                    "Code"
-                }
-                a {
-                    class: "navbar-item",
-                    onclick: move |_| {
-                        let save_status = save_status.to_owned();
-                        let model = app_data.read().data.model.clone();
-                        let settings = app_data.read().data.settings.clone();
-                        let templates = templates.peek().as_ref().unwrap().to_owned();
-
-                        spawn({
-                            gen_all(model, settings, templates, save_status, true, true)
-                        });
-                    },
-                    i { class: "fa-solid fa-industry mr-1" }
-                    "All"
+                    icon: "fa-industry",
+                    label : "Generate zip Archive",
+                    key_name: "G",
+                    key_modifiers : Modifiers::CONTROL | Modifiers::SHIFT
                 }
             }
         }

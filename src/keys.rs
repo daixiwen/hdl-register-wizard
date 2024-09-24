@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum KeyAction {
-    New, OpenFile, SaveFile, SaveFileAs, Quit, Undo, Redo, Preview
+    New, OpenFile, SaveFile, SaveFileAs, Quit, Undo, Redo, Preview, GenerateFolder
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -32,6 +32,7 @@ pub fn key_down_event(event: Event<KeyboardData>, key_action : Signal<Option<Key
         },
         ("y", Modifiers::CONTROL) => Some(KeyAction::Redo),
         ("p", Modifiers::CONTROL) => Some(KeyAction::Preview),
+        ("g", Modifiers::CONTROL) => Some(KeyAction::GenerateFolder),
         _ => None
     };
 

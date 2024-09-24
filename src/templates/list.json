@@ -1,0 +1,9 @@
+{# This template generates a json containing a file list, with file names and the name of the template to apply #}
+{# The application will also call this template at startup with empty strings to determine a list of possible documentation formats and testbench types #}
+{
+    "groups":{
+        "global":[
+            { "template": "pkg.vhd", "path" : "src", "filename": "{{pkg_name}}.vhd"}
+        ]
+    }    
+}

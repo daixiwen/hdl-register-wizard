@@ -41,6 +41,7 @@ pub fn gen_templates(_settings : &crate::settings::Settings) -> Result<Tera> {
 
     // documentation template
     template!(tera,"documentation.md");
+    template!(tera,"list.json");
     
     Ok(tera)
 }
