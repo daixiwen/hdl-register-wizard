@@ -8,3 +8,4 @@ pub mod signal_list;
 pub mod documentation;
 pub mod templates;
 pub mod user_strings;
+pub mod file_list;
