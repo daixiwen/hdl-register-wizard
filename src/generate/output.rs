@@ -121,7 +121,7 @@ pub fn Menu(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>
         }
     };
 #[cfg(target_arch = "wasm32")]
-    let gen_folder = None;
+    let gen_folder: Option<Element> = None;
 
     rsx! {
         div { class: "navbar-item has-dropdown is-hoverable",

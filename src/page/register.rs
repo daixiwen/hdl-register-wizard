@@ -961,7 +961,7 @@ pub fn Content(props: ContentProps) -> Element {
                                             )
                                         }
                                     } else {
-                                        None
+                                        rsx! {}
                                     }
                                 }
                             }

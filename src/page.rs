@@ -2,6 +2,7 @@
 #![allow(non_snake_case)]
 use crate::app::HdlWizardApp;
 use dioxus::prelude::*;
+use dioxus::document::eval;
 use futures_timer::Delay;
 use std::time::Duration;
 use tera::{Tera,Result};
@@ -99,7 +100,7 @@ pub fn FileSave(app_data: Signal<HdlWizardApp>) -> Element {
 #[component]
 #[allow(unused)]
 pub fn FileSave(app_data: Signal<HdlWizardApp>) -> Element {
-    None
+    rsx! {}
 }
 
 /// main contents
@@ -151,7 +152,7 @@ pub fn Content(app_data: Signal<HdlWizardApp>, templates: Signal<Result<Tera>>) 
                         }
                     }
                 }
-            } else { None }
+            } else { rsx! {} }
         },
         {
             // if there is an error message to display, put it in its box
@@ -185,7 +186,7 @@ pub fn Content(app_data: Signal<HdlWizardApp>, templates: Signal<Result<Tera>>) 
                     }
                 }
             } else {
-                None
+                rsx! {}
             }
         },
         // add the box for the file save when in the webapp        
@@ -222,7 +223,7 @@ pub fn Content(app_data: Signal<HdlWizardApp>, templates: Signal<Result<Tera>>) 
                 // work around issue #10. When switching field we change to this page type first
                 // to clear the screen and then switch the page to register
                 app_data.with_mut(|app_data| app_data.page_type = PageType::Register(interface_num, register_num, Some(field_num)));
-                None
+                rsx! {}
             }
             PageType::Preview => {
                 rsx! {

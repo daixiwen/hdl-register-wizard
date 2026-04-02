@@ -180,7 +180,7 @@ pub fn Save(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction
         }
     } else {
         // we don't have a file name, so we don't even need to display the Save menu item
-        None
+        rsx! {}
     }
 }
 
@@ -189,7 +189,7 @@ pub fn Save(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction
 #[allow(unused)]
 #[component]
 pub fn Save(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction>>) -> Element {
-    None
+    rsx! {}
 }
 
 /// SaveAs menu item, desktop version

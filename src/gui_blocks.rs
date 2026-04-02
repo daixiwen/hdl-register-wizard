@@ -415,7 +415,8 @@ pub fn OptionEnumWidget<F: PartialEq + Clone + strum::IntoEnumIterator + std::st
     let undo_description = props.undo_label.unwrap_or_default();
 
     let options = F::iter().map(|enum_value| {
-        rsx!( option { selected: "{value == Some(enum_value)}", "{enum_value.to_string()}" } )
+        let selected = value == Some(enum_value.clone());
+        rsx!( option { selected: "{selected}", "{enum_value.to_string()}" } )
     });
 
     let disabled = props.disabled.unwrap_or(false);
@@ -559,18 +560,18 @@ pub fn MenuEntry(key_action : Option<Signal<Option<KeyAction>>>,
         rsx! {
             i { class: "fa-solid fa-angle-up"}
         }
-    } else { None };
+    } else { rsx! {} };
 #[cfg(not(target_arch = "wasm32"))]
     let shift_modif = if key_modifiers.is_some() && key_modifiers.unwrap().shift() {
         rsx! {
             i { class: "fa-solid fa-arrow-up-from-bracket"}
         }
-    } else { None };
+    } else { rsx! {} };
 
     // do not provide key bindings for web as I haven't figured a way to
     // make them work properly yet
 #[cfg(target_arch = "wasm32")]
-    let key_bindings: Element = None;
+    let key_bindings: Element = rsx! {};
 #[cfg(not(target_arch = "wasm32"))]
     let key_bindings = 
         if let Some(key_name) = key_name {
@@ -583,12 +584,12 @@ pub fn MenuEntry(key_action : Option<Signal<Option<KeyAction>>>,
                 }
             }
         } else {
-            None
+            rsx! {}
         };
  
     if crate::keys::key_event_check(key_action, binding) {
         action(());
-        None
+        rsx! {}
     } else {
         // render the menu item
         rsx! {

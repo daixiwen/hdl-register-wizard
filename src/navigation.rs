@@ -14,7 +14,7 @@ use tera::Tera;
 #[cfg(not(target_arch = "wasm32"))]
 #[component]
 pub fn Quit(key_action : Signal<Option<KeyAction>>) -> Element {
-    let desktop = consume_context::<dioxus_desktop::DesktopContext>();
+    let desktop = dioxus_desktop::use_window();
 
     rsx! {
         hr { class: "navbar-divider" }
