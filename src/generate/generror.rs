@@ -1,6 +1,6 @@
-use std::fmt;
 use crate::page::PageType;
 use std::error::Error;
+use std::fmt;
 
 pub struct GenError {
     pub page: PageType,
@@ -23,9 +23,10 @@ impl fmt::Debug for GenError {
             match self.page {
                 PageType::Project => "project".to_owned(),
                 PageType::Interface(int) => format!("interface({})", int),
-                PageType::Register(int,reg, field) => format!("interface({}), register({}), field({:?})", int, reg, field),
+                PageType::Register(int, reg, field) =>
+                    format!("interface({}), register({}), field({:?})", int, reg, field),
                 PageType::Preview => "preview".to_owned(),
-                PageType::ChangeRegisterField(_,_,_) => String::new(),
+                PageType::ChangeRegisterField(_, _, _) => String::new(),
                 PageType::Settings(_) => "settings".to_owned(),
             },
             self.message
@@ -33,16 +34,13 @@ impl fmt::Debug for GenError {
     }
 }
 
-impl Error for GenError {
-
-}
+impl Error for GenError {}
 
 impl GenError {
     pub fn new(page: &PageType, message: &str) -> Self {
         Self {
             page: page.clone(),
-            message: message.to_owned()
+            message: message.to_owned(),
         }
     }
 }
-

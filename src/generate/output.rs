@@ -2,25 +2,30 @@
 #![allow(non_snake_case)]
 
 use crate::app::HdlWizardApp;
-use dioxus::prelude::*;
 use crate::file_formats::mdf::Mdf;
-use std::sync::Arc;
-use crate::settings::Settings;
-use crate::page::PageType;
-use crate::keys::KeyAction;
 use crate::gui_blocks;
+use crate::keys::KeyAction;
+use crate::page::PageType;
+use crate::settings::Settings;
+use dioxus::prelude::*;
+use std::sync::Arc;
 use tera::Tera;
 
+use super::documentation;
+use super::genmodel::GenModel;
 #[cfg(not(target_arch = "wasm32"))]
 use rfd::AsyncFileDialog;
-use super::genmodel::GenModel;
-use super::documentation;
 use std::io::Write;
 
 /// generate the documentation
 #[allow(dead_code)]
-fn do_gen_all(file: &mut std::fs::File, model: &Arc<Mdf>, settings: &Settings, templates: &mut Tera, _gen_folder : bool) -> Result<(), Box<dyn std::error::Error>> {
-    
+fn do_gen_all(
+    file: &mut std::fs::File,
+    model: &Arc<Mdf>,
+    settings: &Settings,
+    templates: &mut Tera,
+    _gen_folder: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
     super::user_strings::update_engine(templates, settings)?;
 
     let model = GenModel::from_model(model, settings, templates)?;
@@ -33,12 +38,18 @@ fn do_gen_all(file: &mut std::fs::File, model: &Arc<Mdf>, settings: &Settings, t
 
 #[cfg(not(target_arch = "wasm32"))]
 /// Called from the menu to generate the files
-async fn menu_gen_all(model: Arc<Mdf>, settings: Settings, mut templates: Tera, mut status: Signal<Option<Result<(), String>>>, gen_folder : bool) {
+async fn menu_gen_all(
+    model: Arc<Mdf>,
+    settings: Settings,
+    mut templates: Tera,
+    mut status: Signal<Option<Result<(), String>>>,
+    gen_folder: bool,
+) {
     // open file dialog to choose file name
     let file = AsyncFileDialog::new()
         .add_filter("HTML", &["html"])
         .add_filter("any", &["*"])
-//        .set_directory(&current_path)
+        //        .set_directory(&current_path)
         .save_file()
         .await;
 
@@ -47,9 +58,11 @@ async fn menu_gen_all(model: Arc<Mdf>, settings: Settings, mut templates: Tera, 
         let file_path = file.path();
         match std::fs::File::create(file_path) {
             Ok(mut file) => {
-
                 // generate the requested files
-                status.set(Some(do_gen_all(&mut file, &model, &settings, &mut templates, gen_folder).map_err(|error| error.to_string())));
+                status.set(Some(
+                    do_gen_all(&mut file, &model, &settings, &mut templates, gen_folder)
+                        .map_err(|error| error.to_string()),
+                ));
             }
             Err(errormsg) => {
                 status.set(Some(Err(format!(
@@ -63,13 +76,23 @@ async fn menu_gen_all(model: Arc<Mdf>, settings: Settings, mut templates: Tera, 
 
 #[cfg(target_arch = "wasm32")]
 /// Called from the menu to generate the files
-async fn menu_gen_all(model: Arc<Mdf>, settings: Settings, mut templates: Tera, mut status: Signal<Option<Result<(), String>>>, gen_folder : bool) {
+async fn menu_gen_all(
+    model: Arc<Mdf>,
+    settings: Settings,
+    mut templates: Tera,
+    mut status: Signal<Option<Result<(), String>>>,
+    gen_folder: bool,
+) {
     status.set(Some(Ok(())));
 }
 
 /// Generate menu
 #[component]
-pub fn Menu(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>>, key_action : Signal<Option<KeyAction>>) -> Element {
+pub fn Menu(
+    app_data: Signal<HdlWizardApp>,
+    templates: Signal<tera::Result<Tera>>,
+    key_action: Signal<Option<KeyAction>>,
+) -> Element {
     // the save operation itself is done in a future, so we share the result through this state, holding
     // just the result. Either an OK or an error message as a string
     let mut save_status: Signal<Option<Result<(), String>>> = use_signal(|| None);
@@ -99,8 +122,8 @@ pub fn Menu(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>
     }
 
     // generate in a folder is only available on desktop
-#[cfg(not(target_arch = "wasm32"))]
-    let gen_folder = rsx!{
+    #[cfg(not(target_arch = "wasm32"))]
+    let gen_folder = rsx! {
         gui_blocks::MenuEntry {
             key_action : key_action,
             binding : KeyAction::GenerateFolder,
@@ -120,7 +143,7 @@ pub fn Menu(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>
             key_modifiers : Modifiers::CONTROL
         }
     };
-#[cfg(target_arch = "wasm32")]
+    #[cfg(target_arch = "wasm32")]
     let gen_folder: Option<Element> = None;
 
     rsx! {
@@ -151,7 +174,7 @@ pub fn Menu(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>
                         let model = app_data.read().data.model.clone();
                         let settings = app_data.read().data.settings.clone();
                         let templates = templates.peek().as_ref().unwrap().to_owned();
-        
+
                         spawn({
                             menu_gen_all(model, settings, templates, save_status, false)
                         });

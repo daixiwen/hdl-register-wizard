@@ -4,8 +4,8 @@
 use crate::app::HdlWizardApp;
 use crate::file_formats::mdf;
 use crate::gui_blocks;
-use crate::gui_blocks::callback_register;
 use crate::gui_blocks::callback_field;
+use crate::gui_blocks::callback_register;
 use crate::gui_types::Validable;
 use crate::page::PageType;
 use crate::utils;
@@ -51,7 +51,7 @@ struct GuiAddressStrideProps {
     app_data: Signal<HdlWizardApp>,
     #[props(!optional)]
     value: Option<mdf::AddressStride>,
-    update_reg: Option<EventHandler<(usize,usize,Option<mdf::AddressStride>)>>,
+    update_reg: Option<EventHandler<(usize, usize, Option<mdf::AddressStride>)>>,
 }
 
 /// widget for the address stride
@@ -89,7 +89,7 @@ fn AddressStride(props: GuiAddressStrideProps) -> Element {
     let update_reg = props.update_reg;
 
     // render widget
-    rsx!{
+    rsx! {
         div { class: "field is-horizontal",
             div { class: "field-label is-normal", label { class: "label", " " } }
             div { class: "field-body",
@@ -241,34 +241,36 @@ fn CoreProperties(props: GuiCoreProps) -> Element {
     let app_data = props.app_data;
     let is_register = props.is_register;
 
-    let read_update_function_reg: Option<EventHandler<(usize,usize,bool)>> = if is_register {
+    let read_update_function_reg: Option<EventHandler<(usize, usize, bool)>> = if is_register {
         Some(callback_register(app_data, |register, value| {
             register.core_signal_properties.use_read_enable = Some(value)
         }))
     } else {
         None
     };
-    let write_update_function_reg: Option<EventHandler<(usize,usize,bool)>> = if is_register {
+    let write_update_function_reg: Option<EventHandler<(usize, usize, bool)>> = if is_register {
         Some(callback_register(app_data, |register, value| {
             register.core_signal_properties.use_write_enable = Some(value)
         }))
     } else {
         None
     };
-    let read_update_function_field: Option<EventHandler<(usize,usize,usize, bool)>> = if !is_register {
-        Some(callback_field(app_data, |field, value| {
-            field.core_signal_properties.use_read_enable = Some(value)
-        }))
-    } else {
-        None
-    };
-    let write_update_function_field: Option<EventHandler<(usize,usize,usize, bool)>> = if !is_register {
-        Some(callback_field(app_data, |field, value| {
-            field.core_signal_properties.use_write_enable = Some(value)
-        }))
-    } else {
-        None
-    };
+    let read_update_function_field: Option<EventHandler<(usize, usize, usize, bool)>> =
+        if !is_register {
+            Some(callback_field(app_data, |field, value| {
+                field.core_signal_properties.use_read_enable = Some(value)
+            }))
+        } else {
+            None
+        };
+    let write_update_function_field: Option<EventHandler<(usize, usize, usize, bool)>> =
+        if !is_register {
+            Some(callback_field(app_data, |field, value| {
+                field.core_signal_properties.use_write_enable = Some(value)
+            }))
+        } else {
+            None
+        };
 
     // render the html
     rsx! {
@@ -349,7 +351,11 @@ fn TableLine(
             field_name
         };
 
-        let tr_class = if is_selected { "has-background-info-soft" } else { "" };
+        let tr_class = if is_selected {
+            "has-background-info-soft"
+        } else {
+            ""
+        };
 
         // render html
         rsx! {
@@ -444,7 +450,7 @@ fn TableLine(
             }
         }
     } else {
-        rsx!{ p { "error.... not in a interface page" } }
+        rsx! { p { "error.... not in a interface page" } }
     }
 }
 
@@ -453,7 +459,7 @@ fn TableLine(
 struct GuiBitFieldPositionProps {
     app_data: Signal<HdlWizardApp>,
     value: mdf::FieldPosition,
-    update_field: Option<EventHandler<(usize,usize,usize,mdf::FieldPosition)>>,
+    update_field: Option<EventHandler<(usize, usize, usize, mdf::FieldPosition)>>,
 }
 
 // widget for the bitfield position
@@ -475,7 +481,7 @@ fn FieldPosition(props: GuiBitFieldPositionProps) -> Element {
     let value_1 = value.clone();
     let value_2 = value;
 
-    rsx!{
+    rsx! {
         div { class: "field is-horizontal",
             div { class: "field-label is-normal", label { class: "label", "Position" } }
             div { class: "field-body",
@@ -611,8 +617,7 @@ pub fn Content(props: ContentProps) -> Element {
     let register_num = props.register_num;
 
     let get_interface = readappdata.data.model.interfaces.get(interface_num);
-    if let Some(interface) = get_interface
-    {
+    if let Some(interface) = get_interface {
         if let Some(register) = interface.registers.get(register_num) {
             let interface_data_width = interface.data_width.unwrap_or(32);
 
@@ -637,18 +642,16 @@ pub fn Content(props: ContentProps) -> Element {
                 fld_list
                     .iter()
                     .map(|(n, fld_name, fld_pos, fld_access, fld_signal)| {
-                        rsx!(
-                            TableLine {
-                                app_data: app_data,
-                                field_number: *n,
-                                field_name: fld_name.clone(),
-                                field_position: fld_pos.clone(),
-                                field_access: fld_access.clone(),
-                                field_type: fld_signal.clone(),
-                                is_selected: props.field_num == Some(*n),
-                                key: "{fld_name}{n}"
-                            }
-                        )
+                        rsx!(TableLine {
+                            app_data: app_data,
+                            field_number: *n,
+                            field_name: fld_name.clone(),
+                            field_position: fld_pos.clone(),
+                            field_access: fld_access.clone(),
+                            field_type: fld_signal.clone(),
+                            is_selected: props.field_num == Some(*n),
+                            key: "{fld_name}{n}"
+                        })
                     });
 
             // build a vector with statuses for each bit in the field to display the bitmap
@@ -666,11 +669,8 @@ pub fn Content(props: ContentProps) -> Element {
                     mdf::FieldPosition::Field(msb, lsb) => {
                         for bit in lsb..=msb {
                             if (bit as usize) < field_width {
-                                bit_statuses[bit as usize] = update_status(
-                                    &bit_statuses[bit as usize],
-                                    i,
-                                    props.field_num,
-                                );
+                                bit_statuses[bit as usize] =
+                                    update_status(&bit_statuses[bit as usize], i, props.field_num);
                             }
                         }
                     }

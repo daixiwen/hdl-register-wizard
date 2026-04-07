@@ -3,17 +3,17 @@
 use crate::app::HdlWizardApp;
 use crate::file_formats::mdf;
 use crate::file_io;
-use crate::page::{PageType, SettingsPageType};
-use crate::keys::{KeyAction, key_event_check};
-use crate::gui_blocks;
-use dioxus::prelude::*;
 use crate::generate;
+use crate::gui_blocks;
+use crate::keys::{key_event_check, KeyAction};
+use crate::page::{PageType, SettingsPageType};
+use dioxus::prelude::*;
 use tera::Tera;
 
 /// quit menu item for the desktop application
 #[cfg(not(target_arch = "wasm32"))]
 #[component]
-pub fn Quit(key_action : Signal<Option<KeyAction>>) -> Element {
+pub fn Quit(key_action: Signal<Option<KeyAction>>) -> Element {
     let desktop = dioxus_desktop::use_window();
 
     rsx! {
@@ -33,14 +33,17 @@ pub fn Quit(key_action : Signal<Option<KeyAction>>) -> Element {
 /// quit menu item, not used for the webapp
 #[cfg(target_arch = "wasm32")]
 #[component]
-pub fn Quit(key_action : Signal<Option<KeyAction>>) -> Element {
-
+pub fn Quit(key_action: Signal<Option<KeyAction>>) -> Element {
     rsx! {}
 }
 
 /// Menu bar
 #[component]
-pub fn NavBar(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>>, key_action : Signal<Option<KeyAction>>) -> Element {
+pub fn NavBar(
+    app_data: Signal<HdlWizardApp>,
+    templates: Signal<tera::Result<Tera>>,
+    key_action: Signal<Option<KeyAction>>,
+) -> Element {
     let burger_menu = app_data.read().burger_menu;
     let live_help = app_data.read().live_help;
 

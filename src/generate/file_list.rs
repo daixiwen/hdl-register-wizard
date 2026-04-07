@@ -6,11 +6,10 @@ use serde::Deserialize;
 pub struct FileEntry {
     pub template: String,
     pub path: String,
-    pub filename: String
+    pub filename: String,
 }
 
 #[derive(Deserialize, Clone)]
 pub struct FileList {
-    pub global: Vec<FileEntry>
+    pub global: Vec<FileEntry>,
 }
-

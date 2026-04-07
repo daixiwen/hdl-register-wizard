@@ -1,62 +1,78 @@
 //! page to edit names settings
 #![allow(non_snake_case)]
 
-use dioxus::prelude::*;
 use crate::app::HdlWizardApp;
 use crate::generate::user_strings;
 use core::slice::Iter;
+use dioxus::prelude::*;
 
 // table line with one string
-fn TableLine(mut app_data: Signal<HdlWizardApp>, template: &user_strings::UserStringSpec, pattern: &str) -> Element {
-    let value = if let Some(setting_value) = app_data.read().data.settings.user_templates.get(template.template_name) {
+fn TableLine(
+    mut app_data: Signal<HdlWizardApp>,
+    template: &user_strings::UserStringSpec,
+    pattern: &str,
+) -> Element {
+    let value = if let Some(setting_value) = app_data
+        .read()
+        .data
+        .settings
+        .user_templates
+        .get(template.template_name)
+    {
         setting_value.clone()
-    } else { "??".to_owned()};
+    } else {
+        "??".to_owned()
+    };
 
     let default_value = template.default_value.to_owned();
     let template_name = template.template_name.to_owned();
 
     rsx! {
-        tr {
-            td {
-                div { class: "field-label is-normal", label { class: "label", "{template.label}" } }
-            }
-            td {
-                div { class: "field-body",
-                    div { class: "field",
-                        div { class: "control",
-                            input {
-                                class: "input",
-                                r#type: "text",
-                                placeholder: "{template.default_value}",
-                                pattern: "{pattern}",
-                                size: "40",
-//                                pattern: "{validate_pattern}",
-                                onchange: move |evt| {
-                                    app_data.with_mut(|appdata| { 
-                                        appdata.data.settings.user_templates.insert(
-                                            template_name.clone(), 
-                                            if evt.value().is_empty() {
-                                                default_value.clone()
-                                            } else {
-                                                evt.value()
-                                            }
-                                        ); 
-                                    })
-                                },
-                                value: "{value}"
+            tr {
+                td {
+                    div { class: "field-label is-normal", label { class: "label", "{template.label}" } }
+                }
+                td {
+                    div { class: "field-body",
+                        div { class: "field",
+                            div { class: "control",
+                                input {
+                                    class: "input",
+                                    r#type: "text",
+                                    placeholder: "{template.default_value}",
+                                    pattern: "{pattern}",
+                                    size: "40",
+    //                                pattern: "{validate_pattern}",
+                                    onchange: move |evt| {
+                                        app_data.with_mut(|appdata| {
+                                            appdata.data.settings.user_templates.insert(
+                                                template_name.clone(),
+                                                if evt.value().is_empty() {
+                                                    default_value.clone()
+                                                } else {
+                                                    evt.value()
+                                                }
+                                            );
+                                        })
+                                    },
+                                    value: "{value}"
+                                }
                             }
                         }
                     }
                 }
-            }
-            td {
-                "{template.description}"
+                td {
+                    "{template.description}"
+                }
             }
         }
-    }
 }
 
-fn Table(app_data: Signal<HdlWizardApp>, templates: Iter<'_, user_strings::UserStringSpec>, pattern: &str) -> Element {
+fn Table(
+    app_data: Signal<HdlWizardApp>,
+    templates: Iter<'_, user_strings::UserStringSpec>,
+    pattern: &str,
+) -> Element {
     rsx! {
         table {
             class:"table is-striped is-hoverable is-fullwidth",

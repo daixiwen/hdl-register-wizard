@@ -2,8 +2,8 @@
 #![allow(non_snake_case)]
 use crate::app::HdlWizardApp;
 use crate::file_formats::mdf;
-use crate::keys::KeyAction;
 use crate::gui_blocks;
+use crate::keys::KeyAction;
 use dioxus::prelude::*;
 use rfd::AsyncFileDialog;
 #[cfg(not(target_arch = "wasm32"))]
@@ -11,24 +11,34 @@ use std::path::Path;
 
 /// return the file name and its parent path as strings from the handle returned by rfd
 #[cfg(not(target_arch = "wasm32"))]
-fn file_name(handle : &rfd::FileHandle) -> (String, String) {
-    (handle.path().to_str().unwrap_or_default().to_owned(), handle.path().parent().unwrap_or(Path::new("/")).to_str().unwrap_or_default().to_owned())
+fn file_name(handle: &rfd::FileHandle) -> (String, String) {
+    (
+        handle.path().to_str().unwrap_or_default().to_owned(),
+        handle
+            .path()
+            .parent()
+            .unwrap_or(Path::new("/"))
+            .to_str()
+            .unwrap_or_default()
+            .to_owned(),
+    )
 }
 
 /// return the file name and its parent path (ignored on web) as strings from the handle returned by rfd
 #[cfg(target_arch = "wasm32")]
-fn file_name(handle : &rfd::FileHandle) -> (String, String) {
+fn file_name(handle: &rfd::FileHandle) -> (String, String) {
     (handle.file_name(), Default::default())
 }
 
 /// Open/Load file menu item
 #[component]
-pub fn Open(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction>>) -> Element {
+pub fn Open(app_data: Signal<HdlWizardApp>, key_action: Signal<Option<KeyAction>>) -> Element {
     // the load operation itself is done in a future, so we share the result through this state, holding:
     // - the file name (String)
     // - the file parent path (String)
     // - the result of the load operation (either a Mdf or a serde error)
-    let mut open_status: Signal<Option<(String, String, Result<mdf::Mdf, String>)>> = use_signal(|| None);
+    let mut open_status: Signal<Option<(String, String, Result<mdf::Mdf, String>)>> =
+        use_signal(|| None);
 
     // read back the result of the future, if any
     match open_status() {
@@ -45,7 +55,7 @@ pub fn Open(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction
             // clear the open status state so that we don't rerun this
             open_status.set(None);
         }
-        
+
         // load error
         Some((_, _, Err(message))) => {
             app_data.with_mut(|data| {
@@ -80,7 +90,12 @@ pub fn Open(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction
                     let (file_name, file_folder) = file_name(&file);
 
                     // load the file
-                    open_status.set(Some((file_name, file_folder, serde_json::from_slice::<mdf::Mdf>(&file.read().await).map_err(|e| e.to_string()))));
+                    open_status.set(Some((
+                        file_name,
+                        file_folder,
+                        serde_json::from_slice::<mdf::Mdf>(&file.read().await)
+                            .map_err(|e| e.to_string()),
+                    )));
                 }
             }
         });
@@ -102,7 +117,7 @@ pub fn Open(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction
 /// Save menu item
 #[cfg(not(target_arch = "wasm32"))]
 #[component]
-pub fn Save(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction>>) -> Element {
+pub fn Save(app_data: Signal<HdlWizardApp>, key_action: Signal<Option<KeyAction>>) -> Element {
     // the save operation itself is done in a future, so we share the result through this state, holding
     // just the result. Either an OK or an error message as a string
     let mut save_status: Signal<Option<Result<(), String>>> = use_signal(|| None);
@@ -111,7 +126,12 @@ pub fn Save(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction
     match save_status() {
         // save operation completed. send a notification
         Some(Ok(_)) => {
-            let file_name = app_data.read().data.current_file_name.clone().unwrap_or_default();
+            let file_name = app_data
+                .read()
+                .data
+                .current_file_name
+                .clone()
+                .unwrap_or_default();
             app_data.with_mut(|data| {
                 data.notification = Some(format!("file saved as {}", file_name));
             });
@@ -135,14 +155,13 @@ pub fn Save(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction
     let app_data = app_data.read();
     let model_to_save = app_data.data.model.clone();
     if let Some(current_file_name) = app_data.data.current_file_name.clone() {
-
         // spawn a future when the save menu item is selected
         let save_file = move || {
             spawn({
                 let mut save_status = save_status.to_owned();
                 let model_to_save = model_to_save.to_owned();
                 let current_file_name = current_file_name.to_owned();
-    
+
                 async move {
                     // save file and record result
                     match std::fs::File::create(Path::new(&current_file_name)) {
@@ -165,7 +184,7 @@ pub fn Save(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction
                 }
             });
         };
-    
+
         // render the save menu item
         rsx! {
             gui_blocks::MenuEntry {
@@ -188,15 +207,14 @@ pub fn Save(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction
 #[cfg(target_arch = "wasm32")]
 #[allow(unused)]
 #[component]
-pub fn Save(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction>>) -> Element {
+pub fn Save(app_data: Signal<HdlWizardApp>, key_action: Signal<Option<KeyAction>>) -> Element {
     rsx! {}
 }
 
 /// SaveAs menu item, desktop version
 #[cfg(not(target_arch = "wasm32"))]
 #[component]
-pub fn SaveAs(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction>>) -> Element {
-
+pub fn SaveAs(app_data: Signal<HdlWizardApp>, key_action: Signal<Option<KeyAction>>) -> Element {
     // the save as operation itself is done in a future, so we share the result through this state, holding
     // a result with the file name or an error message as a string
     let mut save_status: Signal<Option<Result<String, String>>> = use_signal(|| None);
@@ -232,7 +250,6 @@ pub fn SaveAs(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyActi
     let app_data = app_data.read();
     let model_to_save = app_data.data.model.clone();
     let current_path = app_data.data.current_path.clone();
-
 
     // spawn a future when the save menu item is selected
     let save_file = move || {
@@ -293,8 +310,7 @@ pub fn SaveAs(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyActi
 /// SaveAs menu item, web version
 #[cfg(target_arch = "wasm32")]
 #[component]
-pub fn SaveAs(app_data: Signal<HdlWizardApp>, key_action : Signal<Option<KeyAction>>) -> Element {
-
+pub fn SaveAs(app_data: Signal<HdlWizardApp>, key_action: Signal<Option<KeyAction>>) -> Element {
     // function that performs the actual save, as an uri embedded in the html. It will be "displayed" on the next round
     let mut save_file = move || {
         let file_serialize = serde_json::to_string_pretty(&app_data.read().data.model);

@@ -1,17 +1,21 @@
 //! documentation preview page
 #![allow(non_snake_case)]
 
-use dioxus::prelude::*;
 use crate::app::HdlWizardApp;
-use std::sync::Arc;
-use std::error::Error;
-use crate::generate::{genmodel,documentation,user_strings};
 use crate::file_formats::mdf;
+use crate::generate::{documentation, genmodel, user_strings};
 use crate::settings;
+use dioxus::prelude::*;
+use std::error::Error;
+use std::sync::Arc;
 use tera::Tera;
 
 // generate the documentation as a string from the given model
-fn generate_html(model : Arc<mdf::Mdf>, settings: &settings::Settings, templates: &Tera) -> Result<String, Box<dyn Error>> {
+fn generate_html(
+    model: Arc<mdf::Mdf>,
+    settings: &settings::Settings,
+    templates: &Tera,
+) -> Result<String, Box<dyn Error>> {
     let model = genmodel::GenModel::from_model(model.as_ref(), settings, templates)?;
     documentation::generate_doc(&model, templates)
 }
@@ -19,7 +23,6 @@ fn generate_html(model : Arc<mdf::Mdf>, settings: &settings::Settings, templates
 // Whole page for the project top level
 #[component]
 pub fn Content(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Tera>>) -> Element {
-
     // the preview generation itself is done in a future, so we share the result through this state, holding
     // a result with the generated html or an error message as a string
     let mut preview_status: Signal<Option<Result<String, String>>> = use_signal(|| None);
@@ -37,9 +40,12 @@ pub fn Content(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Te
             async move {
                 preview_status.set(
                     match user_strings::update_engine(&mut templates, &settings) {
-                        Ok(_) => Some(generate_html(model_to_save, &settings, &templates).map_err(|err| err.to_string())),
-                        Err(e) => Some(Err(e))
-                    }
+                        Ok(_) => Some(
+                            generate_html(model_to_save, &settings, &templates)
+                                .map_err(|err| err.to_string()),
+                        ),
+                        Err(e) => Some(Err(e)),
+                    },
                 );
             }
         });
@@ -52,7 +58,7 @@ pub fn Content(app_data: Signal<HdlWizardApp>, templates: Signal<tera::Result<Te
                 None => {
                     rsx! {
                         div { "generating documentation...."
-                        }        
+                        }
                 }},
                 Some(Ok(document)) => {
                     rsx! {

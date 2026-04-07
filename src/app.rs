@@ -4,23 +4,23 @@
 #[cfg(not(target_arch = "wasm32"))]
 use dioxus_desktop::tao;
 
-use std::sync::Arc;
 use crate::file_formats;
+use crate::generate::templates;
+use crate::keys::{key_down_event, KeyAction};
 use crate::navigation;
 use crate::page;
 use crate::settings;
 use crate::undo;
-use crate::generate::templates;
-use crate::keys::{KeyAction,key_down_event};
+use std::sync::Arc;
 
+#[cfg(not(target_arch = "wasm32"))]
+use crate::assets;
 #[cfg(not(target_arch = "wasm32"))]
 use std::cell::RefCell;
 #[cfg(not(target_arch = "wasm32"))]
 use std::fs::File;
 #[cfg(not(target_arch = "wasm32"))]
 use std::io::{BufReader, BufWriter};
-#[cfg(not(target_arch = "wasm32"))]
-use crate::assets;
 
 #[cfg(target_arch = "wasm32")]
 // name of the storage key for app configuration
@@ -69,13 +69,11 @@ pub struct HdlWizardAppSaveTarget {}
 
 /// Application state, that will be passed to all GUI elements for rendering
 pub struct HdlWizardApp {
-
     /// saved part of the application state
     pub data: HdlWizardAppSaveData,
 
     /// undo cache
     pub undo: undo::Undo,
-
 
     // gui state
     /// whether the burger menu is currently open
@@ -97,7 +95,7 @@ pub struct HdlWizardApp {
     pub web_file_save: Option<String>,
 
     /// indicate if a documentation preview generation is requested
-    pub generate_preview : bool
+    pub generate_preview: bool,
 }
 
 /// reasonable defaults for the saved data structure
@@ -108,7 +106,7 @@ impl Default for HdlWizardAppSaveData {
             settings: Default::default(),
             target: Default::default(),
             current_file_name: None,
-            current_path: Default::default()
+            current_path: Default::default(),
         }
     }
 }
@@ -144,7 +142,7 @@ impl Default for HdlWizardApp {
             error_message: None,
             notification: Some("could not load settings".to_owned()),
             web_file_save: None,
-            generate_preview : false
+            generate_preview: false,
         }
     }
 }
@@ -174,7 +172,7 @@ fn load_app_data() -> Result<HdlWizardAppSaveData, std::io::Error> {
                 return Ok(serde_json::from_str(&data)?);
             }
         }
-    } 
+    }
     Err(std::io::Error::from(std::io::ErrorKind::AddrNotAvailable))
 }
 
@@ -210,10 +208,10 @@ fn save_app_data(data: &HdlWizardAppSaveData) -> Result<(), std::io::Error> {
             if let Ok(data_string) = serde_json::to_string(data) {
                 if storage.set_item(STORAGE_NAME, &data_string).is_ok() {
                     return Ok(());
-                } 
+                }
             }
         }
-    } 
+    }
     Err(std::io::Error::from(std::io::ErrorKind::AddrNotAvailable))
 }
 
@@ -228,7 +226,7 @@ impl Drop for HdlWizardApp {
 }
 
 impl HdlWizardApp {
-    /// attempt to restore the state from a previous run and if not use a default state 
+    /// attempt to restore the state from a previous run and if not use a default state
     pub fn try_load() -> Self {
         let mut data = match load_app_data() {
             Ok(data) => data,
@@ -250,14 +248,18 @@ impl HdlWizardApp {
             error_message: None,
             notification: None,
             web_file_save: None,
-            generate_preview: false
+            generate_preview: false,
         }
     }
 
     /// register that a state change took place, so that it can be undone
     pub fn register_undo(&mut self, description: &str) {
-        self.undo
-            .register_modification(description, &self.data.model, &self.data.current_file_name, &self.page_type)
+        self.undo.register_modification(
+            description,
+            &self.data.model,
+            &self.data.current_file_name,
+            &self.page_type,
+        )
     }
 
     /// undo the last change, registering it so that it can be redone if asked
@@ -299,12 +301,22 @@ impl HdlWizardApp {
 
 /// generate the live help column, depending on the displayed page
 #[component]
-pub fn LiveHelp(app_data: Signal<HdlWizardApp>, page_type: page::PageType, live_help_setting: bool) -> Element {
+pub fn LiveHelp(
+    app_data: Signal<HdlWizardApp>,
+    page_type: page::PageType,
+    live_help_setting: bool,
+) -> Element {
     if live_help_setting {
         // content is html generated from markdown, included in the application
         let (title, contents) = match page_type {
-            page::PageType::Project => ("Project", include_str!(concat!(env!("OUT_DIR"), "/live_help/project.html")).to_owned()),
-            page::PageType::Interface(_) => ("Interface", include_str!(concat!(env!("OUT_DIR"), "/live_help/interface.html")).to_owned()),
+            page::PageType::Project => (
+                "Project",
+                include_str!(concat!(env!("OUT_DIR"), "/live_help/project.html")).to_owned(),
+            ),
+            page::PageType::Interface(_) => (
+                "Interface",
+                include_str!(concat!(env!("OUT_DIR"), "/live_help/interface.html")).to_owned(),
+            ),
             page::PageType::Register(int, reg, field) => {
                 // we need to determine if this register is a bitfield, and if it has a bitfield selected, as
                 // this will change which documentation will be shown
@@ -312,52 +324,87 @@ pub fn LiveHelp(app_data: Signal<HdlWizardApp>, page_type: page::PageType, live_
                     if let Some(interface) = app_data.read().data.model.interfaces.get(int) {
                         if let Some(register) = interface.registers.get(reg) {
                             register.signal.is_none()
-                        } else { false}
-                    } else {false}
+                        } else {
+                            false
+                        }
+                    } else {
+                        false
+                    }
                 };
 
                 let has_bitfield_selected = field.is_some();
 
                 // load the different parts
-                let register_top = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-top.html"));
-                let register_med_bitfield = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-med-bitfield.html"));
-                let register_med_normal = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-med-normal.html"));
-                let register_access = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-access.html"));
-                let register_bottom_normal = include_str!(concat!(env!("OUT_DIR"), "/live_help/register-bottom-normal.html"));
-                let bitfield_top = include_str!(concat!(env!("OUT_DIR"), "/live_help/bitfield-top.html"));
-                let bitfield_bottom = include_str!(concat!(env!("OUT_DIR"), "/live_help/bitfield-bottom.html"));
+                let register_top =
+                    include_str!(concat!(env!("OUT_DIR"), "/live_help/register-top.html"));
+                let register_med_bitfield = include_str!(concat!(
+                    env!("OUT_DIR"),
+                    "/live_help/register-med-bitfield.html"
+                ));
+                let register_med_normal = include_str!(concat!(
+                    env!("OUT_DIR"),
+                    "/live_help/register-med-normal.html"
+                ));
+                let register_access =
+                    include_str!(concat!(env!("OUT_DIR"), "/live_help/register-access.html"));
+                let register_bottom_normal = include_str!(concat!(
+                    env!("OUT_DIR"),
+                    "/live_help/register-bottom-normal.html"
+                ));
+                let bitfield_top =
+                    include_str!(concat!(env!("OUT_DIR"), "/live_help/bitfield-top.html"));
+                let bitfield_bottom =
+                    include_str!(concat!(env!("OUT_DIR"), "/live_help/bitfield-bottom.html"));
 
                 // and combine them depending on the context
                 let text = match (is_bitfield, has_bitfield_selected) {
-                    (false, _) => [register_top, register_med_normal, register_access, register_bottom_normal].concat(),
+                    (false, _) => [
+                        register_top,
+                        register_med_normal,
+                        register_access,
+                        register_bottom_normal,
+                    ]
+                    .concat(),
                     (true, false) => [register_top, register_med_bitfield].concat(),
-                    (true, true) => [register_top, register_med_bitfield, bitfield_top, register_access, bitfield_bottom].concat()
+                    (true, true) => [
+                        register_top,
+                        register_med_bitfield,
+                        bitfield_top,
+                        register_access,
+                        bitfield_bottom,
+                    ]
+                    .concat(),
                 };
 
                 ("Register", text)
-            },
-            page::PageType::Preview => ("Preview", include_str!(concat!(env!("OUT_DIR"), "/live_help/preview.html")).to_owned()),
-//                _ => ("WIP","<p>Not written yet</p>".to_owned()) 
-            page::PageType::ChangeRegisterField(_,_,_) => ("", String::new()),
-            page::PageType::Settings(page::SettingsPageType::Strings) => ("WIP","<p>Not written yet</p>".to_owned()),
+            }
+            page::PageType::Preview => (
+                "Preview",
+                include_str!(concat!(env!("OUT_DIR"), "/live_help/preview.html")).to_owned(),
+            ),
+            //                _ => ("WIP","<p>Not written yet</p>".to_owned())
+            page::PageType::ChangeRegisterField(_, _, _) => ("", String::new()),
+            page::PageType::Settings(page::SettingsPageType::Strings) => {
+                ("WIP", "<p>Not written yet</p>".to_owned())
+            }
         };
         rsx!(
             aside { class: "panel ext-sticky m-5 is-link ext-livehelp",
                 p { class: "panel-heading", "{title}" }
-                div { 
+                div {
                     class: "panel-block content",
                     article {
                         dangerous_inner_html : "{contents}"
                     }
                 }
-            }    
+            }
         )
     } else {
         rsx!("")
     }
 }
 
-const STYLE_CSS : &str = include_str!("./style.css");
+const STYLE_CSS: &str = include_str!("./style.css");
 
 /// for windows, convert an url to a filesystem one
 /// We need to use the custom resolver from Dioxus, because the webview2 from Microsoft
@@ -382,15 +429,15 @@ fn convert_url(orig_path: &str) -> String {
 /// application main function, for both web and desktop
 pub fn App() -> Element {
     // this structure holds all the application data and will be sent over all the GUI modules
-    let app_data = use_signal( || {
+    let app_data = use_signal(|| {
         let mut app = HdlWizardApp::try_load();
         app.register_undo("initial load");
         app
     });
-  
-    let key_action: Signal<Option<KeyAction>> = use_signal( || {None });
 
-    let templates = use_signal( || {templates::gen_templates(&app_data.read().data.settings)});
+    let key_action: Signal<Option<KeyAction>> = use_signal(|| None);
+
+    let templates = use_signal(|| templates::gen_templates(&app_data.read().data.settings));
     let templates_ok = templates.peek().is_ok();
 
     // There is no clean way to get an event when the window size or position is changed. The tao WindowEvent is dropped
@@ -420,40 +467,62 @@ pub fn App() -> Element {
     // main stylesheet
     //- on the webapp, get it from the web
     #[cfg(target_arch = "wasm32")]
-    let css_path : &str = "https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css";
+    let css_path: &str = "https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css";
 
     //- on the desktop app, use a local file
     #[cfg(not(target_arch = "wasm32"))]
-    let css_path : String = convert_url(&assets::find_asset("css/bulma.css")
-        .expect("didn't find bulma css file").into_os_string().into_string().unwrap());
+    let css_path: String = convert_url(
+        &assets::find_asset("css/bulma.css")
+            .expect("didn't find bulma css file")
+            .into_os_string()
+            .into_string()
+            .unwrap(),
+    );
 
     // fontawesome import
     //- on the webapp, use the kit from fontawesome.com. Maybe should change this at one point
     #[cfg(target_arch = "wasm32")]
-    let fontawesome_import : Element = rsx!(
-        script { src: "https://kit.fontawesome.com/e5a7832160.js", crossorigin: "anonymous" }
-    );
+    let fontawesome_import: Element = rsx!(script {
+        src: "https://kit.fontawesome.com/e5a7832160.js",
+        crossorigin: "anonymous"
+    });
 
     //- on the desktop app, use local files
     #[cfg(not(target_arch = "wasm32"))]
-    let fontawesome_import : Element = {
-        let fontawesome_path : String = convert_url(&assets::find_asset("css/fontawesome.css")
-            .expect("didn't find fontawesome css file").into_os_string().into_string().unwrap());
-        let brands_path : String = convert_url(&assets::find_asset("css/brands.css")
-            .expect("didn't find fontawesome brands css file").into_os_string().into_string().unwrap());
-        let solid_path : String = convert_url(&assets::find_asset("css/solid.css")
-            .expect("didn't find fontawesome solid css file").into_os_string().into_string().unwrap());
+    let fontawesome_import: Element = {
+        let fontawesome_path: String = convert_url(
+            &assets::find_asset("css/fontawesome.css")
+                .expect("didn't find fontawesome css file")
+                .into_os_string()
+                .into_string()
+                .unwrap(),
+        );
+        let brands_path: String = convert_url(
+            &assets::find_asset("css/brands.css")
+                .expect("didn't find fontawesome brands css file")
+                .into_os_string()
+                .into_string()
+                .unwrap(),
+        );
+        let solid_path: String = convert_url(
+            &assets::find_asset("css/solid.css")
+                .expect("didn't find fontawesome solid css file")
+                .into_os_string()
+                .into_string()
+                .unwrap(),
+        );
 
         rsx!(
-            link { href: brands_path, rel: "stylesheet" }
-            link { href: solid_path, rel: "stylesheet" }
-            link { href: fontawesome_path, rel: "stylesheet" }
-    )};
+                link { href: brands_path, rel: "stylesheet" }
+                link { href: solid_path, rel: "stylesheet" }
+                link { href: fontawesome_path, rel: "stylesheet" }
+        )
+    };
 
     // general variables for page
     let page_type = app_data.read().page_type.to_owned();
     let live_help_setting = app_data.read().live_help.to_owned();
-    
+
     // page render
     let render = rsx! {
         link {
@@ -469,29 +538,29 @@ pub fn App() -> Element {
             {
                 if templates_ok {
                     rsx! {
-                        navigation::NavBar { 
+                        navigation::NavBar {
                             app_data: app_data,
                             templates: templates,
                             key_action: key_action
                         }
                         div { class: "columns",
                             navigation::SideBar {
-                                app_data: app_data 
+                                app_data: app_data
                             }
-                            div { 
-                                class: "column ext-sticky mr-4", 
-                                page::Content { 
+                            div {
+                                class: "column ext-sticky mr-4",
+                                page::Content {
                                     app_data: app_data,
                                     templates: templates
-                                } 
+                                }
                             }
                             LiveHelp {
                                 app_data: app_data,
                                 page_type: page_type,
                                 live_help_setting: live_help_setting
                             }
-                        }    
-                    }        
+                        }
+                    }
                 } else {
                     let error_message = templates.peek().as_ref().unwrap_err().to_string();
 

@@ -103,7 +103,12 @@ impl Undo {
             self.redo_list.push(latest);
 
             let previous_model = self.undo_list.get(num_elements - 2).unwrap().model.clone();
-            let previous_file_name = self.undo_list.get(num_elements - 2).unwrap().file_name.clone();
+            let previous_file_name = self
+                .undo_list
+                .get(num_elements - 2)
+                .unwrap()
+                .file_name
+                .clone();
 
             Some(UndoState {
                 change_description: Default::default(),

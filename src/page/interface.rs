@@ -127,7 +127,7 @@ fn TableLine(
             }
         }
     } else {
-        rsx!{ p { "error.... not in a interface page" } }
+        rsx! { p { "error.... not in a interface page" } }
     }
 }
 
@@ -147,16 +147,14 @@ pub fn Content(app_data: Signal<HdlWizardApp>, interface_num: usize) -> Element 
 
         // now build some items from that list
         let int_items = int_list.iter().map(|(n, int_name, int_address, int_type)| {
-            rsx!(
-                TableLine {
-                    app_data: app_data,
-                    register_number: *n,
-                    register_name: int_name.clone(),
-                    register_type: *int_type,
-                    register_address: int_address.clone(),
-                    key: "{int_name}{n}"
-                }
-            )
+            rsx!(TableLine {
+                app_data: app_data,
+                register_number: *n,
+                register_name: int_name.clone(),
+                register_type: *int_type,
+                register_address: int_address.clone(),
+                key: "{int_name}{n}"
+            })
         });
 
         let interface_width = interface.get_data_width();

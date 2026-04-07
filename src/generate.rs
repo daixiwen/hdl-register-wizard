@@ -1,11 +1,11 @@
 //! Output file generation
 
-pub mod output;
-pub mod tokenlist;
-pub mod genmodel;
-pub mod generror;
-pub mod signal_list;
 pub mod documentation;
-pub mod templates;
-pub mod user_strings;
 pub mod file_list;
+pub mod generror;
+pub mod genmodel;
+pub mod output;
+pub mod signal_list;
+pub mod templates;
+pub mod tokenlist;
+pub mod user_strings;

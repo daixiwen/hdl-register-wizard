@@ -1,8 +1,8 @@
 //! Application settings
 
 use serde::{Deserialize, Serialize};
-use std::default::Default;
 use std::collections::BTreeMap;
+use std::default::Default;
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]
@@ -14,7 +14,7 @@ pub struct Settings {
     /// undo level
     pub undo_level: u32,
     /// user templates
-    pub user_templates: BTreeMap<String,String>
+    pub user_templates: BTreeMap<String, String>,
 }
 
 impl Default for Settings {
@@ -23,7 +23,7 @@ impl Default for Settings {
         Settings {
             dark_mode: None,
             undo_level: 10,
-            user_templates: Default::default()
+            user_templates: Default::default(),
         }
     }
 }

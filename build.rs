@@ -17,12 +17,14 @@ fn main() {
 
     for path in paths {
         if let Ok(path) = path {
-
             let path = path.path();
             let markdown = fs::read_to_string(path.clone()).expect("unable to read file");
             let html = mini_markdown::render(&markdown);
 
-            let dest_file = dest_dir.clone().join(path.file_name().unwrap()).with_extension("html");
+            let dest_file = dest_dir
+                .clone()
+                .join(path.file_name().unwrap())
+                .with_extension("html");
 
             fs::write(dest_file, html).expect("error writing html file");
         }

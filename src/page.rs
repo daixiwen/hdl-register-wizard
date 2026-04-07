@@ -1,15 +1,15 @@
 //! app pages
 #![allow(non_snake_case)]
 use crate::app::HdlWizardApp;
-use dioxus::prelude::*;
 use dioxus::document::eval;
+use dioxus::prelude::*;
 use futures_timer::Delay;
 use std::time::Duration;
-use tera::{Tera,Result};
+use tera::{Result, Tera};
 
 #[derive(PartialEq, Clone)]
 pub enum SettingsPageType {
-    Strings
+    Strings,
 }
 
 #[derive(PartialEq, Clone)]
@@ -19,16 +19,16 @@ pub enum PageType {
     Register(usize, usize, Option<usize>),
     ChangeRegisterField(usize, usize, usize),
     Settings(SettingsPageType),
-    Preview
+    Preview,
 }
 
 pub mod interface;
+pub mod preview;
 pub mod project;
 pub mod register;
-pub mod preview;
 pub mod settings_strings;
 
-/// when saving a file on the webapp, create an URI that the user can click to download 
+/// when saving a file on the webapp, create an URI that the user can click to download
 #[cfg(target_arch = "wasm32")]
 #[component]
 pub fn FileSave(app_data: Signal<HdlWizardApp>) -> Element {
@@ -37,7 +37,7 @@ pub fn FileSave(app_data: Signal<HdlWizardApp>) -> Element {
     let app_data = app_data.read();
     if let Some(download_uri) = &app_data.web_file_save {
         let file_name = match &app_data.data.current_file_name {
-            None => format!("{}.regwiz",&app_data.data.model.name),
+            None => format!("{}.regwiz", &app_data.data.model.name),
             Some(name) => name.clone(),
         };
 
@@ -49,7 +49,8 @@ pub fn FileSave(app_data: Signal<HdlWizardApp>) -> Element {
                 setTimeout(function() {
                     document.getElementById("autodownload").click();    
                     }, 100);
-                "#);
+                "#,
+        );
 
         rsx! {
             div {
@@ -89,7 +90,7 @@ pub fn FileSave(app_data: Signal<HdlWizardApp>) -> Element {
             }
         }
     } else {
-        rsx!{
+        rsx! {
             ""
         }
     }
@@ -109,7 +110,7 @@ pub fn Content(app_data: Signal<HdlWizardApp>, templates: Signal<Result<Tera>>) 
     let mut notification_timer = use_signal(|| false);
 
     let page_type = app_data.read().page_type.to_owned();
-    
+
     // notification system. We use a timer in a future to know when to remove it
     if notification_timer() {
         app_data.write().notification = None;
@@ -189,11 +190,11 @@ pub fn Content(app_data: Signal<HdlWizardApp>, templates: Signal<Result<Tera>>) 
                 rsx! {}
             }
         },
-        // add the box for the file save when in the webapp        
+        // add the box for the file save when in the webapp
         FileSave {
             app_data: app_data
         }
-        
+
         // fill in the contents, calling the correct module depending on the page type
         match page_type {
             PageType::Project => {

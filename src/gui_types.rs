@@ -1,6 +1,6 @@
 //! Types used in different parts of the GUI
 
-use crate::utils;   
+use crate::utils;
 
 /// trait for all types that can be edited as a string to provide a validate function
 /// this function will be called by the GUI to report to the user whether the value

@@ -2,52 +2,82 @@
 //!
 #![allow(non_snake_case)]
 use crate::app::HdlWizardApp;
-use dioxus::prelude::*;
 use crate::file_formats::mdf;
 use crate::gui_types;
+use crate::keys::KeyAction;
 use crate::page::PageType;
 use crate::utils;
-use crate::keys::KeyAction;
+use dioxus::prelude::*;
 
 /// wraps a closure into an EventHandler that can be trnasmitted to Dioxus
 /// the closures work directly on the model or a part of it. It is safe to unwrap() here because apply_function() below already checks
-/// that the indexes are valid 
-pub fn callback_model<F : 'static>(mut app_data: Signal<HdlWizardApp>, updatefn : impl Fn(&mut mdf::Mdf, F) + 'static) -> EventHandler<F> {
-    EventHandler::new(move |f| 
-        app_data.with_mut(|data| updatefn(data.get_mut_model(), f)))
+/// that the indexes are valid
+pub fn callback_model<F: 'static>(
+    mut app_data: Signal<HdlWizardApp>,
+    updatefn: impl Fn(&mut mdf::Mdf, F) + 'static,
+) -> EventHandler<F> {
+    EventHandler::new(move |f| app_data.with_mut(|data| updatefn(data.get_mut_model(), f)))
 }
 
-pub fn callback_interface<F : 'static>(mut app_data: Signal<HdlWizardApp>, updatefn : impl Fn(&mut mdf::Interface, F) + 'static) -> EventHandler<(usize, F)> {
-    EventHandler::new(move |(interface_num, f)| 
-        app_data.with_mut(|data| updatefn(data.get_mut_model().interfaces.get_mut(interface_num).unwrap(), f)))
-}
-
-pub fn callback_register<F : 'static>(mut app_data: Signal<HdlWizardApp>, updatefn : impl Fn(&mut mdf::Register, F) + 'static) -> EventHandler<(usize, usize, F)> {
-    EventHandler::new(move |(interface_num, register_num, f)| 
+pub fn callback_interface<F: 'static>(
+    mut app_data: Signal<HdlWizardApp>,
+    updatefn: impl Fn(&mut mdf::Interface, F) + 'static,
+) -> EventHandler<(usize, F)> {
+    EventHandler::new(move |(interface_num, f)| {
         app_data.with_mut(|data| {
-            let interface: &mut mdf::Interface = data.get_mut_model().interfaces.get_mut(interface_num).unwrap();
+            updatefn(
+                data.get_mut_model()
+                    .interfaces
+                    .get_mut(interface_num)
+                    .unwrap(),
+                f,
+            )
+        })
+    })
+}
+
+pub fn callback_register<F: 'static>(
+    mut app_data: Signal<HdlWizardApp>,
+    updatefn: impl Fn(&mut mdf::Register, F) + 'static,
+) -> EventHandler<(usize, usize, F)> {
+    EventHandler::new(move |(interface_num, register_num, f)| {
+        app_data.with_mut(|data| {
+            let interface: &mut mdf::Interface = data
+                .get_mut_model()
+                .interfaces
+                .get_mut(interface_num)
+                .unwrap();
             updatefn(interface.registers.get_mut(register_num).unwrap(), f)
-        }))
+        })
+    })
 }
 
-pub fn callback_field<F : 'static>(mut app_data: Signal<HdlWizardApp>, updatefn : impl Fn(&mut mdf::Field, F) + 'static) -> EventHandler<(usize, usize, usize, F)> {
-    EventHandler::new(move |(interface_num, register_num, field_num, f)| 
+pub fn callback_field<F: 'static>(
+    mut app_data: Signal<HdlWizardApp>,
+    updatefn: impl Fn(&mut mdf::Field, F) + 'static,
+) -> EventHandler<(usize, usize, usize, F)> {
+    EventHandler::new(move |(interface_num, register_num, field_num, f)| {
         app_data.with_mut(|data| {
-            let interface: &mut mdf::Interface = data.get_mut_model().interfaces.get_mut(interface_num).unwrap();
+            let interface: &mut mdf::Interface = data
+                .get_mut_model()
+                .interfaces
+                .get_mut(interface_num)
+                .unwrap();
             let register: &mut mdf::Register = interface.registers.get_mut(register_num).unwrap();
             updatefn(register.fields.get_mut(field_num).unwrap(), f)
-        }))
+        })
+    })
 }
 
 /// calls one of the update functions applying on one part of the model depending on the page type
-pub fn apply_function<F : 'static>(
+pub fn apply_function<F: 'static>(
     mut app_data: Signal<HdlWizardApp>,
     value: F,
     undo_description: &str,
     update_model: Option<EventHandler<F>>,
-    update_int: Option<EventHandler<(usize,F)>>,
-    update_reg: Option<EventHandler<(usize,usize,F)>>,
-    update_field: Option<EventHandler<(usize,usize,usize,F)>>,
+    update_int: Option<EventHandler<(usize, F)>>,
+    update_reg: Option<EventHandler<(usize, usize, F)>>,
+    update_field: Option<EventHandler<(usize, usize, usize, F)>>,
 ) {
     let page_type = &app_data.read().page_type.clone();
     match page_type {
@@ -55,7 +85,9 @@ pub fn apply_function<F : 'static>(
         PageType::Project => {
             if let Some(updatefn_ref) = update_model {
                 updatefn_ref(value);
-                app_data.with_mut(|app_data| { app_data.register_undo(undo_description);});
+                app_data.with_mut(|app_data| {
+                    app_data.register_undo(undo_description);
+                });
             }
         }
 
@@ -63,8 +95,10 @@ pub fn apply_function<F : 'static>(
         PageType::Interface(interface_number) => {
             if let Some(updatefn_ref) = &update_int {
                 if *interface_number < app_data.peek().data.model.interfaces.len() {
-                    updatefn_ref((*interface_number,value));
-                    app_data.with_mut(|app_data| { app_data.register_undo(undo_description);});
+                    updatefn_ref((*interface_number, value));
+                    app_data.with_mut(|app_data| {
+                        app_data.register_undo(undo_description);
+                    });
                 }
             }
         }
@@ -82,7 +116,9 @@ pub fn apply_function<F : 'static>(
                 }
                 if valid {
                     updatefn_ref((*interface_number, *register_number, value));
-                    app_data.with_mut(|app_data| { app_data.register_undo(undo_description); });
+                    app_data.with_mut(|app_data| {
+                        app_data.register_undo(undo_description);
+                    });
                 }
             } else {
                 if let Some(updatefn_ref) = &update_field {
@@ -99,27 +135,31 @@ pub fn apply_function<F : 'static>(
                         }
                     }
                     if valid {
-                        updatefn_ref((*interface_number, *register_number, field_number.unwrap(),value));
-                        app_data.with_mut(|app_data| { app_data.register_undo(undo_description); });
+                        updatefn_ref((
+                            *interface_number,
+                            *register_number,
+                            field_number.unwrap(),
+                            value,
+                        ));
+                        app_data.with_mut(|app_data| {
+                            app_data.register_undo(undo_description);
+                        });
                     }
                 }
             }
-        },
+        }
         // preview... should never happen
-        PageType::Preview => {
-        },
+        PageType::Preview => {}
         // change register field... should never happen either
-        PageType::ChangeRegisterField(_,_,_) => {
-        },
+        PageType::ChangeRegisterField(_, _, _) => {}
         // settings... should never happen
-        PageType::Settings(_) => {
-        },
+        PageType::Settings(_) => {}
     }
 }
 
 /// properties for a generic GUI widget
 #[derive(Props, Clone, PartialEq)]
-pub struct GuiGenericProps<F : Clone + PartialEq + 'static> {
+pub struct GuiGenericProps<F: Clone + PartialEq + 'static> {
     app_data: Signal<HdlWizardApp>,
     gui_label: &'static str,
     value: F,
@@ -127,13 +167,15 @@ pub struct GuiGenericProps<F : Clone + PartialEq + 'static> {
     undo_label: Option<&'static str>,
     rows: Option<u32>,
     update_model: Option<EventHandler<F>>,
-    update_int: Option<EventHandler<(usize,F)>>,
-    update_reg: Option<EventHandler<(usize,usize,F)>>,
-    update_field: Option<EventHandler<(usize,usize,usize,F)>>,
+    update_int: Option<EventHandler<(usize, F)>>,
+    update_reg: Option<EventHandler<(usize, usize, F)>>,
+    update_field: Option<EventHandler<(usize, usize, usize, F)>>,
 }
 
 /// generic text widget component, using any type that can be converted to and from a string
-pub fn TextGeneric<F: gui_types::Validable + std::string::ToString + std::str::FromStr + Clone + PartialEq>(
+pub fn TextGeneric<
+    F: gui_types::Validable + std::string::ToString + std::str::FromStr + Clone + PartialEq,
+>(
     props: GuiGenericProps<F>,
 ) -> Element {
     let gui_label = props.gui_label;
@@ -224,8 +266,11 @@ pub fn TextArea(props: GuiGenericProps<Option<Vec<String>>>) -> Element {
 }
 
 /// combobox widget using an enum type that uses the strum derives for conversion to and from a string
-pub fn EnumWidget<F: PartialEq + Clone + strum::IntoEnumIterator + std::string::ToString + std::str::FromStr>(
-    props: GuiGenericProps<F>) -> Element {
+pub fn EnumWidget<
+    F: PartialEq + Clone + strum::IntoEnumIterator + std::string::ToString + std::str::FromStr,
+>(
+    props: GuiGenericProps<F>,
+) -> Element {
     let gui_label = props.gui_label;
     let value = props.value;
     let undo_description = props.undo_label.unwrap_or_default();
@@ -270,7 +315,7 @@ pub fn EnumWidget<F: PartialEq + Clone + strum::IntoEnumIterator + std::string::
 
 /// properties for a GUI widget with an optional value (Auto/Manual)
 #[derive(Props, Clone, PartialEq)]
-pub struct GuiAutoManuProps<F : Clone + PartialEq + 'static> {
+pub struct GuiAutoManuProps<F: Clone + PartialEq + 'static> {
     app_data: Signal<HdlWizardApp>,
     gui_label: &'static str,
     field_class: Option<&'static str>,
@@ -280,14 +325,23 @@ pub struct GuiAutoManuProps<F : Clone + PartialEq + 'static> {
     default: Option<F>,
     undo_label: Option<&'static str>,
     update_model: Option<EventHandler<Option<F>>>,
-    update_int: Option<EventHandler<(usize,Option<F>)>>,
-    update_reg: Option<EventHandler<(usize,usize,Option<F>)>>,
-    update_field: Option<EventHandler<(usize,usize,usize,Option<F>)>>,
+    update_int: Option<EventHandler<(usize, Option<F>)>>,
+    update_reg: Option<EventHandler<(usize, usize, Option<F>)>>,
+    update_field: Option<EventHandler<(usize, usize, usize, Option<F>)>>,
 }
 
 /// text widget component with an Auto option
-pub fn AutoManuText<F: Default + Clone + PartialEq + gui_types::Validable + std::string::ToString + std::str::FromStr + Clone>(
-    props: GuiAutoManuProps<F>) -> Element {
+pub fn AutoManuText<
+    F: Default
+        + Clone
+        + PartialEq
+        + gui_types::Validable
+        + std::string::ToString
+        + std::str::FromStr
+        + Clone,
+>(
+    props: GuiAutoManuProps<F>,
+) -> Element {
     let gui_label = props.gui_label;
     let default = match props.default {
         Some(default) => default.clone(),
@@ -392,7 +446,7 @@ pub fn AutoManuText<F: Default + Clone + PartialEq + gui_types::Validable + std:
 
 /// properties for a combobox widget with an optional value
 #[derive(Props, Clone, PartialEq)]
-pub struct OptionEnumWidgetProps<F : Clone + PartialEq + 'static> {
+pub struct OptionEnumWidgetProps<F: Clone + PartialEq + 'static> {
     app_data: Signal<HdlWizardApp>,
     gui_label: &'static str,
     #[props(!optional)]
@@ -401,15 +455,18 @@ pub struct OptionEnumWidgetProps<F : Clone + PartialEq + 'static> {
     field_for_none: Option<&'static str>,
     disabled: Option<bool>,
     update_model: Option<EventHandler<Option<F>>>,
-    update_int: Option<EventHandler<(usize,Option<F>)>>,
-    update_reg: Option<EventHandler<(usize,usize,Option<F>)>>,
-    update_field: Option<EventHandler<(usize,usize,usize,Option<F>)>>,
+    update_int: Option<EventHandler<(usize, Option<F>)>>,
+    update_reg: Option<EventHandler<(usize, usize, Option<F>)>>,
+    update_field: Option<EventHandler<(usize, usize, usize, Option<F>)>>,
 }
 
 /// combobox widget using an option of an enum type that uses the strum derives for conversion to and from a string.
 /// field_for_none can be used to indicate which label should be used for None
-pub fn OptionEnumWidget<F: PartialEq + Clone + strum::IntoEnumIterator + std::string::ToString + std::str::FromStr>(
-    props: OptionEnumWidgetProps<F>) -> Element {
+pub fn OptionEnumWidget<
+    F: PartialEq + Clone + strum::IntoEnumIterator + std::string::ToString + std::str::FromStr,
+>(
+    props: OptionEnumWidgetProps<F>,
+) -> Element {
     let gui_label = props.gui_label;
     let value = props.value;
     let undo_description = props.undo_label.unwrap_or_default();
@@ -500,9 +557,9 @@ pub struct CheckBoxProps {
     value: bool,
     undo_label: Option<&'static str>,
     update_model: Option<EventHandler<bool>>,
-    update_int: Option<EventHandler<(usize,bool)>>,
-    update_reg: Option<EventHandler<(usize,usize,bool)>>,
-    update_field: Option<EventHandler<(usize,usize,usize,bool)>>,
+    update_int: Option<EventHandler<(usize, bool)>>,
+    update_reg: Option<EventHandler<(usize, usize, bool)>>,
+    update_field: Option<EventHandler<(usize, usize, usize, bool)>>,
 }
 
 /// checkbox widget component, using a boolean for the value type
@@ -551,42 +608,50 @@ pub fn CheckBox(props: CheckBoxProps) -> Element {
 
 // entry for a menu
 #[component]
-pub fn MenuEntry(key_action : Option<Signal<Option<KeyAction>>>,
-    binding: Option<KeyAction>, action: EventHandler, icon : String,
-    label : String, key_name : Option<String>, key_modifiers: Option<Modifiers>) -> Element {
-
-#[cfg(not(target_arch = "wasm32"))]
+pub fn MenuEntry(
+    key_action: Option<Signal<Option<KeyAction>>>,
+    binding: Option<KeyAction>,
+    action: EventHandler,
+    icon: String,
+    label: String,
+    key_name: Option<String>,
+    key_modifiers: Option<Modifiers>,
+) -> Element {
+    #[cfg(not(target_arch = "wasm32"))]
     let ctrl_modif = if key_modifiers.is_some() && key_modifiers.unwrap().ctrl() {
         rsx! {
             i { class: "fa-solid fa-angle-up"}
         }
-    } else { rsx! {} };
-#[cfg(not(target_arch = "wasm32"))]
+    } else {
+        rsx! {}
+    };
+    #[cfg(not(target_arch = "wasm32"))]
     let shift_modif = if key_modifiers.is_some() && key_modifiers.unwrap().shift() {
         rsx! {
             i { class: "fa-solid fa-arrow-up-from-bracket"}
         }
-    } else { rsx! {} };
+    } else {
+        rsx! {}
+    };
 
     // do not provide key bindings for web as I haven't figured a way to
     // make them work properly yet
-#[cfg(target_arch = "wasm32")]
+    #[cfg(target_arch = "wasm32")]
     let key_bindings: Element = rsx! {};
-#[cfg(not(target_arch = "wasm32"))]
-    let key_bindings = 
-        if let Some(key_name) = key_name {
-            rsx! {
-                span {
-                    class: "ext-menukeybinding", 
-                    { ctrl_modif },
-                    { shift_modif },
-                    "{key_name}"
-                }
+    #[cfg(not(target_arch = "wasm32"))]
+    let key_bindings = if let Some(key_name) = key_name {
+        rsx! {
+            span {
+                class: "ext-menukeybinding",
+                { ctrl_modif },
+                { shift_modif },
+                "{key_name}"
             }
-        } else {
-            rsx! {}
-        };
- 
+        }
+    } else {
+        rsx! {}
+    };
+
     if crate::keys::key_event_check(key_action, binding) {
         action(());
         rsx! {}
@@ -604,6 +669,5 @@ pub fn MenuEntry(key_action : Option<Signal<Option<KeyAction>>>,
                 }
             }
         }
-
-    }    
+    }
 }

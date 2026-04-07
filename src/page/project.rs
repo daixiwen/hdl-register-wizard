@@ -10,7 +10,8 @@ use dioxus::prelude::*;
 
 /// builds a line in the table with all the interfaces
 #[component]
-fn TableLine(app_data: Signal<HdlWizardApp>,
+fn TableLine(
+    app_data: Signal<HdlWizardApp>,
     interface_number: usize,
     interface_name: String,
     interface_type: mdf::InterfaceType,
@@ -111,15 +112,13 @@ pub fn Content(app_data: Signal<HdlWizardApp>) -> Element {
 
     // now build some items from that list
     let int_items = int_list.iter().map(|(n, int_name, int_type)| {
-        rsx!(
-            TableLine {
-                app_data: app_data,
-                interface_number: *n,
-                interface_name: int_name.clone(),
-                interface_type: *int_type,
-                key: "{int_name}{n}"
-            }
-        )
+        rsx!(TableLine {
+            app_data: app_data,
+            interface_number: *n,
+            interface_name: int_name.clone(),
+            interface_type: *int_type,
+            key: "{int_name}{n}"
+        })
     });
 
     rsx! {
