@@ -6,3 +6,5 @@ mod opt_vec_str;
 mod tokenlist;
 #[cfg(test)]
 mod vector_value;
+#[cfg(test)]
+mod templates;

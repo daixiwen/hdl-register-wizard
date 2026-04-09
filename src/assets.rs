@@ -37,6 +37,8 @@ pub fn find_asset(rel_path: &str) -> Option<std::path::PathBuf> {
         exe_path.pop();
         exe_path.pop();
         exe_path.pop();
+        #[cfg(test)]
+        exe_path.pop();
         exe_path.push("src");
         exe_path.push(rel_path);
 

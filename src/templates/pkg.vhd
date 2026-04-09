@@ -10,10 +10,10 @@ package {{ pkg_name }} is
 {%- macro pkg_interface(interface) -%}
 
   -- Register list
-  type {{ register_enum_name }} is
+  type {{ interface.register_enum_name }} is
 
   {%- for register in interface.registers -%}
-    {{ register.token_name}}{%- if not loop.last %-},{%- endif %}
+    {{ register.token_name}}{%- if (loop.index != loop.last) -%},{%- endif %}
   {% endfor %};
 
   -- Addresses list
@@ -21,7 +21,7 @@ package {{ pkg_name }} is
   constant {{ register.address_const_name }} : integer := 16#{{ register.address_hex}}#;
   {% endfor %};
 
-  {%- if interface.use_stride %-}
+  {%- if interface.use_stride %}
   -- Stride constants list
     {%- for register in interface.registers -%}
       {%- if register.is_stride %}
@@ -39,7 +39,7 @@ package {{ pkg_name }} is
   {%- endif -%}
 
   -- Address decoding functions
-  function {{ interface.address_decoder_name }} (address : unsigned) return {{ register_enum_name }};
+  function {{ interface.address_decoder_name }} (address : unsigned) return {{ interface.register_enum_name }};
   {%- if interface.use_stride %}
   function {{ interface.address_stride_func_name }} (address : unsigned) return integer;
   {% endif -%}
@@ -49,7 +49,7 @@ package {{ pkg_name }} is
   {% for register in interface.registers -%}
     {% for field in register.fields -%}
       {% for entry in field.core2pif -%}
-    {{ entry.name }} : {{ entry.type }};  -- {{ entry.description }}
+    {{ entry.name }} : {{ entry.signal_type }};  -- {{ entry.description }}
       {%- endfor -%}    
     {%- endfor -%}    
   {%- endfor -%}    
@@ -59,7 +59,7 @@ package {{ pkg_name }} is
   {% for register in interface.registers -%}
     {% for field in register.fields -%}
       {% for entry in field.pif2core -%}
-    {{ entry.name }} : {{ entry.type }};  -- {{ entry.description }}
+    {{ entry.name }} : {{ entry.signal_type }};  -- {{ entry.description }}
       {%- endfor -%}    
     {%- endfor -%}    
   {%- endfor -%}    

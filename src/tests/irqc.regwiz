@@ -1,0 +1,137 @@
+{
+  "name": "irqc",
+  "interfaces": [
+    {
+      "name": "sbi",
+      "description": [
+        "Control/Status register interface."
+      ],
+      "type": "SBI",
+      "registers": [
+        {
+          "name": "IER",
+          "address": "auto",
+          "summary": [
+            "Interrupt Enable Register."
+          ],
+          "description": [
+            "Interrupt Enable Register"
+          ],
+          "width": 32,
+          "access": "RW",
+          "signal": "std_logic_vector",
+          "reset": "0x0",
+          "location": "pif"
+        },
+        {
+          "name": "IRR",
+          "address": "auto",
+          "summary": [
+            "Interrupt Request Register."
+          ],
+          "description": [
+            "Interrupt Request Register"
+          ],
+          "width": 32,
+          "access": "RO",
+          "signal": "std_logic_vector",
+          "reset": "0x0",
+          "location": "core",
+          "coreSignalProperties": {
+            "useReadEnable": false
+          }
+        },
+        {
+          "name": "IPR",
+          "address": "auto",
+          "summary": [
+            "Interrupt Pending Register."
+          ],
+          "description": [
+            "Interrupt Pending Register"
+          ],
+          "width": 32,
+          "access": "RO",
+          "signal": "std_logic_vector",
+          "reset": "0x0",
+          "location": "core",
+          "coreSignalProperties": {
+            "useReadEnable": false
+          }
+        },
+        {
+          "name": "ICR",
+          "address": "auto",
+          "summary": [
+            "Interrupt Clear Register."
+          ],
+          "description": [
+            "Interrupt Clear Register"
+          ],
+          "width": 32,
+          "access": "WO",
+          "signal": "std_logic_vector",
+          "reset": "0x0",
+          "location": "core",
+          "coreSignalProperties": {
+            "useWriteEnable": false
+          }
+        },
+        {
+          "name": "ITR",
+          "address": "auto",
+          "summary": [
+            "Interrupt Clear Register."
+          ],
+          "description": [
+            "Interrupt Clear Register"
+          ],
+          "width": 32,
+          "access": "WO",
+          "signal": "std_logic_vector",
+          "reset": "0x0",
+          "location": "core",
+          "coreSignalProperties": {
+            "useWriteEnable": false
+          }
+        },
+        {
+          "name": "IRQ2CPU_ENA",
+          "address": "auto",
+          "summary": [
+            "Interrupt Request to CPU Register."
+          ],
+          "description": [
+            "Interrupt Request to CPU Register."
+          ],
+          "width": 1,
+          "access": "WO",
+          "signal": "std_logic",
+          "reset": "0x0",
+          "location": "core",
+          "coreSignalProperties": {
+            "useWriteEnable": true
+          }
+        },
+        {
+          "name": "IRQ2CPU_allowed",
+          "address": "auto",
+          "summary": [
+            "Interrupt Request to CPU Allowed Register."
+          ],
+          "description": [
+            "Interrupt Request to CPU Allowed Register."
+          ],
+          "width": 1,
+          "access": "RO",
+          "signal": "std_logic",
+          "reset": "0x0",
+          "location": "core",
+          "coreSignalProperties": {
+            "useReadEnable": false
+          }
+        }
+      ]
+    }
+  ]
+}
