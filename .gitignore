@@ -12,3 +12,4 @@ install/hdlregisterwizard-user.msi
 .flatpak-builder
 repo
 *.flatpak
+src/tests/output
