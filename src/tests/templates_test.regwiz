@@ -1,0 +1,192 @@
+{
+  "name": "Templates test project",
+  "interfaces": [
+    {
+      "name": "sbi_bus",
+      "description": [
+        "some test signals on the SBI bus, using automatic width, addresses, one bitstream and one stride register"
+      ],
+      "type": "SBI",
+      "registers": [
+        {
+          "name": "one_bit",
+          "address": "auto",
+          "summary": [
+            "one read/write bit"
+          ],
+          "description": [
+            "one read/write bit in the PIF, std_logic type"
+          ],
+          "width": 1,
+          "access": "RW",
+          "signal": "std_logic",
+          "reset": 0,
+          "location": "pif"
+        },
+        {
+          "name": "vector",
+          "address": "auto",
+          "summary": [
+            "32 bit data read only"
+          ],
+          "description": [
+            "vector read only, in the core, std_logic_vector type"
+          ],
+          "width": 32,
+          "access": "RO",
+          "signal": "std_logic_vector",
+          "reset": 0,
+          "location": "core"
+        },
+        {
+          "name": "unsigned_vector",
+          "address": "auto",
+          "summary": [
+            "32 bit data write only"
+          ],
+          "description": [
+            "unsigned write only, in the core, with write enable"
+          ],
+          "width": 32,
+          "access": "WO",
+          "signal": "unsigned",
+          "reset": 0,
+          "location": "core",
+          "coreSignalProperties": {
+            "useWriteEnable": true
+          }
+        },
+        {
+          "name": "signed_vector",
+          "address": "auto",
+          "summary": [
+            "32 bit data read/write"
+          ],
+          "description": [
+            "unsigned write only, in the core, with write and read enables"
+          ],
+          "width": 32,
+          "access": "RW",
+          "signal": "signed",
+          "reset": 0,
+          "location": "core",
+          "coreSignalProperties": {
+            "useReadEnable": true,
+            "useWriteEnable": true
+          }
+        },
+        {
+          "name": "bool",
+          "address": "auto",
+          "summary": [
+            "boolean "
+          ],
+          "description": [
+            "boolean read/write in the pif, with write and read enables"
+          ],
+          "width": 1,
+          "access": "RW",
+          "signal": "boolean",
+          "reset": 0,
+          "location": "pif",
+          "coreSignalProperties": {
+            "useReadEnable": true,
+            "useWriteEnable": true
+          }
+        },
+        {
+          "name": "bitfield",
+          "address": "auto",
+          "summary": [
+            "a bitfield"
+          ],
+          "description": [
+            "a bitfield with different field types, all in pif"
+          ],
+          "location": "pif",
+          "fields": [
+            {
+              "name": "one_bit",
+              "position": "0",
+              "description": [
+                "one bit, read/write"
+              ],
+              "access": "RW",
+              "signal": "std_logic",
+              "reset": 0,
+              "location": "pif",
+              "coreSignalProperties": {}
+            },
+            {
+              "name": "vector",
+              "position": "4:1",
+              "description": [
+                "read-only vector, constant value"
+              ],
+              "access": "RO",
+              "signal": "std_logic_vector",
+              "reset": 2,
+              "location": "pif",
+              "coreSignalProperties": {}
+            },
+            {
+              "name": "unsigned_vec",
+              "position": "8:5",
+              "description": [
+                "unsigned vector, write only, with write enable"
+              ],
+              "access": "WO",
+              "signal": "unsigned",
+              "reset": 0,
+              "location": "pif",
+              "coreSignalProperties": {
+                "useWriteEnable": true
+              }
+            },
+            {
+              "name": "signed_vec",
+              "position": "12:9",
+              "description": [
+                "read/write signed vector"
+              ],
+              "access": "RW",
+              "signal": "signed",
+              "reset": 0,
+              "location": "pif",
+              "coreSignalProperties": {}
+            },
+            {
+              "name": "bool",
+              "position": "13",
+              "description": [
+                "read/write boolean with read enable"
+              ],
+              "access": "RW",
+              "signal": "boolean",
+              "reset": 0,
+              "location": "pif",
+              "coreSignalProperties": {
+                "useReadEnable": true
+              }
+            }
+          ]
+        },
+        {
+          "name": "stride",
+          "address": "auto:stride:4",
+          "summary": [
+            "an array"
+          ],
+          "description": [
+            "a register with multiple addresses, auto increment"
+          ],
+          "width": 32,
+          "access": "RW",
+          "signal": "std_logic_vector",
+          "reset": 0,
+          "location": "pif"
+        }
+      ]
+    }
+  ]
+}

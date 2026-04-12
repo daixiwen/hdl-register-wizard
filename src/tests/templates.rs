@@ -9,7 +9,6 @@ use super::super::generate::{genmodel, user_strings, templates, file_list};
 use super::super::settings;
 use std::collections::BTreeMap;
 use std::default::Default;
-use tera::Tera;
 
 #[test]
 fn run_all_templates() -> Result<(), Box<dyn Error>> {
@@ -23,7 +22,7 @@ fn run_all_templates() -> Result<(), Box<dyn Error>> {
     test_map_path.pop();
     test_map_path.push("src/tests");
     let mut example_file_path = test_map_path.clone();
-    example_file_path.push("irqc.regwiz");
+    example_file_path.push("templates_test.regwiz");
     let example_file = File::open(example_file_path)?;
     let reader = BufReader::new(example_file);
     let model: Mdf = serde_json::from_reader(reader)?;
