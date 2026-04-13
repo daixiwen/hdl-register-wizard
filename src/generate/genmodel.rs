@@ -771,7 +771,7 @@ impl GenField {
         };
 
         let position = if width == 1 {
-            (width - 1).to_string()
+            offset.to_string()
         } else {
             format!("{}..{}", width + offset - 1, offset)
         };
