@@ -368,10 +368,10 @@ impl Address {
 
                 match stride.increment {
                     None => {
-                        format!("{} + (0..{})", value_str, count_minus_one)
+                        format!("{} (0 \\- {})", value_str, count_minus_one)
                     }
                     Some(increment) => {
-                        format!("{} + (0..{})*{}", value_str, count_minus_one, increment)
+                        format!("{}(0 \\- {}) \\* {}", value_str, count_minus_one, increment)
                     }
                 }
             }

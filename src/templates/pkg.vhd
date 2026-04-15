@@ -21,7 +21,7 @@ package {{ pkg_name }} is
 
   -- Addresses list
   {% for register in interface.registers -%}
-  constant {{ register.address_const_name }} : integer := 16#{{ register.address_hex}}#;
+  constant {{ register.address_const_name }} : integer := 16#{{ register.address_hex}}#; -- {{ register.address_pretty }}
   {% endfor -%}
 
   {%- if interface.use_stride %}
@@ -36,10 +36,17 @@ package {{ pkg_name }} is
   -- Stride array types
     {%- for register in interface.registers -%}
       {%- if register.is_stride %}
-      type {{ register.stride_array_type }} is array ({{ register.stride_count - 1 }} downto 0) of {{ register.fields.0.sig_type_complete }};
+        {%- if register.is_bitfield %}
+          {%- for field in register.fields %}
+  type {{ field.stride_array_type }} is array ({{ register.stride_count - 1 }} downto 0) of {{ field.sig_type_complete }};
+          {%- endfor -%}
+        {%- else %}
+  type {{ register.fields.0.stride_array_type }} is array ({{ register.stride_count - 1 }} downto 0) of {{ register.fields.0.sig_type_complete }};
+        {%- endif -%}
       {%- endif -%}
     {%- endfor -%}
   {%- endif %}
+
   -- Address decoding functions
   function {{ interface.address_decoder_name }} (address : unsigned) return {{ interface.register_enum_name }};
   {%- if interface.use_stride %}

@@ -698,9 +698,9 @@ impl GenRegister {
         } as u32;
 
         let stride_increment = match &register.address.stride {
-            None => interface_data_width,
+            None => (interface_data_width + 7) / 8,
             Some(stride) => match stride.increment {
-                None => interface_data_width,
+                None => (interface_data_width + 7) / 8,
                 Some(increment_value) => increment_value.value as u32,
             },
         };
