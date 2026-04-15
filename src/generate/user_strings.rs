@@ -39,12 +39,13 @@ pub const GF_WIDTH_CONST_NAME: &str = "gf_width_const_name";
 pub const GF_OFFSET_CONST_NAME: &str = "gf_offset_const_name";
 pub const GF_DATA_NAME: &str = "gf_data_name";
 pub const GF_DATA_DESCRIPTION: &str = "gf_data_description";
+pub const GF_STRIDE_FIELD_ARRAY_TYPE: &str = "gf_stride_field_array_type";
 pub const GF_READ_ENABLE_NAME: &str = "gf_read_enable_name";
 pub const GF_READ_ENABLE_DESCRIPTION: &str = "gf_read_enable_description";
 pub const GF_WRITE_ENABLE_NAME: &str = "gf_write_enable_name";
 pub const GF_WRITE_ENABLE_DESCRIPTION: &str = "gf_write_enable_description";
 
-pub const USER_NAMES_SPECS: [UserStringSpec; 26] = [
+pub const USER_NAMES_SPECS: [UserStringSpec; 27] = [
     UserStringSpec {
         template_name: GM_TOP_NAME,
         label: "Top",
@@ -189,6 +190,12 @@ pub const USER_NAMES_SPECS: [UserStringSpec; 26] = [
         label: "Field name",
         default_value: "{{ field }}*",
         description: "Name of the field in the register record",
+    },
+    UserStringSpec {
+        template_name: GF_STRIDE_FIELD_ARRAY_TYPE,
+        label: "Stride array type for a field",
+        default_value: "{{ project }}_{{ interface }}_{{ register }}_{{ field }}*_array_t",
+        description: "Name of the type for the stride array for a field",
     },
     UserStringSpec {
         template_name: GF_READ_ENABLE_NAME,

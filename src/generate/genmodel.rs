@@ -353,8 +353,6 @@ pub struct GenRegister {
     pub stride_count_const_name: String,
     /// name used for the constant with the address offset between array elements (only valid if is_stride = true)    
     pub stride_offset_const_name: String,
-    /// name used for the array type (only valid if is_stride = true)
-    pub stride_array_type: String,
     /// array length (only valid if is_stride = true)
     pub stride_count: u32,
     /// address offset between array elements (only valid if is_stride = true)
@@ -390,7 +388,7 @@ pub struct GenField {
     pub is_read: bool,
     /// write access
     pub is_write: bool,
-    /// field type (only valid if not a bitfield)
+    /// field type
     pub sig_type: String,
     /// complete type, including vector downto size
     pub sig_type_complete: String,
@@ -400,6 +398,8 @@ pub struct GenField {
     pub sig_type_is_bool: bool,
     /// true if type is a vector
     pub sig_type_is_vector: bool,
+    /// name used for the array type (only valid if is_stride for the register = true)
+    pub stride_array_type: String,
     /// field reset value, including quotes if required
     pub reset: String,
     /// field location
@@ -532,6 +532,9 @@ impl GenRegister {
             let sig_type_is_bool = register.signal == Some(utils::SignalType::Boolean);
             let sig_type_is_vector = (!sig_type_is_bit) && (!sig_type_is_bool);
 
+            let stride_array_type = general_token_list
+                .generate_token(&templates.render(user_strings::GR_STRIDE_ARRAY_TYPE, &context)?);
+
             let reset = match register.reset {
                 None => Err(GenError::new(&page, "reset value not specified"))?, // non bitfield, we must have a value
                 Some(reset_value) => match register.signal.unwrap() {
@@ -636,6 +639,7 @@ impl GenRegister {
                 sig_type_is_bit,
                 sig_type_is_bool,
                 sig_type_is_vector,
+                stride_array_type,
                 reset,
                 is_in_core,
                 core_read_enable,
@@ -709,8 +713,6 @@ impl GenRegister {
         let stride_offset_const_name = general_token_list.generate_token(
             &templates.render(user_strings::GR_STRIDE_OFFSET_CONST_NAME, &context)?,
         );
-        let stride_array_type = general_token_list
-            .generate_token(&templates.render(user_strings::GR_STRIDE_ARRAY_TYPE, &context)?);
 
         Ok(GenRegister {
             name,
@@ -725,7 +727,6 @@ impl GenRegister {
             doc_details,
             stride_count_const_name,
             stride_offset_const_name,
-            stride_array_type,
             stride_count,
             stride_increment,
             stride_continuous,
@@ -805,6 +806,10 @@ impl GenField {
         let sig_type_is_bit = field.signal == utils::SignalType::StdLogic;
         let sig_type_is_bool = field.signal == utils::SignalType::Boolean;
         let sig_type_is_vector = (!sig_type_is_bit) && (!sig_type_is_bool);
+
+
+        let stride_array_type = general_token_list
+            .generate_token(&templates.render(user_strings::GR_STRIDE_ARRAY_TYPE, &context)?);
 
         let reset = match field.signal {
             // the way we format the value depends on the type
@@ -910,6 +915,7 @@ impl GenField {
             sig_type_is_bit,
             sig_type_is_bool,
             sig_type_is_vector,
+            stride_array_type,
             reset,
             is_in_core,
             core_read_enable,
