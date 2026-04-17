@@ -106,7 +106,7 @@
           "location": "pif",
           "fields": [
             {
-              "name": "one_bit",
+              "name": "field_one_bit",
               "position": "0",
               "description": [
                 "one bit, read/write"
@@ -118,7 +118,7 @@
               "coreSignalProperties": {}
             },
             {
-              "name": "vector",
+              "name": "field_vector",
               "position": "4:1",
               "description": [
                 "read-only vector, constant value"
@@ -130,7 +130,7 @@
               "coreSignalProperties": {}
             },
             {
-              "name": "unsigned_vec",
+              "name": "field_unsigned_vec",
               "position": "8:5",
               "description": [
                 "unsigned vector, write only, with write enable"
@@ -144,7 +144,7 @@
               }
             },
             {
-              "name": "signed_vec",
+              "name": "field_signed_vec",
               "position": "12:9",
               "description": [
                 "read/write signed vector"
@@ -156,7 +156,7 @@
               "coreSignalProperties": {}
             },
             {
-              "name": "bool",
+              "name": "field_bool",
               "position": "13",
               "description": [
                 "read/write boolean with read enable"

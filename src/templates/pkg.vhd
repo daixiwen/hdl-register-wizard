@@ -21,7 +21,7 @@ package {{ pkg_name }} is
 
   -- Addresses list
   {% for register in interface.registers -%}
-  constant {{ register.address_const_name }} : integer := 16#{{ register.address_hex}}#; -- {{ register.address_pretty }}
+  constant {{ register.address_const_name }} : integer := 16#{{ register.address_hex}}#;
   {% endfor -%}
 
   {%- if interface.use_stride %}

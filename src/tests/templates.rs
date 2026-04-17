@@ -1,19 +1,17 @@
 //! Tests for the templates
-//! 
+//!
 //! This test will just check that all templates can be run without errors on a model file that should include all possible options
 use super::super::file_formats::mdf::Mdf;
-use std::fs::File;
-use std::io::{BufReader, BufWriter, Write};
-use std::error::Error;
-use super::super::generate::{genmodel, user_strings, templates, file_list};
+use super::super::generate::{file_list, genmodel, templates, user_strings};
 use super::super::settings;
 use std::collections::BTreeMap;
 use std::default::Default;
+use std::error::Error;
+use std::fs::File;
+use std::io::{BufReader, BufWriter, Write};
 
 #[test]
 fn run_all_templates() -> Result<(), Box<dyn Error>> {
-
-
     // load the example model file for the templates test
     let mut test_map_path = std::env::current_exe()?;
     test_map_path.pop();
@@ -31,9 +29,9 @@ fn run_all_templates() -> Result<(), Box<dyn Error>> {
     let mut default_user_strings = BTreeMap::<String, String>::default();
     user_strings::load_defaults(&mut default_user_strings);
     let default_settings = settings::Settings {
-            user_templates: default_user_strings,
-            ..Default::default()
-        };
+        user_templates: default_user_strings,
+        ..Default::default()
+    };
 
     // create the Tera template engine
     let mut tera_engine = templates::gen_templates(&default_settings)?;
@@ -63,7 +61,8 @@ fn run_all_templates() -> Result<(), Box<dyn Error>> {
         let mut writer = BufWriter::new(output_file);
 
         // apply template
-        let content = tera_engine.render(&template_name, &tera::Context::from_serialize(&model)?)?;
+        let content =
+            tera_engine.render(&template_name, &tera::Context::from_serialize(&model)?)?;
         writer.write(content.as_bytes())?;
     }
 

@@ -1,7 +1,7 @@
 //! handles the list of files to generate
 
-use serde::Deserialize;
 use super::genmodel;
+use serde::Deserialize;
 use std::error::Error;
 use tera::Tera;
 

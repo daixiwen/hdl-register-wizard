@@ -1,5 +1,6 @@
 //! app pages
 #![allow(non_snake_case)]
+#![allow(unused_imports)]
 use crate::app::HdlWizardApp;
 use dioxus::document::eval;
 use dioxus::prelude::*;

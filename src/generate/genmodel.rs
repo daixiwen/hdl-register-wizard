@@ -521,19 +521,22 @@ impl GenRegister {
             // rw_mode should be a string
             let rw_mode = rw_mode.to_string();
             let sig_type = register.signal.unwrap().to_string();
-            let sig_type_complete = match register.signal {
-                Some(utils::SignalType::Boolean) | Some(utils::SignalType::StdLogic) => {
-                    sig_type.clone()
+            let stride_array_type = general_token_list
+                .generate_token(&templates.render(user_strings::GR_STRIDE_ARRAY_TYPE, &context)?);
+            let sig_type_complete = if is_stride {
+                stride_array_type.clone()
+            } else {
+                match register.signal {
+                    Some(utils::SignalType::Boolean) | Some(utils::SignalType::StdLogic) => {
+                        sig_type.clone()
+                    }
+                    _ => format!("{}({} downto 0)", &sig_type, width - 1),
                 }
-                _ => format!("{}({} downto 0)", &sig_type, width - 1),
             };
 
             let sig_type_is_bit = register.signal == Some(utils::SignalType::StdLogic);
             let sig_type_is_bool = register.signal == Some(utils::SignalType::Boolean);
             let sig_type_is_vector = (!sig_type_is_bit) && (!sig_type_is_bool);
-
-            let stride_array_type = general_token_list
-                .generate_token(&templates.render(user_strings::GR_STRIDE_ARRAY_TYPE, &context)?);
 
             let reset = match register.reset {
                 None => Err(GenError::new(&page, "reset value not specified"))?, // non bitfield, we must have a value
@@ -798,18 +801,20 @@ impl GenField {
         let rw_mode = rw_mode.to_string();
 
         let sig_type = field.signal.to_string();
-        let sig_type_complete = match field.signal {
-            utils::SignalType::Boolean | utils::SignalType::StdLogic => sig_type.clone(),
-            _ => format!("{}({} downto 0)", &sig_type, width - 1),
+        let stride_array_type = general_token_list
+            .generate_token(&templates.render(user_strings::GR_STRIDE_ARRAY_TYPE, &context)?);
+        let sig_type_complete = if register.address.stride.is_some() {
+            stride_array_type.clone()
+        } else {
+            match field.signal {
+                utils::SignalType::Boolean | utils::SignalType::StdLogic => sig_type.clone(),
+                _ => format!("{}({} downto 0)", &sig_type, width - 1),
+            }
         };
 
         let sig_type_is_bit = field.signal == utils::SignalType::StdLogic;
         let sig_type_is_bool = field.signal == utils::SignalType::Boolean;
         let sig_type_is_vector = (!sig_type_is_bit) && (!sig_type_is_bool);
-
-
-        let stride_array_type = general_token_list
-            .generate_token(&templates.render(user_strings::GR_STRIDE_ARRAY_TYPE, &context)?);
 
         let reset = match field.signal {
             // the way we format the value depends on the type
@@ -872,12 +877,16 @@ impl GenField {
                 pif2core_token_list,
             )?);
         }
+        let enable_signal_type = match &register.address.stride {
+            Some(stride) => format!("boolean_vector({} downto 0)", stride.count.value - 1),
+            None => "boolean".to_string(),
+        };
         if core_read_enable {
             pif2core.push(gen_registersignal(
                 templates,
                 "read_enable",
                 user_strings::GF_READ_ENABLE_NAME,
-                "boolean",
+                &enable_signal_type,
                 user_strings::GF_READ_ENABLE_DESCRIPTION,
                 &context,
                 pif2core_token_list,
@@ -888,7 +897,7 @@ impl GenField {
                 templates,
                 "write_enable",
                 user_strings::GF_WRITE_ENABLE_NAME,
-                "boolean",
+                &enable_signal_type,
                 user_strings::GF_WRITE_ENABLE_DESCRIPTION,
                 &context,
                 pif2core_token_list,
