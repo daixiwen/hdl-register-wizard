@@ -47,11 +47,24 @@ package {{ pkg_name }} is
     {%- endfor -%}
   {%- endif %}
 
+  {%- if interface.use_bitfield %}
+  
+  -- Bitfield contstants list
+    {%- for register in interface.registers -%}
+      {%- if register.is_bitfield %}
+        {%- for field in register.fields %}
+  constant {{ field.width_const_name }} : integer := {{ field.width }}; -- width for the field {{ field.name }}
+  constant {{ field.offset_const_name }} : integer := {{ field.offset }}; -- offset for the field {{ field.name }}
+        {%- endfor -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif %}
+
   -- Address decoding functions
   function {{ interface.address_decoder_name }} (address : unsigned) return {{ interface.register_enum_name }};
   {%- if interface.use_stride %}
   function {{ interface.address_stride_func_name }} (address : unsigned) return integer;
-  {% endif %}
+  {%- endif %}
 
   -- records between core and PIF
   type {{ interface.core2pif_name }} is record

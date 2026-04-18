@@ -137,7 +137,9 @@ pub struct GenInterface {
     pub use_stride: bool,
     /// if true, some registers are non arrays
     pub use_not_stride: bool,
-    /// list of interface porte
+    /// if true, some registers are bitfields
+    pub use_bitfield: bool,
+    /// list of interface ports
     pub ports: Vec<GenIntPort>,
     // list of signals for interface as a map (with function as index and name as value)
     pub ports_names: HashMap<String, String>,
@@ -219,6 +221,11 @@ impl GenInterface {
             .fold(false, |use_not_stride, reg| {
                 use_not_stride || reg.address.stride.is_none()
             });
+
+        // go through all the regusters and check if at least one is a bitfield
+        let use_bitfield = interface.registers.iter().fold(false, |use_bitfield, reg | {
+            use_bitfield || reg.signal.is_none()
+        });
 
         let mut context = tera::Context::new();
         context.insert("project", project_token_name);
@@ -315,6 +322,7 @@ impl GenInterface {
             data_width,
             use_stride,
             use_not_stride,
+            use_bitfield,
             ports,
             ports_names,
             regs_doc_details,
