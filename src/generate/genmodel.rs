@@ -118,7 +118,7 @@ pub struct GenInterface {
     /// name for the address decoder function
     pub address_decoder_name: String,
     /// name for the address stride number function
-    pub address_stride_func_name: String,
+    pub address_decoder_return_type: String,
     /// name for the address width constant
     pub address_width_const_name: String,
     /// name for the data width constant
@@ -243,8 +243,8 @@ impl GenInterface {
             .generate_token(&templates.render(user_strings::GI_REGISTER_ENUM_NAME, &context)?);
         let address_decoder_name = general_token_list
             .generate_token(&templates.render(user_strings::GI_ADDRESS_DECODER_NAME, &context)?);
-        let address_stride_func_name = general_token_list.generate_token(
-            &templates.render(user_strings::GI_ADDRESS_STRIDE_FUNC_NAME, &context)?,
+        let address_decoder_return_type = general_token_list.generate_token(
+            &templates.render(user_strings::GI_ADDRESS_DECODER_RETURN_TYPE, &context)?,
         );
         let address_width_const_name = general_token_list.generate_token(
             &templates.render(user_strings::GI_ADDRESS_WIDTH_CONST_NAME, &context)?,
@@ -312,7 +312,7 @@ impl GenInterface {
             pif2core_name,
             register_enum_name,
             address_decoder_name,
-            address_stride_func_name,
+            address_decoder_return_type,
             address_width_const_name,
             data_width_const_name,
             description,

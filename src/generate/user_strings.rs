@@ -21,7 +21,7 @@ pub const GI_CORE2PIF_NAME: &str = "gi_core2pif_name";
 pub const GI_PIF2CORE_NAME: &str = "gi_pif2core_name";
 pub const GI_REGISTER_ENUM_NAME: &str = "gi_register_enum_name";
 pub const GI_ADDRESS_DECODER_NAME: &str = "gi_address_decoder_name";
-pub const GI_ADDRESS_STRIDE_FUNC_NAME: &str = "gi_address_stride_func_name";
+pub const GI_ADDRESS_DECODER_RETURN_TYPE: &str = "gi_address_decoder_return_type";
 pub const GI_ADDRESS_WIDTH_CONST_NAME: &str = "gi_address_width_const_name";
 pub const GI_DATA_WIDTH_CONST_NAME: &str = "gi_data_width_const_name";
 pub const GR_ADDRESS_CONST_NAME: &str = "gr_address_const_name";
@@ -108,9 +108,9 @@ pub const USER_NAMES_SPECS: [UserStringSpec; 27] = [
         description: "Name of the function decoding the address in the pif",
     },
     UserStringSpec {
-        template_name: GI_ADDRESS_STRIDE_FUNC_NAME,
-        label: "Address stride",
-        default_value: "f_{{ interface }}*_address_stride",
+        template_name: GI_ADDRESS_DECODER_RETURN_TYPE,
+        label: "Address decoder return type",
+        default_value: "t_{{ interface }}*_address_decode_return",
         description: "Name of the function decoding the stride number for a register",
     },
     UserStringSpec {
@@ -146,7 +146,7 @@ pub const USER_NAMES_SPECS: [UserStringSpec; 27] = [
     UserStringSpec {
         template_name: GR_STRIDE_ARRAY_TYPE,
         label: "Stride array type",
-        default_value: "{{ project }}_{{ interface }}_{{ register }}*_array_t",
+        default_value: "t_{{ project }}_{{ interface }}_{{ register }}*_array",
         description: "Name of the type for the stride array",
     },
     UserStringSpec {
@@ -194,7 +194,7 @@ pub const USER_NAMES_SPECS: [UserStringSpec; 27] = [
     UserStringSpec {
         template_name: GF_STRIDE_FIELD_ARRAY_TYPE,
         label: "Stride array type for a field",
-        default_value: "{{ project }}_{{ interface }}_{{ register }}_{{ field }}*_array_t",
+        default_value: "t_{{ project }}_{{ interface }}_{{ register }}_{{ field }}*_array",
         description: "Name of the type for the stride array for a field",
     },
     UserStringSpec {
