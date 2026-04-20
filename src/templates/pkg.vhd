@@ -119,22 +119,36 @@ package body {{ pkg_name }} is
     variable return_value : {{ interface.address_decoder_return_type }};
   begin
 
-    return_value <= (
-      address_valid => false,
-      reg => interface.registers[0].token_name
-  {%- if interface.use_stride -%},
-      stride_num => 0
-  {%- endif -%});
+    return_value.address_valid <= false;
+  {%- if interface.use_stride %}
+    return_value.stride_num <= 0;
+  {%- endif %}
   {% if interface.use_not_stride %}
     case to_integer(address) is
 
     {%- for register in interface.registers %}
       {%- if not register.is_stride %}
       when {{ register.address_const_name}} =>
-        return_value.address_value <= true;
+        return_value.address_valid <= true;
         return_value.reg <= {{ register.token_name}};
       {% endif -%}
     {%- endfor -%}
+      when others =>
+  {%- endif %}
+  {%- for register in interface.registers %}
+    {%- if register.is_stride %}
+
+        -- {{ register.name }}
+        for i in 0 to {{ register.stride_count_const_name }} - 1 loop
+          if to_integer(address) = {{ register.address_const_name }} + i * {{ register.stride_offset_const_name }} then
+            return_value.address_valid <= true;
+            return_value.reg <= {{ register.token_name}};
+            return_value.stride_num <= i; 
+          end if;       
+        end loop;
+    {% endif -%}
+  {%- endfor -%}
+  {% if interface.use_not_stride %}
     end case;
   {%- endif %}
     return return_value;
