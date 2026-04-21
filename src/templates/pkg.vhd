@@ -20,7 +20,7 @@ package {{ pkg_name }} is
   constant {{ register.stride_count_const_name }} : integer := {{ register.stride_count}};
   constant {{ register.stride_offset_const_name }} : integer := {{ register.stride_increment}};
       {%- endif -%}
-    {%- endfor -%};
+    {%- endfor -%}
 
   -- Stride array types
     {%- for register in interface.registers -%}
@@ -71,7 +71,7 @@ package {{ pkg_name }} is
   function {{ interface.address_decoder_name }} (address : unsigned) return {{ interface.address_decoder_return_type }};
 
   -- records between core and PIF
-  type {{ interface.core2pif_name }} is record
+  type {{ interface.core2pif_type }} is record
   {%- for register in interface.registers -%}
     {%- for field in register.fields -%}
       {% for entry in field.core2pif %}
@@ -79,9 +79,9 @@ package {{ pkg_name }} is
       {%- endfor -%}    
     {%- endfor -%}    
   {%- endfor %}    
-  end record  {{ interface.core2pif_name }};
+  end record  {{ interface.core2pif_type }};
 
-  type {{ interface.pif2core_name }} is record
+  type {{ interface.pif2core_type }} is record
   {%- for register in interface.registers -%}
     {%- for field in register.fields -%}
       {% for entry in field.pif2core %}
@@ -89,7 +89,7 @@ package {{ pkg_name }} is
       {%- endfor -%}    
     {%- endfor -%}    
   {%- endfor %}    
-  end record  {{ interface.pif2core_name }};
+  end record  {{ interface.pif2core_type }};
 
 {%- endmacro pkg_interface -%}
 
@@ -119,9 +119,9 @@ package body {{ pkg_name }} is
     variable return_value : {{ interface.address_decoder_return_type }};
   begin
 
-    return_value.address_valid <= false;
+    return_value.address_valid := false;
   {%- if interface.use_stride %}
-    return_value.stride_num <= 0;
+    return_value.stride_num := 0;
   {%- endif %}
   {% if interface.use_not_stride %}
     case to_integer(address) is
@@ -129,8 +129,8 @@ package body {{ pkg_name }} is
     {%- for register in interface.registers %}
       {%- if not register.is_stride %}
       when {{ register.address_const_name}} =>
-        return_value.address_valid <= true;
-        return_value.reg <= {{ register.token_name}};
+        return_value.address_valid := true;
+        return_value.reg := {{ register.token_name}};
       {% endif -%}
     {%- endfor -%}
       when others =>
@@ -141,9 +141,9 @@ package body {{ pkg_name }} is
         -- {{ register.name }}
         for i in 0 to {{ register.stride_count_const_name }} - 1 loop
           if to_integer(address) = {{ register.address_const_name }} + i * {{ register.stride_offset_const_name }} then
-            return_value.address_valid <= true;
-            return_value.reg <= {{ register.token_name}};
-            return_value.stride_num <= i; 
+            return_value.address_valid := true;
+            return_value.reg := {{ register.token_name}};
+            return_value.stride_num := i; 
           end if;       
         end loop;
     {% endif -%}

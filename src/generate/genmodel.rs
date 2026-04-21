@@ -113,6 +113,10 @@ pub struct GenInterface {
     pub core2pif_name: String,
     /// name for the pif2core record
     pub pif2core_name: String,
+    /// type for the core2pif record
+    pub core2pif_type: String,
+    /// type for the pif2core record
+    pub pif2core_type: String,
     /// name for the register enum
     pub register_enum_name: String,
     /// name for the address decoder function
@@ -239,6 +243,10 @@ impl GenInterface {
             .generate_token(&templates.render(user_strings::GI_CORE2PIF_NAME, &context)?);
         let pif2core_name = general_token_list
             .generate_token(&templates.render(user_strings::GI_PIF2CORE_NAME, &context)?);
+        let core2pif_type = general_token_list
+            .generate_token(&templates.render(user_strings::GI_CORE2PIF_TYPE, &context)?);
+        let pif2core_type = general_token_list
+            .generate_token(&templates.render(user_strings::GI_PIF2CORE_TYPE, &context)?);
         let register_enum_name = general_token_list
             .generate_token(&templates.render(user_strings::GI_REGISTER_ENUM_NAME, &context)?);
         let address_decoder_name = general_token_list
@@ -310,6 +318,8 @@ impl GenInterface {
             pif_instance,
             core2pif_name,
             pif2core_name,
+            core2pif_type,
+            pif2core_type,
             register_enum_name,
             address_decoder_name,
             address_decoder_return_type,
@@ -531,15 +541,11 @@ impl GenRegister {
             let sig_type = register.signal.unwrap().to_string();
             let stride_array_type = general_token_list
                 .generate_token(&templates.render(user_strings::GR_STRIDE_ARRAY_TYPE, &context)?);
-            let sig_type_complete = if is_stride {
-                stride_array_type.clone()
-            } else {
-                match register.signal {
-                    Some(utils::SignalType::Boolean) | Some(utils::SignalType::StdLogic) => {
-                        sig_type.clone()
-                    }
-                    _ => format!("{}({} downto 0)", &sig_type, width - 1),
+            let sig_type_complete = match register.signal {
+                Some(utils::SignalType::Boolean) | Some(utils::SignalType::StdLogic) => {
+                    sig_type.clone()
                 }
+                _ => format!("{}({} downto 0)", &sig_type, width - 1),
             };
 
             let sig_type_is_bit = register.signal == Some(utils::SignalType::StdLogic);

@@ -19,6 +19,8 @@ pub const GI_PIF_NAME: &str = "gi_pif_name";
 pub const GI_PIF_INSTANCE: &str = "gi_pif_instance";
 pub const GI_CORE2PIF_NAME: &str = "gi_core2pif_name";
 pub const GI_PIF2CORE_NAME: &str = "gi_pif2core_name";
+pub const GI_CORE2PIF_TYPE: &str = "gi_core2pif_type";
+pub const GI_PIF2CORE_TYPE: &str = "gi_pif2core_type";
 pub const GI_REGISTER_ENUM_NAME: &str = "gi_register_enum_name";
 pub const GI_ADDRESS_DECODER_NAME: &str = "gi_address_decoder_name";
 pub const GI_ADDRESS_DECODER_RETURN_TYPE: &str = "gi_address_decoder_return_type";
@@ -45,7 +47,7 @@ pub const GF_READ_ENABLE_DESCRIPTION: &str = "gf_read_enable_description";
 pub const GF_WRITE_ENABLE_NAME: &str = "gf_write_enable_name";
 pub const GF_WRITE_ENABLE_DESCRIPTION: &str = "gf_write_enable_description";
 
-pub const USER_NAMES_SPECS: [UserStringSpec; 27] = [
+pub const USER_NAMES_SPECS: [UserStringSpec; 29] = [
     UserStringSpec {
         template_name: GM_TOP_NAME,
         label: "Top",
@@ -94,6 +96,18 @@ pub const USER_NAMES_SPECS: [UserStringSpec; 27] = [
         label: "Pif to core",
         default_value: "{{ interface }}*_pif2core",
         description: "Name of the record containing the signals from the pif to the core",
+    },
+    UserStringSpec {
+        template_name: GI_CORE2PIF_TYPE,
+        label: "Core to pif type",
+        default_value: "t_{{ interface }}*_core2pif",
+        description: "Type of the record containing the signals from the core to the pif",
+    },
+    UserStringSpec {
+        template_name: GI_PIF2CORE_TYPE,
+        label: "Pif to core type",
+        default_value: "t_{{ interface }}*_pif2core",
+        description: "Type of the record containing the signals from the pif to the core",
     },
     UserStringSpec {
         template_name: GI_REGISTER_ENUM_NAME,
