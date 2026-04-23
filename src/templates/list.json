@@ -2,7 +2,8 @@
 {# The application will also call this template at startup with empty strings to determine a list of possible documentation formats and testbench types #}
 {
     "global":[
+        { "template": "pkg.vhd", "path" : "src", "filename": "{{pkg_name}}.vhd"},
         { "template": "top_level.vhd", "path" : "src", "filename": "{{top_name}}.vhd"},
-        { "template": "pkg.vhd", "path" : "src", "filename": "{{pkg_name}}.vhd"}
+        { "template": "core.vhd", "path" : "src", "filename": "{{core_name}}.vhd"}
     ]
 }
