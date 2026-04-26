@@ -47,6 +47,7 @@ fn run_all_templates() -> Result<(), Box<dyn Error>> {
     let mut output_path = test_map_path.clone();
     output_path.push("output");
 
+    let context = tera::Context::from_serialize(&model)?;
     for entry in list.global {
         let template_name = entry.template;
 
@@ -62,8 +63,37 @@ fn run_all_templates() -> Result<(), Box<dyn Error>> {
 
         // apply template
         let content =
-            tera_engine.render(&template_name, &tera::Context::from_serialize(&model)?)?;
+            tera_engine.render(&template_name, &context)?;
         writer.write(content.as_bytes())?;
+    }
+
+    // generate interface specific outputs
+    for (interface, file_list) in model.interfaces.iter().zip(list.interfaces.iter()) {
+        println!("Processing interface {} ({})", interface.name, interface.interface_type_pretty);
+
+        // interface context
+        let mut context = tera::Context::from_serialize(&interface)?;
+        context.insert("global", &model);
+
+        for entry in file_list {
+            let template_name = &entry.template;
+
+            let mut output_file_path = output_path.clone();
+            output_file_path.push(&entry.path);
+            std::fs::create_dir_all(&output_file_path)?;
+            output_file_path.push(&entry.filename);
+
+            println!("File entry: template {template_name}, file {output_file_path:?}");
+            let output_file = File::create(output_file_path)?;
+
+            let mut writer = BufWriter::new(output_file);
+
+            // apply template
+
+            let content =
+                tera_engine.render(&template_name, &context)?;
+            writer.write(content.as_bytes())?;
+        }
     }
 
     Ok(())

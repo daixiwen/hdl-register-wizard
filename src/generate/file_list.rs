@@ -15,6 +15,7 @@ pub struct FileEntry {
 #[derive(Deserialize, Clone)]
 pub struct FileList {
     pub global: Vec<FileEntry>,
+    pub interfaces: Vec<Vec<FileEntry>>
 }
 
 // generates the file list for a model
@@ -24,6 +25,7 @@ pub fn generate_list(
 ) -> Result<FileList, Box<dyn Error>> {
     let json_list = templates.render("list.json", &tera::Context::from_serialize(&model)?)?;
 
+    println!("compiled json: {}",json_list);
     Ok(serde_json::from_slice::<FileList>(json_list.as_bytes())?)
     //Ok(markdown)
 }

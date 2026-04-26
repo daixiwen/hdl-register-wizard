@@ -52,6 +52,7 @@ pub fn gen_templates(_settings: &crate::settings::Settings) -> Result<Tera> {
     template!(tera, "pkg.vhd");
     template!(tera, "top_level.vhd");
     template!(tera, "core.vhd");
+    template!(tera, "pif-sbi.vhd");
 
     Ok(tera)
 }
