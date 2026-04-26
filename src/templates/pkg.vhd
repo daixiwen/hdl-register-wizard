@@ -75,7 +75,10 @@ package {{ pkg_name }} is
   {%- for register in interface.registers -%}
     {%- for field in register.fields -%}
       {% for entry in field.core2pif %}
-    {{ entry.name }} : {{ entry.signal_type }};  -- {{ entry.description }}
+    {{ entry.name }} :
+        {%- if register.is_stride and (entry.function == "data") %} {{ field.stride_array_type }}
+        {%- else %} {{ entry.signal_type }}
+        {%- endif %};  -- {{ entry.description }}
       {%- endfor -%}    
     {%- endfor -%}    
   {%- endfor %}    
@@ -85,7 +88,10 @@ package {{ pkg_name }} is
   {%- for register in interface.registers -%}
     {%- for field in register.fields -%}
       {% for entry in field.pif2core %}
-    {{ entry.name }} : {{ entry.signal_type }};  -- {{ entry.description }}
+    {{ entry.name }} :
+        {%- if register.is_stride and (entry.function == "data") %} {{ field.stride_array_type }}
+        {%- else %} {{ entry.signal_type }}
+        {%- endif %};  -- {{ entry.description }}
       {%- endfor -%}    
     {%- endfor -%}    
   {%- endfor %}    
